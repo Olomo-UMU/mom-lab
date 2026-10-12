@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive vertical spring-mass-dashpot system: free, forced and base-excited vibration.">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+.sitebar{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:12px 0;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:0.8rem}
+.sitebar a{color:var(--muted);text-decoration:none}
+.sitebar a:hover,.sitebar a:focus-visible{color:var(--ink);text-decoration:underline}
+@media (max-width:420px){.sitebar{padding-inline:16px}}
+</style>
+<title>Spring–Mass–Damper Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: drafting-sheet tool, companion to the mechanism labs. Controls left; hanging system + readouts right; time histories, phase plane, energy and frequency response below. */
+:root {
+  --paper: #eceff3;
+  --sheet: #fbfcfd;
+  --ink: #15212c;
+  --muted: #5b6977;
+  --rule: #cdd5dd;
+  --grid: #e3e8ed;
+  --spring: #1d5bbd;
+  --damper: #b9600c;
+  --mass: #4b4f86;
+  --disp: #15212c;
+  --vel: #0b8466;
+  --acc: #b8215f;
+  --force: #7b36c4;
+  --ke: #0b8466;
+  --pe: #1d5bbd;
+  --warn-bg: #fff3e0;
+  --warn-fg: #8a4a00;
+  --focus: #1d5bbd;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e1318; --sheet: #151c24; --ink: #e2e8ee; --muted: #93a1ae; --rule: #2b3641; --grid: #1f2830;
+    --spring: #72a6ff; --damper: #f0a24f; --mass: #a3a8f0; --disp: #e2e8ee; --vel: #3fd0a6; --acc: #ff74ab; --force: #c493ff;
+    --ke: #3fd0a6; --pe: #72a6ff; --warn-bg: #3a2a12; --warn-fg: #ffc77a; --focus: #72a6ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e1318; --sheet: #151c24; --ink: #e2e8ee; --muted: #93a1ae; --rule: #2b3641; --grid: #1f2830;
+  --spring: #72a6ff; --damper: #f0a24f; --mass: #a3a8f0; --disp: #e2e8ee; --vel: #3fd0a6; --acc: #ff74ab; --force: #c493ff;
+  --ke: #3fd0a6; --pe: #72a6ff; --warn-bg: #3a2a12; --warn-fg: #ffc77a; --focus: #72a6ff;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-inline: 20px; padding-block: 20px 40px; display: grid; gap: 18px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 24px; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 1.9rem; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); max-width: 64ch; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin: 0; }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; min-width: 0; }
+.top { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
+
+.controls { display: grid; gap: 14px; }
+.ctl { display: grid; gap: 4px; }
+.ctl-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ctl label { font-weight: 600; font-size: 0.86rem; }
+.ctl label .sym { font-family: var(--f-mono); font-weight: 500; color: var(--muted); margin-left: 4px; }
+.ctl .num { display: flex; align-items: center; gap: 4px; font-family: var(--f-mono); font-size: 0.82rem; color: var(--muted); }
+.ctl input[type=number] { width: 80px; font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 2px 6px; text-align: right; font-variant-numeric: tabular-nums; }
+.ctl input[type=range] { width: 100%; accent-color: var(--spring); }
+.ctl .hint { font-size: 0.76rem; color: var(--muted); font-family: var(--f-mono); }
+.group-label { border-top: 1px solid var(--rule); padding-top: 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button { font: inherit; font-weight: 600; font-size: 0.84rem; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 11px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--spring); color: var(--sheet); border-color: var(--spring); min-width: 84px; }
+button.small { padding: 2px 8px; font-size: 0.76rem; font-weight: 500; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+select { font: inherit; font-size: 0.84rem; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 5px 6px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 0.86rem; }
+.check input { accent-color: var(--spring); width: 16px; height: 16px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { text-align: center; padding: 6px 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; background: var(--paper); color: var(--muted); border-right: 1px solid var(--rule); line-height: 1.25; }
+.seg label:last-of-type { border-right: 0; }
+.seg input:checked + label { background: var(--spring); color: var(--sheet); }
+.seg input:focus-visible + label { outline: 2px solid var(--focus); outline-offset: -2px; }
+
+.sys { display: grid; grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr); gap: 18px; }
+.sys-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; margin-bottom: 8px; }
+.chip { font-family: var(--f-display); font-weight: 600; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; border: 1.5px solid currentColor; color: var(--spring); }
+canvas { display: block; width: 100%; touch-action: none; }
+#sysc { aspect-ratio: 3 / 4; max-width: 100%; }
+.note { font-size: 0.78rem; color: var(--muted); }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+td, th { padding: 4px 6px; text-align: left; border-bottom: 1px solid var(--grid); vertical-align: baseline; }
+th { font-family: var(--f-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; color: var(--muted); padding-top: 10px; }
+td.sym { font-family: var(--f-mono); white-space: nowrap; }
+td.val { font-family: var(--f-mono); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.unit { color: var(--muted); font-family: var(--f-mono); font-size: 0.78rem; white-space: nowrap; }
+td.desc { color: var(--muted); }
+tr.key td { font-weight: 600; }
+tr.key td.desc { color: var(--ink); }
+.tbl-wrap { overflow-x: auto; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border-top: 1px solid var(--rule); margin-top: 10px; }
+.stat { padding: 10px 10px 4px 0; }
+.stat .k { font-size: 0.74rem; color: var(--muted); }
+.stat .v { font-family: var(--f-mono); font-size: 1rem; font-variant-numeric: tabular-nums; }
+
+.plots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+.plot { min-width: 0; }
+.plot canvas { aspect-ratio: 16 / 10; max-width: 100%; cursor: crosshair; }
+.plots-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; align-items: baseline; }
+
+details { font-size: 0.88rem; }
+summary { cursor: pointer; font-family: var(--f-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; font-size: 0.82rem; color: var(--muted); }
+.eqs { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 28px; margin-top: 10px; }
+.eqs p { margin: 4px 0; max-width: 70ch; }
+.eq { font-family: var(--f-mono); font-size: 0.84rem; background: var(--paper); border-radius: 4px; padding: 6px 8px; overflow-x: auto; white-space: nowrap; margin-bottom: 4px; }
+.refs p { padding-left: 2em; text-indent: -2em; margin: 6px 0; max-width: 90ch; }
+
+@media (max-width: 1100px) { .sys { grid-template-columns: 1fr; } #sysc { max-width: 420px; margin: 0 auto; } }
+@media (max-width: 1000px) { .plots { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .top { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .plots { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { .wrap { padding-inline: 16px; } }
+</style>
+</head>
+<body>
+<nav class="sitebar"><a href="../">← All labs</a></nav>
+<div class="wrap">
+  <header>
+    <h1>Spring–Mass–Damper Lab</h1>
+    <p>A mass hangs from a fixed support by a spring and a viscous dashpot in parallel. Set the system and its excitation, then play the motion or scrub the time histories. Responses are exact closed-form solutions.</p>
+  </header>
+
+  <div class="top">
+    <aside class="sheet controls" aria-label="Inputs">
+      <h2>System</h2>
+      <div id="gSys"></div>
+      <div class="row" id="zetaBtns"><span class="note">Set ζ:</span>
+        <button type="button" class="small" data-z="0">0</button>
+        <button type="button" class="small" data-z="0.1">0.1</button>
+        <button type="button" class="small" data-z="0.3">0.3</button>
+        <button type="button" class="small" data-z="1">1</button>
+        <button type="button" class="small" data-z="2">2</button>
+      </div>
+      <h2 class="group-label">Initial conditions at t = 0</h2>
+      <div id="gIC"></div>
+      <h2 class="group-label">Excitation</h2>
+      <div class="seg" role="radiogroup" aria-label="Excitation type">
+        <input type="radio" name="mode" id="mNone" value="none" checked><label for="mNone">None</label>
+        <input type="radio" name="mode" id="mForce" value="force"><label for="mForce">Force on mass</label>
+        <input type="radio" name="mode" id="mBase" value="base"><label for="mBase">Support motion</label>
+      </div>
+      <div id="gExc"></div>
+      <h2 class="group-label">Time</h2>
+      <div id="gTime"></div>
+      <label class="check" for="autoT"><input type="checkbox" id="autoT" checked> Choose duration automatically</label>
+      <div class="row">
+        <button id="play" class="primary" type="button">Play</button>
+        <label class="check" for="speed" style="gap:6px">Speed
+          <select id="speed">
+            <option value="0.1">× 0.1</option>
+            <option value="0.25" selected>× 0.25</option>
+            <option value="0.5">× 0.5</option>
+            <option value="1">Real time</option>
+          </select>
+        </label>
+      </div>
+      <label class="check" for="showF"><input type="checkbox" id="showF" checked> Show forces on the mass</label>
+      <h2 class="group-label">Presets</h2>
+      <div class="row" id="presets">
+        <button type="button" data-p="under">Underdamped decay</button>
+        <button type="button" data-p="undamped">Undamped</button>
+        <button type="button" data-p="critical">Critically damped</button>
+        <button type="button" data-p="over">Overdamped</button>
+        <button type="button" data-p="res">Forced at resonance</button>
+        <button type="button" data-p="beat">Beats</button>
+        <button type="button" data-p="iso">Vibration isolation</button>
+      </div>
+    </aside>
+
+    <section class="sheet">
+      <div class="sys">
+        <div>
+          <div class="sys-head">
+            <h2>t = <span id="tLabel">0.000 s</span></h2>
+            <span id="classChip" class="chip">Underdamped</span>
+          </div>
+          <canvas id="sysc" aria-label="Spring, dashpot and mass hanging from a support"></canvas>
+          <p class="note">x is measured downward from static equilibrium. Motion is magnified for visibility; spring length is schematic.</p>
+        </div>
+        <div style="min-width:0">
+          <h2>Response at this instant</h2>
+          <div class="tbl-wrap"><table id="readout"></table></div>
+        </div>
+      </div>
+      <div class="stats" id="stats"></div>
+    </section>
+  </div>
+
+  <section class="sheet">
+    <div class="plots-head">
+      <h2>Response</h2>
+      <span class="note">Click or drag a time chart to move to that instant. Click the frequency-response chart to set the forcing frequency.</span>
+    </div>
+    <div class="plots">
+      <div class="plot"><canvas id="pX"></canvas></div>
+      <div class="plot"><canvas id="pV"></canvas></div>
+      <div class="plot"><canvas id="pA"></canvas></div>
+      <div class="plot"><canvas id="pPh"></canvas></div>
+      <div class="plot"><canvas id="pE"></canvas></div>
+      <div class="plot"><canvas id="pF"></canvas></div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <details>
+      <summary>Equations and sign conventions</summary>
+      <div class="eqs">
+        <div>
+          <p>x is the mass displacement, positive downward, measured from static equilibrium. In equilibrium the spring is already stretched by δ<sub>st</sub> = mg/k, so the spring force k·δ<sub>st</sub> cancels the weight mg and gravity drops out of the equation of motion.</p>
+          <div class="eq">m ẍ + c ẋ + k x = F(t)&nbsp;&nbsp;&nbsp;(force on mass)</div>
+          <div class="eq">m ẍ + c (ẋ − ẏ) + k (x − y) = 0&nbsp;&nbsp;&nbsp;(support motion y)</div>
+          <div class="eq">ω<sub>n</sub> = √(k/m),&nbsp; c<sub>c</sub> = 2√(km),&nbsp; ζ = c / c<sub>c</sub>,&nbsp; ω<sub>d</sub> = ω<sub>n</sub>√(1 − ζ²)</div>
+          <p>Free response from x₀, v₀</p>
+          <div class="eq">ζ &lt; 1: x = e<sup>−ζω<sub>n</sub>t</sup>[x₀ cos ω<sub>d</sub>t + (v₀ + ζω<sub>n</sub>x₀)/ω<sub>d</sub> · sin ω<sub>d</sub>t]</div>
+          <div class="eq">ζ = 1: x = [x₀ + (v₀ + ω<sub>n</sub>x₀) t] e<sup>−ω<sub>n</sub>t</sup></div>
+          <div class="eq">ζ &gt; 1: x = A e<sup>s₁t</sup> + B e<sup>s₂t</sup>,&nbsp; s₁,₂ = −ζω<sub>n</sub> ± ω<sub>n</sub>√(ζ² − 1)</div>
+          <div class="eq">Logarithmic decrement δ = ln(x<sub>i</sub>/x<sub>i+1</sub>) = 2πζ / √(1 − ζ²)</div>
+        </div>
+        <div>
+          <p>Steady state under F₀ sin ωt, with r = ω/ω<sub>n</sub></p>
+          <div class="eq">X = (F₀/k) / √[(1 − r²)² + (2ζr)²],&nbsp; tan φ = 2ζr / (1 − r²)</div>
+          <p>Steady state under support motion Y sin ωt (transmissibility)</p>
+          <div class="eq">X/Y = √[1 + (2ζr)²] / √[(1 − r²)² + (2ζr)²]</div>
+          <p>Isolation (X/Y &lt; 1) needs r &gt; √2. The total response is the steady state plus a free response chosen so that x(0) = x₀ and ẋ(0) = v₀. Velocity and acceleration are the exact time derivatives of x(t).</p>
+          <p>Energy about equilibrium</p>
+          <div class="eq">T = ½ m ẋ²,&nbsp; V = ½ k (x − y)²</div>
+          <p>For an undamped system at exact resonance the steady state grows linearly: x<sub>p</sub> = −(F₀ / 2mω<sub>n</sub>) t cos ω<sub>n</sub>t.</p>
+        </div>
+      </div>
+      <div class="refs">
+        <p style="margin-top:14px"><strong>References</strong></p>
+        <p>Inman, D. J. (2014). <em>Engineering vibration</em> (4th ed.). Pearson.</p>
+        <p>Rao, S. S. (2017). <em>Mechanical vibrations</em> (6th ed.). Pearson.</p>
+      </div>
+    </details>
+  </section>
+</div>
+
+<script>
+(function () {
+  const G = 9.81;
+  const P = { m: 2, k: 800, c: 8, x0: 20, v0: 0, mode: 'none', F0: 10, Y: 5, w: 20, T: 3, t: 0 };
+  const PRESETS = {
+    under:    { m: 2, k: 800, c: 8,   x0: 20, v0: 0, mode: 'none' },
+    undamped: { m: 2, k: 800, c: 0,   x0: 20, v0: 0, mode: 'none' },
+    critical: { m: 2, k: 800, c: 80,  x0: 20, v0: 0, mode: 'none' },
+    over:     { m: 2, k: 800, c: 160, x0: 20, v0: 0, mode: 'none' },
+    res:      { m: 2, k: 800, c: 4,   x0: 0,  v0: 0, mode: 'force', F0: 10, w: 20 },
+    beat:     { m: 2, k: 800, c: 0,   x0: 0,  v0: 0, mode: 'force', F0: 10, w: 18 },
+    iso:      { m: 2, k: 800, c: 8,   x0: 0,  v0: 0, mode: 'base', Y: 5, w: 60 }
+  };
+
+  // MODEL START
+  function buildModel(P) {
+    const m = P.m, k = P.k, c = P.c;
+    const wn = Math.sqrt(k / m), cc = 2 * Math.sqrt(k * m), z = c / cc, dst = m * G / k;
+    const w = P.w, mode = P.mode, F0 = P.F0, Y = P.Y / 1000;
+    // particular (steady-state) solution
+    let part = { type: 'none' };
+    if (mode !== 'none' && w > 0) {
+      const dr = k - m * w * w, di = c * w, dm = dr * dr + di * di;
+      const nr = mode === 'force' ? F0 : k * Y, ni = mode === 'force' ? 0 : c * w * Y;
+      if (Math.sqrt(dm) < 1e-9 * k) {
+        part = { type: 'res', K: nr / (2 * m * w) };
+      } else {
+        const hr = (nr * dr + ni * di) / dm, hi = (ni * dr - nr * di) / dm;
+        part = { type: 'harm', A: Math.hypot(hr, hi), th: Math.atan2(hi, hr) };
+      }
+    }
+    function partAt(t) {
+      if (part.type === 'harm') {
+        const s = Math.sin(w * t + part.th), co = Math.cos(w * t + part.th);
+        return [part.A * s, part.A * w * co, -part.A * w * w * s];
+      }
+      if (part.type === 'res') {
+        const K = part.K, s = Math.sin(w * t), co = Math.cos(w * t);
+        return [-K * t * co, -K * (co - w * t * s), K * (2 * w * s + w * w * t * co)];
+      }
+      return [0, 0, 0];
+    }
+    const p0 = partAt(0);
+    const X0 = P.x0 / 1000 - p0[0], V0 = P.v0 - p0[1];
+    let hom, kind, sSlow = null, wd = null;
+    if (Math.abs(z - 1) < 1e-4) {
+      kind = 'critical';
+      const s = -wn, C1 = X0, C2 = V0 + wn * X0;
+      sSlow = s;
+      hom = t => { const e = Math.exp(s * t), q = C1 + C2 * t; return [q * e, (C2 + s * q) * e, (2 * s * C2 + s * s * q) * e]; };
+    } else if (z < 1) {
+      kind = z === 0 ? 'undamped' : 'underdamped';
+      const sg = z * wn; wd = wn * Math.sqrt(1 - z * z);
+      const C1 = X0, C2 = (V0 + sg * X0) / wd;
+      const D1 = C2 * wd - sg * C1, D2 = -C1 * wd - sg * C2;
+      const E1 = D2 * wd - sg * D1, E2 = -D1 * wd - sg * D2;
+      hom = t => { const e = Math.exp(-sg * t), co = Math.cos(wd * t), s = Math.sin(wd * t); return [e * (C1 * co + C2 * s), e * (D1 * co + D2 * s), e * (E1 * co + E2 * s)]; };
+    } else {
+      kind = 'overdamped';
+      const q = wn * Math.sqrt(z * z - 1), s1 = -z * wn + q, s2 = -z * wn - q;
+      const A = (V0 - s2 * X0) / (s1 - s2), B = (s1 * X0 - V0) / (s1 - s2);
+      sSlow = s1;
+      hom = t => { const e1 = Math.exp(s1 * t), e2 = Math.exp(s2 * t); return [A * e1 + B * e2, A * s1 * e1 + B * s2 * e2, A * s1 * s1 * e1 + B * s2 * s2 * e2]; };
+    }
+    function at(t) {
+      const h = hom(t), p = partAt(t);
+      const y = mode === 'base' ? Y * Math.sin(w * t) : 0, yd = mode === 'base' ? Y * w * Math.cos(w * t) : 0;
+      const F = mode === 'force' ? F0 * Math.sin(w * t) : 0;
+      return { t, x: h[0] + p[0], v: h[1] + p[1], a: h[2] + p[2], y, yd, F };
+    }
+    const amp0 = Math.hypot(X0, wd ? (V0 + z * wn * X0) / wd : 0);
+    return { m, k, c, wn, cc, z, dst, w, mode, F0, Y, part, kind, wd, sSlow, at, amp0 };
+  }
+  // MODEL END
+
+  // ---------- controls ----------
+  const wnNow = () => Math.sqrt(P.k / P.m), ccNow = () => 2 * Math.sqrt(P.k * P.m);
+  const SPECS = {
+    gSys: [
+      { k: 'm', label: 'Mass', sym: 'm', unit: 'kg', min: 0.1, max: 50, step: 0.1 },
+      { k: 'k', label: 'Spring stiffness', sym: 'k', unit: 'N/m', min: 10, max: 20000, step: 10 },
+      { k: 'c', label: 'Damping coefficient', sym: 'c', unit: 'N·s/m', min: 0, max: () => Math.max(10, Math.ceil(ccNow() * 3)), step: 0.1,
+        hint: () => { const z = P.c / ccNow(); return 'ζ = ' + z.toFixed(3) + ', c_c = ' + ccNow().toFixed(1) + ' N·s/m'; } }
+    ],
+    gIC: [
+      { k: 'x0', label: 'Initial displacement', sym: 'x₀', unit: 'mm', min: -100, max: 100, step: 0.5, hint: () => 'positive = below equilibrium' },
+      { k: 'v0', label: 'Initial velocity', sym: 'v₀', unit: 'm/s', min: -5, max: 5, step: 0.01 }
+    ],
+    gExc: [
+      { k: 'F0', label: 'Force amplitude', sym: 'F₀', unit: 'N', min: 0, max: 500, step: 0.5, only: 'force' },
+      { k: 'Y', label: 'Support amplitude', sym: 'Y', unit: 'mm', min: 0, max: 50, step: 0.1, only: 'base' },
+      { k: 'w', label: 'Forcing frequency', sym: 'ω', unit: 'rad/s', min: 0.1, max: () => Math.max(10, Math.ceil(wnNow() * 4)), step: 0.1, only: 'exc',
+        hint: () => 'r = ω/ωn = ' + (P.w / wnNow()).toFixed(3) + ',  f = ' + (P.w / 2 / Math.PI).toFixed(2) + ' Hz' }
+    ],
+    gTime: [
+      { k: 'T', label: 'Duration shown', sym: 't_end', unit: 's', min: 0.1, max: 60, step: 0.01 },
+      { k: 't', label: 'Time', sym: 't', unit: 's', min: 0, max: () => P.T, step: 0.001 }
+    ]
+  };
+  const ctrls = {};
+  const val = v => typeof v === 'function' ? v() : v;
+  function buildControls(id, list) {
+    const box = document.getElementById(id);
+    box.className = 'controls';
+    list.forEach(s => {
+      const d = document.createElement('div');
+      d.className = 'ctl';
+      d.innerHTML =
+        '<div class="ctl-head"><label for="n_' + s.k + '">' + s.label + '<span class="sym">' + s.sym + '</span></label>' +
+        '<span class="num"><input type="number" id="n_' + s.k + '" step="' + s.step + '">' + s.unit + '</span></div>' +
+        '<input type="range" id="r_' + s.k + '" aria-label="' + s.label + '" step="' + s.step + '">' +
+        (s.hint ? '<div class="hint" id="h_' + s.k + '"></div>' : '');
+      box.appendChild(d);
+      const num = d.querySelector('#n_' + s.k), rng = d.querySelector('#r_' + s.k);
+      ctrls[s.k] = { el: d, num, rng, spec: s };
+      const set = v => {
+        v = parseFloat(v);
+        if (!isFinite(v)) return;
+        if (s.k === 't') { P.t = Math.min(Math.max(v, 0), P.T); stopPlay(); syncControls(); refreshInstant(); return; }
+        P[s.k] = v;
+        if (s.k === 'T') document.getElementById('autoT').checked = false;
+        rebuild();
+      };
+      rng.addEventListener('input', () => set(rng.value));
+      num.addEventListener('change', () => set(num.value));
+    });
+  }
+  function syncControls() {
+    for (const k in ctrls) {
+      const c = ctrls[k], s = c.spec;
+      const mn = val(s.min), mx = val(s.max);
+      c.rng.min = mn; c.rng.max = mx; c.num.min = mn; c.num.max = mx;
+      if (k === 't') c.rng.step = c.num.step = Math.max(0.0005, P.T / 2000).toPrecision(2);
+      const v = P[k];
+      if (document.activeElement !== c.num) c.num.value = +(+v).toFixed(k === 't' ? 3 : 4);
+      c.rng.value = v;
+      if (s.hint) document.getElementById('h_' + k).textContent = s.hint();
+      if (s.only) c.el.hidden = s.only === 'exc' ? P.mode === 'none' : P.mode !== s.only;
+    }
+    document.querySelectorAll('input[name=mode]').forEach(r => r.checked = r.value === P.mode);
+  }
+
+  // ---------- data ----------
+  let M = null, D = null;
+  function autoDuration(M) {
+    const Tn = 2 * Math.PI / M.wn;
+    let T;
+    if (M.kind === 'undamped') T = 8 * Tn;
+    else if (M.kind === 'underdamped') T = Math.min(Math.max(1.3 * 4 / (M.z * M.wn), 4 * Tn), 30 * Tn);
+    else T = Math.min(6 / Math.abs(M.sSlow), 40 * Tn);
+    if (M.mode !== 'none') {
+      const Tf = 2 * Math.PI / M.w;
+      if (M.kind === 'undamped') {
+        const beat = Math.abs(M.w - M.wn) > 1e-6 ? 2 * 2 * Math.PI / Math.abs(M.w - M.wn) : 12 * Tn;
+        T = Math.max(8 * Tf, Math.min(beat, 60 * Tn));
+      } else T = Math.max(T, 6 * Tf);
+      T = Math.min(T, Math.max(60 * Tn, 12 * Tf));
+    }
+    return T;
+  }
+  function rebuild() {
+    M = buildModel(P);
+    if (document.getElementById('autoT').checked) P.T = +autoDuration(M).toPrecision(3);
+    P.T = Math.min(Math.max(P.T, 0.1), 60);
+    if (P.t > P.T) P.t = 0;
+    const Tn = 2 * Math.PI / M.wn, Tf = M.mode !== 'none' ? 2 * Math.PI / M.w : Tn;
+    const N = Math.max(800, Math.min(12000, Math.ceil(P.T / (Math.min(Tn, Tf) / 60))));
+    const d = { t: [], x: [], v: [], a: [], y: [], ke: [], pe: [], te: [], env: [] };
+    for (let i = 0; i <= N; i++) {
+      const t = P.T * i / N, s = M.at(t);
+      d.t.push(t); d.x.push(s.x * 1000); d.v.push(s.v); d.a.push(s.a); d.y.push(s.y * 1000);
+      const ke = 0.5 * M.m * s.v * s.v, pe = 0.5 * M.k * (s.x - s.y) ** 2;
+      d.ke.push(ke); d.pe.push(pe); d.te.push(ke + pe);
+      if (M.mode === 'none' && M.kind === 'underdamped') d.env.push(M.amp0 * Math.exp(-M.z * M.wn * t) * 1000);
+    }
+    const mx = a => Math.max(...a.map(Math.abs));
+    d.maxRel = 0; for (let i = 0; i <= N; i++) d.maxRel = Math.max(d.maxRel, Math.abs(d.x[i] - d.y[i]));
+    d.maxAbs = Math.max(mx(d.x), mx(d.y));
+    d.vmax = mx(d.v); d.amax = mx(d.a);
+    D = d;
+    syncControls(); drawStats(); refreshInstant();
+  }
+
+  // ---------- canvas helpers ----------
+  let C = {};
+  function readColors() {
+    const cs = getComputedStyle(document.documentElement);
+    ['paper', 'sheet', 'ink', 'muted', 'rule', 'grid', 'spring', 'damper', 'mass', 'disp', 'vel', 'acc', 'force', 'ke', 'pe'].forEach(n => C[n] = cs.getPropertyValue('--' + n).trim());
+  }
+  function prep(cv) {
+    const dpr = window.devicePixelRatio || 1;
+    const W = cv.clientWidth, H = cv.clientHeight;
+    if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    return { ctx, W, H };
+  }
+  const MONO = '"IBM Plex Mono", ui-monospace, Menlo, monospace';
+  const SANS = '"IBM Plex Sans", "Segoe UI", Arial, sans-serif';
+  function arrow(ctx, x1, y1, x2, y2, color, width, head) {
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy);
+    if (L < 1) return;
+    head = Math.min(head || 9, L * 0.5);
+    const ux = dx / L, uy = dy / L;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width || 2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux * head * 0.8, y2 - uy * head * 0.8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - ux * head - uy * head * 0.45, y2 - uy * head + ux * head * 0.45);
+    ctx.lineTo(x2 - ux * head + uy * head * 0.45, y2 - uy * head - ux * head * 0.45);
+    ctx.closePath(); ctx.fill();
+  }
+  function label(ctx, txt, x, y, color, font, align, base) {
+    ctx.fillStyle = color; ctx.font = font || ('12px ' + MONO);
+    ctx.textAlign = align || 'left'; ctx.textBaseline = base || 'middle';
+    ctx.fillText(txt, x, y);
+  }
+  const fmt = (v, d) => (Math.abs(v) < 0.5 * Math.pow(10, -d) ? 0 : v).toFixed(d);
+
+  // ---------- system drawing ----------
+  function drawSystem() {
+    const cv = document.getElementById('sysc');
+    const { ctx, W, H } = prep(cv);
+    const S = M.at(P.t);
+    const base = M.mode === 'base';
+    const Ls = 0.28 * H, gap = Math.max(22, Math.min(0.08 * H, 30));
+    const Dl = Ls + gap;
+    const ampRel = Math.min(0.15 * H, (Dl - 18) / 3 - 2);
+    const ampAbs = 0.12 * H;
+    const sx = Math.min(ampRel / Math.max(D.maxRel / 1000, 1e-9), ampAbs / Math.max(D.maxAbs / 1000, 1e-9));
+    const top = 30 + (base ? ampAbs : 0);
+    const supY = top + S.y * sx;                // underside of the support
+    const yU = top + Ls, yS = top + Dl;          // unstretched and equilibrium lines (support at rest)
+    const massTop = yS + S.x * sx;
+    const massW = Math.min(150, 0.4 * W), massH = Math.min(70, 0.13 * H);
+    const cx = W * 0.46;
+    const xSpring = cx - massW * 0.24, xDamp = cx + massW * 0.24;
+
+    // reference lines
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = C.rule;
+    ctx.beginPath(); ctx.moveTo(8, yU); ctx.lineTo(W - 8, yU); ctx.stroke(); ctx.setLineDash([]);
+    label(ctx, 'unstretched', 8, yU - 8, C.muted, '10.5px ' + MONO);
+    ctx.strokeStyle = C.muted;
+    ctx.beginPath(); ctx.moveTo(8, yS); ctx.lineTo(W - 8, yS); ctx.stroke();
+    label(ctx, 'equilibrium', 8, yS - 8, C.muted, '10.5px ' + MONO);
+    // static deflection dimension
+    const xd = 22;
+    ctx.strokeStyle = C.muted;
+    ctx.beginPath(); ctx.moveTo(xd, yU + 2); ctx.lineTo(xd, yS - 2); ctx.stroke();
+    label(ctx, 'δst = ' + (M.dst * 1000).toFixed(1) + ' mm', 8, (yU + yS) / 2 + 1, C.muted, '10.5px ' + MONO);
+
+    // support
+    ctx.fillStyle = C.paper; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5;
+    const sw = massW * 1.25;
+    ctx.fillRect(cx - sw / 2, supY - 14, sw, 14);
+    ctx.beginPath(); ctx.moveTo(cx - sw / 2, supY); ctx.lineTo(cx + sw / 2, supY); ctx.stroke();
+    ctx.lineWidth = 1; ctx.strokeStyle = C.muted;
+    for (let x = cx - sw / 2; x < cx + sw / 2; x += 9) { ctx.beginPath(); ctx.moveTo(x, supY); ctx.lineTo(x + 9, supY - 12); ctx.stroke(); }
+    if (base) {
+      label(ctx, 'y = ' + fmt(S.y * 1000, 2) + ' mm', cx + sw / 2 + 6, supY - 7, C.muted, '10.5px ' + MONO);
+      ctx.setLineDash([2, 3]); ctx.strokeStyle = C.rule;
+      ctx.beginPath(); ctx.moveTo(cx - sw / 2 - 6, top); ctx.lineTo(cx + sw / 2 + 6, top); ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // spring (zigzag)
+    const lead = 12, coils = 9, zw = 11;
+    const y1 = supY, y2 = massTop;
+    ctx.strokeStyle = C.spring; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(xSpring, y1); ctx.lineTo(xSpring, y1 + lead);
+    const segs = coils * 2, zl = (y2 - y1 - 2 * lead) / segs;
+    for (let i = 1; i <= segs; i++) ctx.lineTo(xSpring + (i === segs ? 0 : (i % 2 ? zw : -zw)), y1 + lead + zl * i);
+    ctx.lineTo(xSpring, y2); ctx.stroke();
+    label(ctx, 'k', xSpring - zw - 12, (y1 + y2) / 2, C.spring, 'italic 600 13px ' + SANS, 'center');
+
+    // dashpot: cylinder on support, piston on mass
+    const cylLen = Dl - ampRel - 10, rodLen = 2 * ampRel + 16, cw = 13;
+    const cylBot = supY + cylLen, pistonY = massTop - rodLen;
+    ctx.strokeStyle = C.damper; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(xDamp, supY); ctx.lineTo(xDamp, supY + 8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(xDamp - cw, supY + 8); ctx.lineTo(xDamp + cw, supY + 8); ctx.moveTo(xDamp - cw, supY + 8); ctx.lineTo(xDamp - cw, cylBot); ctx.moveTo(xDamp + cw, supY + 8); ctx.lineTo(xDamp + cw, cylBot); ctx.stroke();
+    ctx.globalAlpha = 0.15; ctx.fillStyle = C.damper; ctx.fillRect(xDamp - cw, supY + 8, 2 * cw, cylBot - supY - 8); ctx.globalAlpha = 1;
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(xDamp - cw + 3, pistonY); ctx.lineTo(xDamp + cw - 3, pistonY); ctx.stroke();
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(xDamp, pistonY); ctx.lineTo(xDamp, massTop); ctx.stroke();
+    label(ctx, 'c', xDamp + cw + 10, (supY + cylBot) / 2, C.damper, 'italic 600 13px ' + SANS, 'center');
+
+    // mass
+    ctx.fillStyle = C.sheet; ctx.strokeStyle = C.mass; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.rect(cx - massW / 2, massTop, massW, massH); ctx.fill(); ctx.stroke();
+    ctx.globalAlpha = 0.12; ctx.fillStyle = C.mass; ctx.fillRect(cx - massW / 2, massTop, massW, massH); ctx.globalAlpha = 1;
+    label(ctx, 'm = ' + M.m + ' kg', cx, massTop + massH / 2, C.ink, '600 12px ' + SANS, 'center');
+
+    // displacement indicator (left of mass)
+    const xr = cx - massW / 2 - 14;
+    if (Math.abs(massTop - yS) > 2) arrow(ctx, xr, yS, xr, massTop, C.disp, 1.6, 7);
+    label(ctx, 'x = ' + fmt(S.x * 1000, 2) + ' mm', xr - 4, Math.max(yS, massTop) + 14, C.disp, '500 11px ' + MONO, 'right');
+
+    // forces on the mass (positive down)
+    if (document.getElementById('showF').checked) {
+      const mg = M.m * G;
+      const Fs = -M.k * (M.dst + S.x - S.y);   // spring force on mass (down +)
+      const Fd = -M.c * (S.v - S.yd);           // damper force on mass
+      const items = [['mg', mg], ['Fs', Fs], ['Fd', Fd]];
+      if (M.mode === 'force') items.push(['F', S.F]);
+      const sc = Math.min(48 / mg, 1e9);
+      const yc = massTop + massH / 2;
+      items.forEach((it, i) => {
+        const x = cx + massW / 2 + 16 + i * 22;
+        let L = it[1] * sc; L = Math.sign(L) * Math.min(Math.abs(L), 0.22 * H);
+        arrow(ctx, x, yc, x, yc + L, C.force, 2, 7);
+        label(ctx, it[0], x, L >= 0 ? yc - 9 : yc + 10, C.force, '10px ' + MONO, 'center');
+      });
+    }
+  }
+
+  // ---------- readout & stats ----------
+  function drawReadout() {
+    const S = M.at(P.t);
+    const Fs = M.k * (M.dst + S.x - S.y), Fd = M.c * (S.v - S.yd);
+    const rows = [
+      ['h', 'Motion'],
+      ['x', 'Displacement (down +)', fmt(S.x * 1000, 3), 'mm', 1],
+      ['ẋ', 'Velocity', fmt(S.v, 4), 'm/s', 1],
+      ['ẍ', 'Acceleration', fmt(S.a, 3), 'm/s²', 1]
+    ];
+    if (M.mode === 'base') rows.push(['y', 'Support displacement', fmt(S.y * 1000, 3), 'mm'], ['x − y', 'Spring/dashpot deflection', fmt((S.x - S.y) * 1000, 3), 'mm']);
+    rows.push(
+      ['h', 'Forces'],
+      ['k(δst+x−y)', 'Spring tension', fmt(Fs, 2), 'N'],
+      ['c(ẋ−ẏ)', 'Dashpot force (resists motion)', fmt(Fd, 3), 'N'],
+      ['mg', 'Weight', fmt(M.m * G, 2), 'N']);
+    if (M.mode === 'force') rows.push(['F', 'Applied force F₀ sin ωt', fmt(S.F, 3), 'N']);
+    rows.push(['mẍ', 'Net force = mass × accel.', fmt(M.m * S.a, 3), 'N']);
+    rows.push(
+      ['h', 'Energy'],
+      ['T', 'Kinetic, ½mẋ²', fmt(0.5 * M.m * S.v * S.v, 4), 'J'],
+      ['V', 'Strain, ½k(x−y)²', fmt(0.5 * M.k * (S.x - S.y) ** 2, 4), 'J']);
+    document.getElementById('readout').innerHTML = rows.map(r => r[0] === 'h'
+      ? '<tr><th colspan="4">' + r[1] + '</th></tr>'
+      : '<tr' + (r[4] ? ' class="key"' : '') + '><td class="sym">' + r[0] + '</td><td class="desc">' + r[1] + '</td><td class="val">' + r[2] + '</td><td class="unit">' + r[3] + '</td></tr>').join('');
+  }
+  const KIND = { undamped: 'Undamped', underdamped: 'Underdamped', critical: 'Critically damped', overdamped: 'Overdamped' };
+  function drawStats() {
+    document.getElementById('classChip').textContent = KIND[M.kind] + '  ζ = ' + M.z.toFixed(3);
+    const items = [
+      ['Natural frequency ωn', M.wn.toFixed(3) + ' rad/s'],
+      ['fn / period Tn', (M.wn / 2 / Math.PI).toFixed(3) + ' Hz / ' + (2 * Math.PI / M.wn).toFixed(4) + ' s'],
+      ['Critical damping c_c', M.cc.toFixed(2) + ' N·s/m'],
+      ['Static deflection δst', (M.dst * 1000).toFixed(2) + ' mm']
+    ];
+    if (M.kind === 'underdamped') {
+      const dl = 2 * Math.PI * M.z / Math.sqrt(1 - M.z * M.z);
+      items.push(['Damped frequency ωd', M.wd.toFixed(3) + ' rad/s'], ['Log decrement δ', dl.toFixed(4) + ' (peak ratio ' + Math.exp(dl).toFixed(3) + ')'],
+        ['2 % settling time ≈ 4/ζωn', (4 / (M.z * M.wn)).toFixed(3) + ' s']);
+    } else if (M.kind === 'undamped') {
+      items.push(['Damped frequency ωd', M.wn.toFixed(3) + ' rad/s (no decay)']);
+    } else {
+      items.push(['Slowest decay rate', Math.abs(M.sSlow).toFixed(3) + ' 1/s'], ['2 % settling time ≈ 4/|s|', (4 / Math.abs(M.sSlow)).toFixed(3) + ' s']);
+    }
+    if (M.mode !== 'none') {
+      const r = M.w / M.wn;
+      items.push(['Frequency ratio r', r.toFixed(3)]);
+      if (M.part.type === 'harm') {
+        const X = M.part.A;
+        if (M.mode === 'force') {
+          items.push(['Steady amplitude X', (X * 1000).toFixed(3) + ' mm'], ['Magnification X/(F₀/k)', (X / (M.F0 / M.k || 1)).toFixed(3)]);
+        } else {
+          items.push(['Steady amplitude X', (X * 1000).toFixed(3) + ' mm'], ['Transmissibility X/Y', (M.Y ? X / M.Y : 0).toFixed(3)]);
+        }
+        items.push(['Phase lag of x', (-M.part.th * 180 / Math.PI).toFixed(2) + '°']);
+      } else if (M.part.type === 'res') {
+        items.push(['Steady amplitude X', 'grows without limit']);
+      }
+    }
+    document.getElementById('stats').innerHTML = items.map(i => '<div class="stat"><div class="k">' + i[0] + '</div><div class="v">' + i[1] + '</div></div>').join('');
+  }
+
+  // ---------- generic chart ----------
+  function niceStep(range, n) {
+    const raw = range / (n || 4), mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag;
+    return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag;
+  }
+  function decFor(step) { return step < 1 ? Math.min(4, Math.ceil(-Math.log10(step) - 1e-9)) : 0; }
+  function chart(cv, o) {
+    const { ctx, W, H } = prep(cv);
+    const Lm = 56, Rm = 12, Tm = 30, Bm = 30;
+    label(ctx, o.title, 0, 10, C.ink, '600 12.5px ' + SANS, 'left');
+    if (o.value) label(ctx, o.value, W - Rm, 10, o.valueColor || C.ink, '500 12px ' + MONO, 'right');
+    const xs = o.xs;
+    let x0 = o.xr ? o.xr[0] : Math.min(...xs), x1 = o.xr ? o.xr[1] : Math.max(...xs);
+    if (x1 - x0 < 1e-12) { x0 -= 1; x1 += 1; }
+    let lo = Infinity, hi = -Infinity;
+    o.series.forEach(s => { if (s.noRange) return; s.ys.forEach(v => { if (isFinite(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }); });
+    if (o.yr) { lo = o.yr[0]; hi = o.yr[1]; }
+    if (o.yMin !== undefined) lo = Math.min(lo, o.yMin);
+    if (o.yClip !== undefined) hi = Math.min(hi, o.yClip);
+    if (!isFinite(lo)) { lo = -1; hi = 1; }
+    if (hi - lo < 1e-12) { hi += Math.abs(hi) * 0.1 + 1e-6; lo -= Math.abs(lo) * 0.1 + 1e-6; }
+    const ys = niceStep(hi - lo), xst = niceStep(x1 - x0, 5);
+    lo = Math.floor(lo / ys - 1e-9) * ys; hi = Math.ceil(hi / ys + 1e-9) * ys;
+    if (o.xNice) { x0 = Math.floor(x0 / xst) * xst; x1 = Math.ceil(x1 / xst) * xst; }
+    const pw = W - Lm - Rm, ph = H - Tm - Bm;
+    const X = v => Lm + (v - x0) / (x1 - x0) * pw, Y = v => Tm + (hi - v) / (hi - lo) * ph;
+    ctx.lineWidth = 1;
+    const yd = decFor(ys);
+    for (let v = lo; v <= hi + ys * 0.01; v += ys) {
+      const vv = Math.abs(v) < ys * 1e-6 ? 0 : v;
+      ctx.strokeStyle = vv === 0 && lo < 0 ? C.muted : C.grid;
+      ctx.beginPath(); ctx.moveTo(Lm, Y(vv)); ctx.lineTo(W - Rm, Y(vv)); ctx.stroke();
+      label(ctx, vv.toFixed(yd), Lm - 6, Y(vv), C.muted, '10.5px ' + MONO, 'right');
+    }
+    const xd = decFor(xst);
+    for (let v = Math.ceil(x0 / xst - 1e-9) * xst; v <= x1 + xst * 0.01; v += xst) {
+      const vv = Math.abs(v) < xst * 1e-6 ? 0 : v;
+      ctx.strokeStyle = vv === 0 && x0 < 0 ? C.muted : C.grid;
+      ctx.beginPath(); ctx.moveTo(X(vv), Tm); ctx.lineTo(X(vv), Tm + ph); ctx.stroke();
+      label(ctx, vv.toFixed(xd), X(vv), Tm + ph + 12, C.muted, '10.5px ' + MONO, 'center');
+    }
+    label(ctx, o.yUnit, Lm - 6, Tm - 12, C.muted, '10.5px ' + MONO, 'right');
+    label(ctx, o.xUnit, W - Rm, Tm + ph + 24, C.muted, '10.5px ' + MONO, 'right');
+    ctx.save(); ctx.beginPath(); ctx.rect(Lm, Tm - 1, pw, ph + 2); ctx.clip();
+    (o.vlines || []).forEach(vl => {
+      if (vl.x < x0 || vl.x > x1) return;
+      ctx.strokeStyle = C.muted; ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(X(vl.x), Tm); ctx.lineTo(X(vl.x), Tm + ph); ctx.stroke(); ctx.setLineDash([]);
+      label(ctx, vl.t, X(vl.x) + 4, Tm + 8, C.muted, '10px ' + MONO, 'left');
+    });
+    o.series.forEach(s => {
+      const sx = s.xs || xs;
+      ctx.strokeStyle = s.col; ctx.lineWidth = s.w || 2; ctx.globalAlpha = s.alpha || 1;
+      ctx.setLineDash(s.dash || []);
+      ctx.beginPath();
+      let pen = false;
+      for (let i = 0; i < s.ys.length; i++) {
+        const v = s.ys[i];
+        if (!isFinite(v)) { pen = false; continue; }
+        const px = X(sx[i]), py = Math.max(Tm - 4, Math.min(Tm + ph + 4, Y(v)));
+        pen ? ctx.lineTo(px, py) : ctx.moveTo(px, py); pen = true;
+      }
+      ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      if (s.tag) label(ctx, s.tag, X(sx[s.tagAt]) + 4, Y(s.ys[s.tagAt]) - 7, s.col, '10px ' + MONO, 'left');
+    });
+    ctx.restore();
+    if (o.cursorX !== undefined) {
+      ctx.strokeStyle = C.muted; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(X(o.cursorX), Tm); ctx.lineTo(X(o.cursorX), Tm + ph); ctx.stroke(); ctx.setLineDash([]);
+    }
+    (o.markers || []).forEach(mk => {
+      if (!isFinite(mk.y)) return;
+      const py = Math.max(Tm, Math.min(Tm + ph, Y(mk.y)));
+      ctx.fillStyle = C.sheet; ctx.strokeStyle = mk.col; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(X(mk.x), py, 4, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+    });
+    if (o.legend) {
+      let lx = Lm + 6;
+      o.legend.forEach(l => {
+        ctx.strokeStyle = l.col; ctx.lineWidth = 2; ctx.setLineDash(l.dash || []);
+        ctx.beginPath(); ctx.moveTo(lx, Tm + ph - 8); ctx.lineTo(lx + 14, Tm + ph - 8); ctx.stroke(); ctx.setLineDash([]);
+        label(ctx, l.t, lx + 18, Tm + ph - 8, C.muted, '10px ' + MONO, 'left');
+        ctx.font = '10px ' + MONO; lx += 26 + ctx.measureText(l.t).width;
+      });
+    }
+    cv._map = { Lm, pw, x0, x1 };
+  }
+
+  function drawCharts() {
+    const S = M.at(P.t), t = P.t;
+    const base = M.mode === 'base';
+    const xSeries = [{ ys: D.x, col: C.disp }];
+    const xLegend = [];
+    if (base) { xSeries.unshift({ ys: D.y, col: C.muted, dash: [4, 3], w: 1.4 }); xLegend.push({ t: 'x', col: C.disp }, { t: 'y support', col: C.muted, dash: [4, 3] }); }
+    if (D.env.length) {
+      xSeries.unshift({ ys: D.env, col: C.muted, dash: [3, 3], w: 1, noRange: true }, { ys: D.env.map(v => -v), col: C.muted, dash: [3, 3], w: 1, noRange: true });
+      xLegend.push({ t: 'x', col: C.disp }, { t: 'decay envelope', col: C.muted, dash: [3, 3] });
+    }
+    chart(document.getElementById('pX'), { title: 'Displacement x(t)', yUnit: 'mm', xUnit: 's', xs: D.t, series: xSeries, cursorX: t,
+      markers: [{ x: t, y: S.x * 1000, col: C.disp }], value: fmt(S.x * 1000, 3) + ' mm', valueColor: C.disp, legend: xLegend.length ? xLegend : null });
+    chart(document.getElementById('pV'), { title: 'Velocity ẋ(t)', yUnit: 'm/s', xUnit: 's', xs: D.t, series: [{ ys: D.v, col: C.vel }], cursorX: t,
+      markers: [{ x: t, y: S.v, col: C.vel }], value: fmt(S.v, 4) + ' m/s', valueColor: C.vel });
+    chart(document.getElementById('pA'), { title: 'Acceleration ẍ(t)', yUnit: 'm/s²', xUnit: 's', xs: D.t, series: [{ ys: D.a, col: C.acc }], cursorX: t,
+      markers: [{ x: t, y: S.a, col: C.acc }], value: fmt(S.a, 3) + ' m/s²', valueColor: C.acc });
+    chart(document.getElementById('pPh'), { title: 'Phase plane ẋ vs x', yUnit: 'm/s', xUnit: 'x, mm', xs: D.x, series: [{ ys: D.v, col: C.mass, w: 1.6 }],
+      markers: [{ x: S.x * 1000, y: S.v, col: C.mass }, { x: D.x[0], y: D.v[0], col: C.muted }] });
+    const ke = 0.5 * M.m * S.v * S.v, pe = 0.5 * M.k * (S.x - S.y) ** 2;
+    chart(document.getElementById('pE'), { title: 'Energy', yUnit: 'J', xUnit: 's', xs: D.t, yMin: 0,
+      series: [{ ys: D.te, col: C.ink, w: 1.6 }, { ys: D.pe, col: C.pe, w: 1.4 }, { ys: D.ke, col: C.ke, w: 1.4 }], cursorX: t,
+      markers: [{ x: t, y: ke + pe, col: C.ink }], value: fmt(ke + pe, 4) + ' J', legend: [{ t: 'T+V', col: C.ink }, { t: 'V', col: C.pe }, { t: 'T', col: C.ke }] });
+    drawFRF();
+  }
+  function frfVal(r, z, mode) {
+    const d = Math.sqrt((1 - r * r) ** 2 + (2 * z * r) ** 2);
+    return mode === 'base' ? Math.sqrt(1 + (2 * z * r) ** 2) / d : 1 / d;
+  }
+  function drawFRF() {
+    const mode = M.mode === 'base' ? 'base' : 'force';
+    const r = M.w / M.wn;
+    const rMax = Math.min(6, Math.max(3, M.mode !== 'none' ? r * 1.15 : 3));
+    const rs = []; for (let i = 0; i <= 600; i++) rs.push(rMax * i / 600);
+    const refs = [0.05, 0.2, 0.5, 1].filter(z => Math.abs(z - M.z) > 0.005);
+    const series = refs.map(z => {
+      const ys = rs.map(x => frfVal(x, z, mode));
+      const tagAt = Math.round(600 * Math.min(0.95, 1.12 / rMax));
+      return { ys, col: C.muted, w: 1, alpha: 0.55, noRange: true, tag: 'ζ=' + z, tagAt };
+    });
+    const cur = rs.map(x => frfVal(x, M.z, mode));
+    series.push({ ys: cur, col: C.spring, w: 2.2 });
+    const peak = Math.max(...cur.filter(isFinite));
+    const yClip = Math.max(3, Math.min(10, isFinite(peak) ? peak * 1.1 : 10));
+    const o = {
+      title: mode === 'base' ? 'Transmissibility X/Y vs r' : 'Magnification X/(F₀/k) vs r', yUnit: 'ratio', xUnit: 'r = ω/ωn',
+      xs: rs, xr: [0, rMax], series, yMin: 0, yClip, vlines: mode === 'base' ? [{ x: Math.SQRT2, t: '√2' }] : [{ x: 1, t: 'r = 1' }]
+    };
+    if (M.mode !== 'none') {
+      const v = frfVal(r, M.z, mode);
+      o.markers = [{ x: r, y: v, col: C.spring }];
+      o.cursorX = r;
+      o.value = 'r = ' + r.toFixed(2) + ',  ' + (isFinite(v) ? v.toFixed(3) : '∞');
+      o.valueColor = C.spring;
+    } else {
+      o.value = 'ζ = ' + M.z.toFixed(3) + ' (no forcing)';
+      o.valueColor = C.muted;
+    }
+    chart(document.getElementById('pF'), o);
+  }
+
+  // scrub on time charts, set ω on FRF chart
+  ['pX', 'pV', 'pA', 'pE', 'pF'].forEach(id => {
+    const cv = document.getElementById(id);
+    let down = false;
+    const setFrom = ev => {
+      if (!cv._map) return;
+      const rect = cv.getBoundingClientRect();
+      const f = Math.min(1, Math.max(0, (ev.clientX - rect.left - cv._map.Lm) / cv._map.pw));
+      const v = cv._map.x0 + f * (cv._map.x1 - cv._map.x0);
+      if (id === 'pF') {
+        if (P.mode === 'none') return;
+        P.w = Math.max(0.1, +(v * Math.sqrt(P.k / P.m)).toFixed(2));
+        rebuild();
+      } else { P.t = Math.min(P.T, Math.max(0, v)); stopPlay(); syncControls(); refreshInstant(); }
+    };
+    cv.addEventListener('pointerdown', ev => { down = true; cv.setPointerCapture(ev.pointerId); setFrom(ev); });
+    cv.addEventListener('pointermove', ev => { if (down) setFrom(ev); });
+    ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => down = false));
+  });
+
+  function refreshInstant() {
+    readColors();
+    document.getElementById('tLabel').textContent = P.t.toFixed(3) + ' s';
+    drawSystem(); drawReadout(); drawCharts();
+  }
+
+  // ---------- animation ----------
+  let playing = false, last = 0, raf = 0;
+  const playBtn = document.getElementById('play');
+  function tick(ts) {
+    if (!playing) return;
+    const dt = last ? Math.min(0.1, (ts - last) / 1000) : 0; last = ts;
+    P.t += dt * parseFloat(document.getElementById('speed').value);
+    if (P.t > P.T) P.t = 0;
+    syncControls(); refreshInstant();
+    raf = requestAnimationFrame(tick);
+  }
+  function startPlay() { if (P.t >= P.T * 0.999) P.t = 0; playing = true; last = 0; playBtn.textContent = 'Pause'; raf = requestAnimationFrame(tick); }
+  function stopPlay() { playing = false; cancelAnimationFrame(raf); playBtn.textContent = 'Play'; }
+  playBtn.addEventListener('click', () => playing ? stopPlay() : startPlay());
+
+  document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => { P.mode = r.value; rebuild(); }));
+  document.getElementById('autoT').addEventListener('change', rebuild);
+  document.getElementById('showF').addEventListener('change', refreshInstant);
+  document.getElementById('zetaBtns').addEventListener('click', ev => {
+    const b = ev.target.closest('button[data-z]'); if (!b) return;
+    P.c = +(parseFloat(b.dataset.z) * ccNow()).toFixed(2); rebuild();
+  });
+  document.getElementById('presets').addEventListener('click', ev => {
+    const b = ev.target.closest('button[data-p]'); if (!b) return;
+    Object.assign(P, PRESETS[b.dataset.p]); P.t = 0;
+    document.getElementById('autoT').checked = true;
+    stopPlay(); rebuild();
+  });
+
+  buildControls('gSys', SPECS.gSys);
+  buildControls('gIC', SPECS.gIC);
+  buildControls('gExc', SPECS.gExc);
+  buildControls('gTime', SPECS.gTime);
+
+  const ro = new ResizeObserver(() => { if (M) refreshInstant(); });
+  ['sysc', 'pX'].forEach(id => ro.observe(document.getElementById(id)));
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => M && refreshInstant());
+  new MutationObserver(() => M && refreshInstant()).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => M && refreshInstant());
+
+  rebuild();
+})();
+</script>
+</body>
+</html>

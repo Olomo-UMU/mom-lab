@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive engineering mechanics labs: slider crank, quick return mechanism, spring-mass-damper vibration and the Tacoma Narrows Bridge collapse.">
+<title>Mechanics Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: index sheet for the lab set. Header, then a two-column grid of lab cards with live screenshots, then how-to-use notes. */
+:root {
+  --paper: #eceff3; --sheet: #fbfcfd; --ink: #15212c; --muted: #5b6977; --rule: #cdd5dd; --grid: #e3e8ed;
+  --accent: #1d5bbd; --focus: #1d5bbd;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #0e1318; --sheet: #151c24; --ink: #e2e8ee; --muted: #93a1ae; --rule: #2b3641; --grid: #1f2830; --accent: #72a6ff; --focus: #72a6ff; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 48px; display: grid; gap: 28px; }
+header { display: grid; gap: 8px; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.8rem; color: var(--muted); letter-spacing: 0.04em; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 2.3rem; line-height: 1.1; margin: 0; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); max-width: 68ch; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin: 0 0 10px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.card { display: grid; grid-template-rows: auto 1fr; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; color: inherit; text-decoration: none; transition: border-color .15s, transform .15s; }
+.card:hover { border-color: var(--muted); transform: translateY(-2px); }
+.card:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.card img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; object-position: top; border-bottom: 1px solid var(--rule); background: var(--grid); }
+.card .body { padding: 14px 16px 16px; display: grid; gap: 6px; align-content: start; }
+.card .topic { font-family: var(--f-mono); font-size: 0.76rem; color: var(--muted); }
+.card h3 { font-family: var(--f-display); font-weight: 600; font-size: 1.3rem; margin: 0; }
+.card p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+.card .go { font-family: var(--f-display); font-weight: 600; font-size: 0.85rem; color: var(--accent); letter-spacing: 0.04em; margin-top: 4px; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.note { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; }
+.note ul { margin: 0; padding-left: 1.1em; }
+.note li { margin: 3px 0; }
+.note p { margin: 0 0 6px; }
+code { font-family: var(--f-mono); font-size: 0.86em; }
+a { color: var(--accent); }
+footer { color: var(--muted); font-size: 0.82rem; }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 1.9rem; } }
+@media (max-width: 420px) { .wrap { padding-inline: 16px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Theory of machines · Mechanical vibrations · Structural dynamics</span>
+    <h1>Mechanics Labs</h1>
+    <p>Interactive models for class. Change the inputs, drag the mechanism, play the motion and scrub the graphs. Every result comes from the exact equations, which are listed at the bottom of each lab with references.</p>
+  </header>
+
+  <section>
+    <h2>Labs</h2>
+    <div class="grid">
+      <a class="card" href="slider-crank/">
+        <img src="img/slider-crank.jpg" alt="Slider-crank lab showing the mechanism, results table and vector polygons" width="640" height="360">
+        <div class="body">
+          <span class="topic">Kinematics of mechanisms</span>
+          <h3>Slider-Crank Lab</h3>
+          <p>Position, velocity and acceleration by loop closure. Velocity and acceleration polygons, rod obliquity, offset slider and quick return.</p>
+          <span class="go">Open lab →</span>
+        </div>
+      </a>
+      <a class="card" href="quick-return/">
+        <img src="img/quick-return.jpg" alt="Quick return lab showing the crank and slotted lever with the ram" width="640" height="360">
+        <div class="body">
+          <span class="topic">Kinematics of mechanisms</span>
+          <h3>Quick Return Lab</h3>
+          <p>Crank and slotted lever shaper mechanism. Time ratio, cutting and return strokes, and the Coriolis component of acceleration.</p>
+          <span class="go">Open lab →</span>
+        </div>
+      </a>
+      <a class="card" href="vibration/">
+        <img src="img/vibration.jpg" alt="Spring-mass-damper lab showing the hanging mass and response" width="640" height="360">
+        <div class="body">
+          <span class="topic">Single-degree-of-freedom vibration</span>
+          <h3>Spring–Mass–Damper Lab</h3>
+          <p>A mass hanging from a spring and dashpot. Free vibration in all damping cases, harmonic forcing, support motion, resonance, beats and isolation.</p>
+          <span class="go">Open lab →</span>
+        </div>
+      </a>
+      <a class="card" href="tacoma-narrows/">
+        <img src="img/tacoma-narrows.jpg" alt="Tacoma Narrows lab showing the twisting bridge span" width="640" height="360">
+        <div class="body">
+          <span class="topic">Case study · 7 November 1940</span>
+          <h3>Tacoma Narrows Flutter Lab</h3>
+          <p>Why the bridge failed by self-excited torsional flutter, not resonance. Run both explanations side by side and compare them with what was filmed.</p>
+          <span class="go">Open lab →</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="note">
+      <h2>Using a lab</h2>
+      <ul>
+        <li>Move a slider or type a value; everything updates at once.</li>
+        <li>Press <strong>Play</strong> to animate, or drag the crank directly.</li>
+        <li>Click or drag on any graph to jump to that angle or time.</li>
+        <li>Try the <strong>Presets</strong> to see one behaviour at a time.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h2>Suggested exercises</h2>
+      <ul>
+        <li>Check the worked-example values in the results table by hand.</li>
+        <li>Find the crank angle of peak slider speed. Why isn't it 90°?</li>
+        <li>Measure the logarithmic decrement from the x(t) graph and recover ζ.</li>
+        <li>Find the wind speed at which the Tacoma deck becomes unstable.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h2>Works on</h2>
+      <p>Any modern browser on a laptop, tablet or phone. Nothing to install. The labs also work offline once a page has loaded.</p>
+      <p>A Python version of the slider-crank analysis is in <a href="python/slider_crank.py"><code>python/slider_crank.py</code></a>.</p>
+    </div>
+  </section>
+
+  <footer>References for each model are listed in its “Equations” panel (APA style).</footer>
+</div>
+</body>
+</html>

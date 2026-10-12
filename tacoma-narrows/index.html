@@ -1,0 +1,934 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive model of the 1940 Tacoma Narrows Bridge collapse: self-excited flutter versus vortex resonance.">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+.sitebar{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:12px 0;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:0.8rem}
+.sitebar a{color:var(--muted);text-decoration:none}
+.sitebar a:hover,.sitebar a:focus-visible{color:var(--ink);text-decoration:underline}
+@media (max-width:420px){.sitebar{padding-inline:16px}}
+</style>
+<title>Tacoma Narrows Flutter Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: drafting-sheet tool, companion to the mechanism and vibration labs. Bridge view across the top, controls + cross-section + readouts, then comparison charts and the sourced account. */
+:root {
+  --paper: #eceff3;
+  --sheet: #fbfcfd;
+  --ink: #15212c;
+  --muted: #5b6977;
+  --rule: #cdd5dd;
+  --grid: #e3e8ed;
+  --water: #d6e1ea;
+  --sky: #f3f6f8;
+  --steel: #3e4a56;
+  --deck: #8c99a6;
+  --deck-hi: #c9d2db;
+  --cable: #3e4a56;
+  --twist: #1d5bbd;
+  --vel: #0b8466;
+  --acc: #b8215f;
+  --flutter: #c2410c;
+  --vortex: #1d5bbd;
+  --wind: #7b8fa3;
+  --good: #0b8466;
+  --bad: #c2410c;
+  --focus: #1d5bbd;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e1318; --sheet: #151c24; --ink: #e2e8ee; --muted: #93a1ae; --rule: #2b3641; --grid: #1f2830;
+    --water: #16283a; --sky: #121a22; --steel: #b5c1cc; --deck: #5d6b78; --deck-hi: #8d9aa6; --cable: #b5c1cc;
+    --twist: #72a6ff; --vel: #3fd0a6; --acc: #ff74ab; --flutter: #ff8a4c; --vortex: #72a6ff; --wind: #6f8397;
+    --good: #3fd0a6; --bad: #ff8a4c; --focus: #72a6ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e1318; --sheet: #151c24; --ink: #e2e8ee; --muted: #93a1ae; --rule: #2b3641; --grid: #1f2830;
+  --water: #16283a; --sky: #121a22; --steel: #b5c1cc; --deck: #5d6b78; --deck-hi: #8d9aa6; --cable: #b5c1cc;
+  --twist: #72a6ff; --vel: #3fd0a6; --acc: #ff74ab; --flutter: #ff8a4c; --vortex: #72a6ff; --wind: #6f8397;
+  --good: #3fd0a6; --bad: #ff8a4c; --focus: #72a6ff;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-inline: 20px; padding-block: 20px 40px; display: grid; gap: 18px; }
+header { display: grid; gap: 6px; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); letter-spacing: 0.04em; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 1.9rem; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); max-width: 80ch; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin: 0; }
+h3 { font-family: var(--f-display); font-weight: 600; font-size: 1.05rem; margin: 0 0 6px; }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; min-width: 0; }
+
+.bridge-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 14px; margin-bottom: 8px; }
+.chip { font-family: var(--f-display); font-weight: 600; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; border: 1.5px solid currentColor; }
+.chip.bad { color: var(--bad); }
+.chip.good { color: var(--good); }
+canvas { display: block; width: 100%; touch-action: none; }
+#bridge { aspect-ratio: 16 / 6.2; max-width: 100%; border-radius: 4px; }
+.note { font-size: 0.78rem; color: var(--muted); }
+
+.top { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
+.controls { display: grid; gap: 14px; }
+.ctl { display: grid; gap: 4px; }
+.ctl-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ctl label { font-weight: 600; font-size: 0.86rem; }
+.ctl label .sym { font-family: var(--f-mono); font-weight: 500; color: var(--muted); margin-left: 4px; }
+.ctl .num { display: flex; align-items: center; gap: 4px; font-family: var(--f-mono); font-size: 0.82rem; color: var(--muted); }
+.ctl input[type=number] { width: 80px; font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 2px 6px; text-align: right; font-variant-numeric: tabular-nums; }
+.ctl input[type=range] { width: 100%; accent-color: var(--twist); }
+.ctl .hint { font-size: 0.76rem; color: var(--muted); font-family: var(--f-mono); }
+.group-label { border-top: 1px solid var(--rule); padding-top: 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button { font: inherit; font-weight: 600; font-size: 0.84rem; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 11px; cursor: pointer; text-align: left; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--twist); color: var(--sheet); border-color: var(--twist); min-width: 84px; text-align: center; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+select { font: inherit; font-size: 0.84rem; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 5px 6px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 0.86rem; }
+.check input { accent-color: var(--twist); width: 16px; height: 16px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { text-align: center; padding: 6px 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; background: var(--paper); color: var(--muted); border-right: 1px solid var(--rule); line-height: 1.25; }
+.seg label:last-of-type { border-right: 0; }
+.seg input:checked + label { background: var(--twist); color: var(--sheet); }
+.seg input:focus-visible + label { outline: 2px solid var(--focus); outline-offset: -2px; }
+.presets { display: grid; gap: 6px; }
+.presets button { font-weight: 500; font-size: 0.82rem; }
+.presets button b { font-weight: 600; }
+
+.mid { display: grid; grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.2fr); gap: 18px; }
+#xsec { aspect-ratio: 4 / 3; max-width: 100%; }
+table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+td, th { padding: 4px 6px; text-align: left; border-bottom: 1px solid var(--grid); vertical-align: baseline; }
+th { font-family: var(--f-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; color: var(--muted); padding-top: 10px; }
+td.sym { font-family: var(--f-mono); white-space: nowrap; }
+td.val { font-family: var(--f-mono); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.unit { color: var(--muted); font-family: var(--f-mono); font-size: 0.78rem; white-space: nowrap; }
+td.desc { color: var(--muted); }
+tr.key td { font-weight: 600; }
+tr.key td.desc { color: var(--ink); }
+.tbl-wrap { overflow-x: auto; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); border-top: 1px solid var(--rule); margin-top: 12px; }
+.stat { padding: 10px 10px 4px 0; }
+.stat .k { font-size: 0.74rem; color: var(--muted); }
+.stat .v { font-family: var(--f-mono); font-size: 1rem; font-variant-numeric: tabular-nums; }
+
+.plots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+.plot { min-width: 0; }
+.plot canvas { aspect-ratio: 16 / 10; max-width: 100%; cursor: crosshair; }
+.plots-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; align-items: baseline; }
+
+.story { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px 28px; }
+.story p { margin: 0 0 8px; max-width: 68ch; }
+.timeline { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.timeline li { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; }
+.timeline .when { font-family: var(--f-mono); font-size: 0.8rem; color: var(--muted); padding-top: 1px; }
+details { font-size: 0.88rem; }
+summary { cursor: pointer; font-family: var(--f-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; font-size: 0.82rem; color: var(--muted); }
+.eqs { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 28px; margin-top: 10px; }
+.eqs p { margin: 4px 0; max-width: 70ch; }
+.eq { font-family: var(--f-mono); font-size: 0.84rem; background: var(--paper); border-radius: 4px; padding: 6px 8px; overflow-x: auto; white-space: nowrap; margin-bottom: 4px; }
+.refs p { padding-left: 2em; text-indent: -2em; margin: 6px 0; max-width: 100ch; overflow-wrap: anywhere; }
+.refs a { color: var(--twist); }
+
+@media (max-width: 1100px) { .mid { grid-template-columns: 1fr; } #xsec { max-width: 460px; } }
+@media (max-width: 1000px) { .plots { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .top { grid-template-columns: 1fr; } #bridge { aspect-ratio: 16 / 9; } }
+@media (max-width: 560px) { .plots { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { .wrap { padding-inline: 16px; } }
+</style>
+</head>
+<body>
+<nav class="sitebar"><a href="../">← All labs</a></nav>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Tacoma Narrows Bridge · 7 November 1940 · 42 mph wind · 0.2 Hz twisting</span>
+    <h1>Tacoma Narrows Flutter Lab</h1>
+    <p>The bridge did not fail by resonance. In a steady wind its twisting motion drew energy from the air on every cycle, which acts like negative damping, so a small twist grew until the deck was rotating tens of degrees. Run the self-excited model and the popular "vortex resonance" explanation side by side and see which one can produce what was filmed.</p>
+  </header>
+
+  <section class="sheet">
+    <div class="bridge-head">
+      <h2>Centre span, t = <span id="tLabel">0 s</span> <span id="tClock" class="note"></span></h2>
+      <span id="stateChip" class="chip bad">Wind feeds the twist</span>
+    </div>
+    <canvas id="bridge" aria-label="Animated view of the suspension bridge centre span twisting"></canvas>
+    <p class="note">Twisting mode with a node at midspan: the two halves rotate in opposite directions while the centre line stays still. Deck width is exaggerated so the rotation is visible; rotation angles are drawn true.</p>
+  </section>
+
+  <div class="top">
+    <aside class="sheet controls" aria-label="Inputs">
+      <h2>Mechanism</h2>
+      <div class="seg" role="radiogroup" aria-label="Mechanism">
+        <input type="radio" name="mech" id="mFl" value="flutter" checked><label for="mFl">Self-excited flutter</label>
+        <input type="radio" name="mech" id="mVx" value="vortex"><label for="mVx">Vortex resonance</label>
+      </div>
+      <p class="note" id="mechNote"></p>
+      <div id="gWind"></div>
+      <h2 class="group-label">Structure</h2>
+      <div class="seg" role="radiogroup" aria-label="Midspan cable connection">
+        <input type="radio" name="band" id="bS" value="slipped" checked><label for="bS">Midspan link slipped</label>
+        <input type="radio" name="band" id="bI" value="intact"><label for="bI">Midspan link intact</label>
+      </div>
+      <div id="gStruct"></div>
+      <label class="check" for="sat"><input type="checkbox" id="sat" checked> Air loads saturate at large twist</label>
+      <h2 class="group-label">Time</h2>
+      <div id="gTime"></div>
+      <div class="row">
+        <button id="play" class="primary" type="button">Play</button>
+        <label class="check" for="speed" style="gap:6px">Speed
+          <select id="speed">
+            <option value="1">Real time</option>
+            <option value="10">× 10</option>
+            <option value="30" selected>× 30</option>
+            <option value="100">× 100</option>
+          </select>
+        </label>
+      </div>
+      <h2 class="group-label">Scenarios</h2>
+      <div class="presets" id="presets">
+        <button type="button" data-p="nov7"><b>10:03 am, 7 Nov 1940.</b> 42 mph, link slipped</button>
+        <button type="button" data-p="intact"><b>Same wind, link intact.</b> No twisting flutter</button>
+        <button type="button" data-p="mph30"><b>30 mph.</b> Below the flutter threshold</button>
+        <button type="button" data-p="linear"><b>Linear theory.</b> No saturation, growth is unbounded</button>
+        <button type="button" data-p="vres"><b>Vortex resonance at 8 mph.</b> Tuned, but weak</button>
+        <button type="button" data-p="v42"><b>Vortex forcing at 42 mph.</b> 1 Hz vs 0.2 Hz</button>
+        <button type="button" data-p="damped"><b>Add structural damping.</b> ζ = 2 %</button>
+      </div>
+    </aside>
+
+    <section class="sheet">
+      <div class="mid">
+        <div>
+          <h2>Cross-section at quarter span</h2>
+          <canvas id="xsec" aria-label="Rotating H-shaped deck cross-section in the wind"></canvas>
+          <p class="note">H-shaped section: 8 ft deep plate girders at the edges of a deck 39 ft between cables. Wind blows from the left.</p>
+        </div>
+        <div style="min-width:0">
+          <h2>At this instant</h2>
+          <div class="tbl-wrap"><table id="readout"></table></div>
+        </div>
+      </div>
+      <div class="stats" id="stats"></div>
+    </section>
+  </div>
+
+  <section class="sheet">
+    <div class="plots-head">
+      <h2>Response and the two explanations compared</h2>
+      <span class="note">Click a time chart to jump to that instant. Click a wind-speed chart to set the wind.</span>
+    </div>
+    <div class="plots">
+      <div class="plot"><canvas id="pTh"></canvas></div>
+      <div class="plot"><canvas id="pOm"></canvas></div>
+      <div class="plot"><canvas id="pAl"></canvas></div>
+      <div class="plot"><canvas id="pZ"></canvas></div>
+      <div class="plot"><canvas id="pAmp"></canvas></div>
+      <div class="plot"><canvas id="pFreq"></canvas></div>
+    </div>
+  </section>
+
+  <section class="sheet story">
+    <div>
+      <h3>What happened</h3>
+      <ul class="timeline">
+        <li><span class="when">1 Jul 1940</span><span>Opens with a 2,800 ft centre span and a span-to-width ratio of 1 : 72. Its shallow plate-girder deck soon earns the name "Galloping Gertie" for its vertical waves.</span></li>
+        <li><span class="when">7 Nov, a.m.</span><span>Wind of 38 mph at 7:30, then a steady 42 mph. The deck runs in vertical waves several feet high.</span></li>
+        <li><span class="when">≈ 10:00</span><span>A cable connection at midspan slips. The motion switches to twisting: the two halves rotate in opposite directions about a still centre line, about 12 cycles per minute.</span></li>
+        <li><span class="when">10:03–11:02</span><span>The twist persists for about an hour. The roadway tilts as much as 45°, with edges rising and falling many feet.</span></li>
+        <li><span class="when">11:02</span><span>Suspenders snap and a 600 ft section falls into Puget Sound; most of the remaining centre span follows within minutes.</span></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Why it was not resonance</h3>
+      <p>Resonance needs an outside force repeating at the structure's natural frequency. At 42 mph the vortices shed by the deck repeat at about 1 Hz, five times faster than the 0.2 Hz twist. They line up only near 8 mph, where the air forces are too weak to matter. The federal investigation also found no sharp link between wind speed and oscillation frequency.</p>
+      <p>What did happen was self-excitation. The twisting deck shapes the airflow, including vortices that form at the leading edge, so that the air pushes in step with the motion. Above a threshold wind (about 35 mph once the midspan link had slipped) the energy gained each cycle exceeds what the structure dissipates. The effective damping turns negative and the amplitude grows in a steady wind, with no tuning required.</p>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <details>
+      <summary>Model, calibration and references</summary>
+      <div class="eqs">
+        <div>
+          <p>One twisting mode, θ = rotation at quarter span (the antisymmetric mode has its node at midspan, so θ(x) = θ·sin(2πx/L)).</p>
+          <div class="eq">θ̈ + 2ω [ζ<sub>s</sub> + ζ<sub>link</sub> + ζ<sub>aero</sub>(U) + β θ²] θ̇ + ω² θ = M(t)</div>
+          <p><strong>Self-excited flutter:</strong> M = 0 and the air adds damping that falls with wind speed and turns negative.</p>
+          <div class="eq">ζ<sub>aero</sub>(U) = −a U²,&nbsp; flutter onset U<sub>c</sub> = √[(ζ<sub>s</sub> + ζ<sub>link</sub>) / a]</div>
+          <div class="eq">growth rate σ = −ω ζ<sub>net</sub>,&nbsp; θ ∝ e<sup>σt</sup> while small</div>
+          <div class="eq">limit cycle (saturation β): Θ = √(−4 ζ<sub>net</sub> / β)</div>
+          <p><strong>Vortex resonance:</strong> the air adds no damping, and M = Q U² sin(2π f<sub>s</sub> t) with the shedding frequency f<sub>s</sub> = St·U/D.</p>
+          <div class="eq">Θ = (Q U² / ω²) / √[(1 − r²)² + (2ζr)²],&nbsp; r = f<sub>s</sub> / f</div>
+          <p>Time histories are integrated with fourth-order Runge–Kutta, 100 steps per period.</p>
+        </div>
+        <div>
+          <p><strong>Calibration.</strong> These are teaching models tuned to the 1940 observations, not a reconstruction of the bridge's aerodynamics.</p>
+          <div class="eq">f = 0.2 Hz (12 cycles/min), D = 8 ft girder depth, B = 39 ft</div>
+          <div class="eq">a set so U<sub>c</sub> = 35 mph with ζ<sub>s</sub> = 0.5 %, link slipped</div>
+          <div class="eq">β set so Θ = 0.7 rad (40°) at 42 mph</div>
+          <div class="eq">St = 0.13, giving f<sub>s</sub> ≈ 1 Hz at 42 mph</div>
+          <div class="eq">Q set so vortex resonance gives Θ = 3° at its tuned wind</div>
+          <div class="eq">ζ<sub>link</sub> = 1.5 % while the midspan link holds (assumed)</div>
+          <p>The structural damping, the link's effect and the saturation law are assumptions chosen for illustration. Change them to see which conclusions depend on them: the frequency mismatch and the growth of flutter with wind speed do not.</p>
+        </div>
+      </div>
+      <div class="refs">
+        <p style="margin-top:14px"><strong>References</strong></p>
+        <p>Billah, K. Y., &amp; Scanlan, R. H. (1991). Resonance, Tacoma Narrows bridge failure, and undergraduate physics textbooks. <em>American Journal of Physics, 59</em>(2), 118–124. <a href="https://doi.org/10.1119/1.16590">https://doi.org/10.1119/1.16590</a></p>
+        <p>Green, D., &amp; Unruh, W. G. (2004). <em>Tacoma bridge failure: A physical model</em> (arXiv:physics/0408101). arXiv. <a href="https://arxiv.org/abs/physics/0408101">https://arxiv.org/abs/physics/0408101</a></p>
+        <p>Olson, D. W., Wolf, S. F., &amp; Hook, J. M. (2015). The Tacoma Narrows Bridge collapse. <em>Physics Today, 68</em>(11), 64–65. <a href="https://doi.org/10.1063/PT.3.2991">https://doi.org/10.1063/PT.3.2991</a></p>
+        <p>Tacoma Narrows Bridge (1940). (n.d.). In <em>Wikipedia</em>. Retrieved October 10, 2026, from <a href="https://en.wikipedia.org/wiki/Tacoma_Narrows_Bridge_(1940)">https://en.wikipedia.org/wiki/Tacoma_Narrows_Bridge_(1940)</a></p>
+        <p>Washington State Department of Transportation. (n.d.-a). <em>Tacoma Narrows Bridge history: Collapse</em>. Retrieved October 10, 2026, from <a href="https://wsdot.wa.gov/TNBhistory/collapse.htm">https://wsdot.wa.gov/TNBhistory/collapse.htm</a></p>
+        <p>Washington State Department of Transportation. (n.d.-b). <em>Tacoma Narrows Bridge history: The machine</em>. Retrieved October 10, 2026, from <a href="https://wsdot.wa.gov/TNBHistory/1940-bridge.htm">https://wsdot.wa.gov/TNBHistory/1940-bridge.htm</a></p>
+      </div>
+    </details>
+  </section>
+</div>
+
+<script>
+(function () {
+  const MPH = 0.44704, D2R = Math.PI / 180;
+  const P = { mech: 'flutter', band: 'slipped', U: 42, zs: 0.5, f: 0.2, th0: 2, sat: true, T: 1500, t: 0, auto: true };
+  const PRESETS = {
+    nov7:   { mech: 'flutter', band: 'slipped', U: 42, zs: 0.5, f: 0.2, th0: 2, sat: true },
+    intact: { mech: 'flutter', band: 'intact',  U: 42, zs: 0.5, f: 0.2, th0: 2, sat: true },
+    mph30:  { mech: 'flutter', band: 'slipped', U: 30, zs: 0.5, f: 0.2, th0: 2, sat: true },
+    linear: { mech: 'flutter', band: 'slipped', U: 42, zs: 0.5, f: 0.2, th0: 2, sat: false },
+    vres:   { mech: 'vortex',  band: 'slipped', U: 8.4, zs: 0.5, f: 0.2, th0: 0, sat: true },
+    v42:    { mech: 'vortex',  band: 'slipped', U: 42, zs: 0.5, f: 0.2, th0: 0, sat: true },
+    damped: { mech: 'flutter', band: 'slipped', U: 42, zs: 2.0, f: 0.2, th0: 2, sat: true }
+  };
+
+  // MODEL START
+  const CAL = (function () {
+    const Uc = 35 * 0.44704, U42 = 42 * 0.44704, zs = 0.005, f = 0.2, w = 2 * Math.PI * f;
+    const a = zs / (Uc * Uc);
+    const znet42 = zs - a * U42 * U42;
+    const beta = -4 * znet42 / (0.7 * 0.7);
+    const St = 0.13, Dg = 8 * 0.3048, B = 39 * 0.3048;
+    const Ures = f * Dg / St;
+    const Q = (3 * Math.PI / 180) * w * w * 2 * zs / (Ures * Ures);
+    return { a, beta, St, Dg, B, Q, zLink: 0.015 };
+  })();
+  function buildModel(P) {
+    const U = P.U * 0.44704, f = P.f, w = 2 * Math.PI * f;
+    const zstr = P.zs / 100 + (P.band === 'intact' ? CAL.zLink : 0);
+    const flutter = P.mech === 'flutter';
+    const zAero = flutter ? -CAL.a * U * U : 0;
+    const zNet = zstr + zAero;
+    const beta = P.sat ? CAL.beta : 0;
+    const fs = CAL.St * U / CAL.Dg;
+    const M0 = flutter ? 0 : CAL.Q * U * U;
+    const Uc = Math.sqrt(zstr / CAL.a);
+    function rhs(t, th, om) { return -2 * w * (zNet + beta * th * th) * om - w * w * th + M0 * Math.sin(2 * Math.PI * fs * t); }
+    function simulate(T, maxPts) {
+      const per = Math.min(1 / f, fs > 0 && !flutter ? 1 / fs : 1 / f);
+      const dt = per / 100, n = Math.ceil(T / dt), h = T / n;
+      const every = Math.max(1, Math.floor(n / (maxPts || 6000)));
+      let th = P.th0 * Math.PI / 180, om = 0, t = 0;
+      const out = { t: [], th: [], om: [], al: [] };
+      const push = () => { out.t.push(t); out.th.push(th); out.om.push(om); out.al.push(rhs(t, th, om)); };
+      push();
+      for (let i = 1; i <= n; i++) {
+        const k1t = om, k1o = rhs(t, th, om);
+        const k2t = om + 0.5 * h * k1o, k2o = rhs(t + 0.5 * h, th + 0.5 * h * k1t, om + 0.5 * h * k1o);
+        const k3t = om + 0.5 * h * k2o, k3o = rhs(t + 0.5 * h, th + 0.5 * h * k2t, om + 0.5 * h * k2o);
+        const k4t = om + h * k3o, k4o = rhs(t + h, th + h * k3t, om + h * k3o);
+        th += h / 6 * (k1t + 2 * k2t + 2 * k3t + k4t);
+        om += h / 6 * (k1o + 2 * k2o + 2 * k3o + k4o);
+        t = i * h;
+        if (!isFinite(th) || Math.abs(th) > 50) { push(); out.diverged = true; break; }
+        if (i % every === 0 || i === n) push();
+      }
+      return out;
+    }
+    function flutterAmp(Umph, zsPct, band, sat) {
+      const u = Umph * 0.44704, zn = zsPct / 100 + (band === 'intact' ? CAL.zLink : 0) - CAL.a * u * u;
+      if (zn >= 0) return 0;
+      return sat ? Math.sqrt(-4 * zn / CAL.beta) : Infinity;
+    }
+    function vortexAmp(Umph, zsPct, band, fr) {
+      const u = Umph * 0.44704, ww = 2 * Math.PI * fr, z = zsPct / 100 + (band === 'intact' ? CAL.zLink : 0);
+      const r = (CAL.St * u / CAL.Dg) / fr;
+      return CAL.Q * u * u / (ww * ww) / Math.sqrt((1 - r * r) ** 2 + (2 * z * r) ** 2);
+    }
+    return { U, f, w, zstr, zAero, zNet, beta, fs, M0, Uc, rhs, simulate, flutterAmp, vortexAmp, flutter };
+  }
+  // MODEL END
+
+  // ---------- controls ----------
+  const SPECS = {
+    gWind: [{ k: 'U', label: 'Wind speed', sym: 'U', unit: 'mph', min: 0, max: 70, step: 0.1, hint: () => '= ' + (P.U * MPH).toFixed(2) + ' m/s' }],
+    gStruct: [
+      { k: 'zs', label: 'Structural damping', sym: 'ζs', unit: '%', min: 0.1, max: 5, step: 0.05 },
+      { k: 'f', label: 'Twisting frequency', sym: 'f', unit: 'Hz', min: 0.1, max: 0.6, step: 0.01, hint: () => '= ' + (P.f * 60).toFixed(1) + ' cycles/min, period ' + (1 / P.f).toFixed(2) + ' s' },
+      { k: 'th0', label: 'Initial twist', sym: 'θ₀', unit: '°', min: 0, max: 20, step: 0.1 }
+    ],
+    gTime: [
+      { k: 'T', label: 'Duration shown', sym: 't_end', unit: 's', min: 30, max: 3600, step: 1 },
+      { k: 't', label: 'Time', sym: 't', unit: 's', min: 0, max: () => P.T, step: 0.1 }
+    ]
+  };
+  const ctrls = {};
+  const val = v => typeof v === 'function' ? v() : v;
+  function buildControls(id, list) {
+    const box = document.getElementById(id);
+    box.className = 'controls';
+    list.forEach(s => {
+      const d = document.createElement('div');
+      d.className = 'ctl';
+      d.innerHTML =
+        '<div class="ctl-head"><label for="n_' + s.k + '">' + s.label + '<span class="sym">' + s.sym + '</span></label>' +
+        '<span class="num"><input type="number" id="n_' + s.k + '" step="' + s.step + '">' + s.unit + '</span></div>' +
+        '<input type="range" id="r_' + s.k + '" aria-label="' + s.label + '" step="' + s.step + '">' +
+        (s.hint ? '<div class="hint" id="h_' + s.k + '"></div>' : '');
+      box.appendChild(d);
+      const num = d.querySelector('#n_' + s.k), rng = d.querySelector('#r_' + s.k);
+      ctrls[s.k] = { num, rng, spec: s };
+      const set = v => {
+        v = parseFloat(v);
+        if (!isFinite(v)) return;
+        if (s.k === 't') { P.t = Math.min(Math.max(v, 0), P.T); stopPlay(); syncControls(); refreshInstant(); return; }
+        P[s.k] = v;
+        if (s.k === 'T') P.auto = false;
+        rebuild();
+      };
+      rng.addEventListener('input', () => set(rng.value));
+      num.addEventListener('change', () => set(num.value));
+    });
+  }
+  function syncControls() {
+    for (const k in ctrls) {
+      const c = ctrls[k], s = c.spec;
+      c.rng.min = c.num.min = val(s.min); c.rng.max = c.num.max = val(s.max);
+      if (document.activeElement !== c.num) c.num.value = +(+P[k]).toFixed(k === 't' ? 1 : 3);
+      c.rng.value = P[k];
+      if (s.hint) document.getElementById('h_' + k).textContent = s.hint();
+    }
+    document.querySelectorAll('input[name=mech]').forEach(r => r.checked = r.value === P.mech);
+    document.querySelectorAll('input[name=band]').forEach(r => r.checked = r.value === P.band);
+    document.getElementById('sat').checked = P.sat;
+    document.getElementById('sat').disabled = P.mech !== 'flutter';
+    document.getElementById('mechNote').textContent = P.mech === 'flutter'
+      ? 'No outside rhythm. The air adds damping that turns negative above a threshold wind.'
+      : 'Vortices shed by the deck push it at f_s = St·U/D. The air adds no damping.';
+  }
+
+  // ---------- simulation ----------
+  let M = null, D = null;
+  function autoDuration(M) {
+    const T0 = 1 / M.f;
+    if (M.flutter && M.zNet < 0) {
+      const sig = -M.zNet * M.w;
+      const target = P.sat ? 0.95 * Math.sqrt(-4 * M.zNet / CAL.beta) : 60 * D2R;
+      const start = Math.max(P.th0 * D2R, 1e-4);
+      const tGrow = target > start ? Math.log(target / start) / sig : 0;
+      return Math.min(3600, Math.max(120, tGrow * 1.15 + 20 * T0));
+    }
+    const z = Math.max(M.zNet, 1e-4);
+    return Math.min(1800, Math.max(120, 4 / (z * M.w)));
+  }
+  function rebuild() {
+    M = buildModel(P);
+    if (P.auto) P.T = Math.round(autoDuration(M));
+    if (P.t > P.T) P.t = 0;
+    const s = M.simulate(P.T, 6000);
+    D = {
+      t: s.t, th: s.th.map(v => v / D2R), om: s.om.map(v => v / D2R), al: s.al.map(v => v / D2R),
+      raw: s, diverged: !!s.diverged
+    };
+    D.tEnd = s.t[s.t.length - 1];
+    syncControls(); drawStats(); refreshInstant();
+  }
+  function stateAt(t) {
+    const s = D.raw, n = s.t.length;
+    if (t >= s.t[n - 1]) return { th: s.th[n - 1], om: s.om[n - 1], al: s.al[n - 1] };
+    let lo = 0, hi = n - 1;
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (s.t[mid] <= t) lo = mid; else hi = mid; }
+    // integrate from the stored sample to t for exact state
+    let th = s.th[lo], om = s.om[lo], tt = s.t[lo];
+    const steps = Math.max(1, Math.ceil((t - tt) / ((1 / Math.max(M.f, M.flutter ? M.f : M.fs)) / 100)));
+    const h = (t - tt) / steps;
+    for (let i = 0; i < steps; i++) {
+      const k1t = om, k1o = M.rhs(tt, th, om);
+      const k2t = om + 0.5 * h * k1o, k2o = M.rhs(tt + 0.5 * h, th + 0.5 * h * k1t, om + 0.5 * h * k1o);
+      const k3t = om + 0.5 * h * k2o, k3o = M.rhs(tt + 0.5 * h, th + 0.5 * h * k2t, om + 0.5 * h * k2o);
+      const k4t = om + h * k3o, k4o = M.rhs(tt + h, th + h * k3t, om + h * k3o);
+      th += h / 6 * (k1t + 2 * k2t + 2 * k3t + k4t); om += h / 6 * (k1o + 2 * k2o + 2 * k3o + k4o); tt += h;
+    }
+    return { th, om, al: M.rhs(t, th, om) };
+  }
+
+  // ---------- canvas helpers ----------
+  let C = {};
+  function readColors() {
+    const cs = getComputedStyle(document.documentElement);
+    ['paper', 'sheet', 'ink', 'muted', 'rule', 'grid', 'water', 'sky', 'steel', 'deck', 'deck-hi', 'cable', 'twist', 'vel', 'acc', 'flutter', 'vortex', 'wind', 'good', 'bad'].forEach(n => C[n] = cs.getPropertyValue('--' + n).trim());
+  }
+  function prep(cv) {
+    const dpr = window.devicePixelRatio || 1;
+    const W = cv.clientWidth, H = cv.clientHeight;
+    if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    return { ctx, W, H };
+  }
+  const MONO = '"IBM Plex Mono", ui-monospace, Menlo, monospace';
+  const SANS = '"IBM Plex Sans", "Segoe UI", Arial, sans-serif';
+  function arrow(ctx, x1, y1, x2, y2, color, width, head) {
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy);
+    if (L < 1) return;
+    head = Math.min(head || 9, L * 0.5);
+    const ux = dx / L, uy = dy / L;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width || 2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux * head * 0.8, y2 - uy * head * 0.8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - ux * head - uy * head * 0.45, y2 - uy * head + ux * head * 0.45);
+    ctx.lineTo(x2 - ux * head + uy * head * 0.45, y2 - uy * head - ux * head * 0.45);
+    ctx.closePath(); ctx.fill();
+  }
+  function label(ctx, txt, x, y, color, font, align, base) {
+    ctx.fillStyle = color; ctx.font = font || ('12px ' + MONO);
+    ctx.textAlign = align || 'left'; ctx.textBaseline = base || 'middle';
+    ctx.fillText(txt, x, y);
+  }
+  const fmt = (v, d) => (Math.abs(v) < 0.5 * Math.pow(10, -d) ? 0 : v).toFixed(d);
+
+  // ---------- bridge view ----------
+  function drawBridge(thq) {
+    const cv = document.getElementById('bridge');
+    const { ctx, W, H } = prep(cv);
+    ctx.fillStyle = C.sky; ctx.fillRect(0, 0, W, H);
+    const yWater = H * 0.86;
+    ctx.fillStyle = C.water; ctx.fillRect(0, yWater, W, H - yWater);
+    const xL = W * 0.1, xR = W * 0.9, span = xR - xL;
+    const yDeck = H * 0.6, yTop = H * 0.1;
+    const half = Math.max(22, Math.min(H * 0.17, 64));         // drawn half-width (exaggerated)
+    const cz = [-0.5, 0.42];                                 // screen offset per unit of z (toward viewer)
+    const proj = (x, y, z) => [x + z * cz[0], yDeck - y + z * cz[1]];
+    const sagY = yDeck - H * 0.05;
+    const cableY = x => { const u = (x - xL) / span; const yy = yTop + 10 + (sagY - yTop - 10) * (1 - Math.pow(2 * u - 1, 2)); return yDeck - yy; };
+
+    // wind streaks (blowing across the deck, toward the viewer)
+    const tNow = P.t;
+    ctx.strokeStyle = C.wind; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.6;
+    const nW = Math.round(P.U / 6);
+    for (let i = 0; i < nW; i++) {
+      const phase = ((i * 0.37 + tNow * P.U * 0.004) % 1);
+      const x0 = W * (0.05 + 0.9 * ((i * 0.618) % 1)), y0 = H * (0.12 + 0.2 * ((i * 0.41) % 1));
+      const len = 28;
+      const sx = x0 + phase * 30 * cz[0], sy = y0 + phase * 30 * cz[1];
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + len * cz[0] * 0.8, sy + len * cz[1] * 0.8); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    const N = 120;
+    const sec = [];
+    for (let i = 0; i <= N; i++) {
+      const u = i / N, x = xL + u * span;
+      const th = thq * Math.sin(2 * Math.PI * u);
+      sec.push({ x, th, far: proj(x, -half * Math.sin(th), -half * Math.cos(th)), near: proj(x, half * Math.sin(th), half * Math.cos(th)) });
+    }
+    // far cable, far hangers and far tower legs
+    const drawCable = z => {
+      ctx.strokeStyle = C.cable; ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i <= 60; i++) { const x = xL + span * i / 60; const p = proj(x, cableY(x), z); i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }
+      ctx.stroke();
+      // side span cables
+      [[0, xL], [xR, W]].forEach(([a, b]) => {
+        const pa = proj(a, a === 0 ? (yDeck - H * 0.55) : cableY(xR), z), pb = proj(b, b === W ? (yDeck - H * 0.55) : cableY(xL), z);
+        const pTop = proj(a === 0 ? xL : xR, cableY(a === 0 ? xL : xR), z);
+        ctx.beginPath();
+        if (a === 0) { ctx.moveTo(proj(0, yDeck - H * 0.62, z)[0], proj(0, yDeck - H * 0.62, z)[1]); ctx.quadraticCurveTo(proj(xL * 0.5, yDeck - H * 0.5, z)[0], proj(xL * 0.5, yDeck - H * 0.5, z)[1], pTop[0], pTop[1]); }
+        else { ctx.moveTo(pTop[0], pTop[1]); ctx.quadraticCurveTo(proj((xR + W) / 2, yDeck - H * 0.5, z)[0], proj((xR + W) / 2, yDeck - H * 0.5, z)[1], proj(W, yDeck - H * 0.62, z)[0], proj(W, yDeck - H * 0.62, z)[1]); }
+        ctx.stroke();
+      });
+    };
+    const drawHangers = (side) => {
+      ctx.strokeStyle = C.cable; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.7;
+      for (let i = 4; i < N; i += 6) {
+        const s = sec[i], z = side * half;
+        const top = proj(s.x, cableY(s.x), z);
+        const bot = side < 0 ? s.far : s.near;
+        ctx.beginPath(); ctx.moveTo(top[0], top[1]); ctx.lineTo(bot[0], bot[1]); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    };
+    const drawTowerLeg = (x, z) => {
+      const b = proj(x, -(yWater - yDeck) + 4, z), t = proj(x, yDeck - yTop, z);
+      ctx.strokeStyle = C.steel; ctx.lineWidth = 6; ctx.lineCap = 'butt';
+      ctx.beginPath(); ctx.moveTo(b[0], b[1]); ctx.lineTo(t[0], t[1]); ctx.stroke();
+    };
+    drawCable(-half); drawHangers(-1); drawTowerLeg(xL, -half); drawTowerLeg(xR, -half);
+    // tower cross struts
+    [xL, xR].forEach(x => {
+      ctx.strokeStyle = C.steel; ctx.lineWidth = 3;
+      [yDeck - yTop - 6, (yDeck - yTop) * 0.55].forEach(yy => {
+        const a = proj(x, yy, -half), b = proj(x, yy, half);
+        ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      });
+    });
+    // side-span decks (static)
+    ctx.fillStyle = C.deck;
+    [[0, xL], [xR, W]].forEach(([a, b]) => {
+      const p = [proj(a, 0, -half), proj(b, 0, -half), proj(b, 0, half), proj(a, 0, half)];
+      ctx.beginPath(); p.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.closePath(); ctx.fill();
+    });
+    // deck surface, shaded by tilt
+    for (let i = 0; i < N; i++) {
+      const a = sec[i], b = sec[i + 1];
+      const thm = (a.th + b.th) / 2;
+      ctx.fillStyle = C.deck;
+      ctx.beginPath(); ctx.moveTo(a.far[0], a.far[1]); ctx.lineTo(b.far[0], b.far[1]); ctx.lineTo(b.near[0], b.near[1]); ctx.lineTo(a.near[0], a.near[1]); ctx.closePath(); ctx.fill();
+      const shade = Math.max(-1, Math.min(1, Math.sin(thm) * 1.6));
+      ctx.globalAlpha = Math.abs(shade) * 0.55;
+      ctx.fillStyle = shade > 0 ? C['deck-hi'] : C.ink;
+      ctx.fill(); ctx.globalAlpha = 1;
+    }
+    // girders along the edges
+    ctx.strokeStyle = C.steel; ctx.lineWidth = 2.4; ctx.lineJoin = 'round';
+    ['far', 'near'].forEach(k => { ctx.beginPath(); sec.forEach((s, i) => i ? ctx.lineTo(s[k][0], s[k][1]) : ctx.moveTo(s[k][0], s[k][1])); ctx.stroke(); });
+    // centre line
+    ctx.setLineDash([6, 6]); ctx.strokeStyle = C.sky; ctx.lineWidth = 1;
+    ctx.beginPath(); sec.forEach((s, i) => { const p = proj(s.x, 0, 0); i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }); ctx.stroke(); ctx.setLineDash([]);
+    drawHangers(1); drawCable(half); drawTowerLeg(xL, half); drawTowerLeg(xR, half);
+
+    // annotations
+    const mid = proj(xL + span / 2, 0, half);
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+    ctx.beginPath(); ctx.moveTo(mid[0], mid[1] + 8); ctx.lineTo(mid[0], yWater - 6); ctx.stroke(); ctx.setLineDash([]);
+    label(ctx, 'node (midspan)', mid[0], yWater - 12, C.muted, '10.5px ' + MONO, 'center');
+    [0.25, 0.75].forEach(u => {
+      const p = proj(xL + span * u, 0, half);
+      const th = thq * Math.sin(2 * Math.PI * u);
+      label(ctx, (th / D2R >= 0 ? '+' : '') + (th / D2R).toFixed(1) + '°', p[0], Math.min(yWater - 12, p[1] + half * 0.9 + 16), C.twist, '600 12px ' + MONO, 'center');
+    });
+    label(ctx, 'wind ' + P.U.toFixed(0) + ' mph', W - 10, 14, C.muted, '11px ' + MONO, 'right');
+    arrow(ctx, W - 120, 26, W - 120 + 30 * cz[0] * 1.2, 26 + 30 * cz[1] * 1.2, C.wind, 1.6, 7);
+    label(ctx, 'Tacoma tower', proj(xL, 0, -half)[0] + 8, yTop + 4, C.muted, '10px ' + MONO, 'left');
+    label(ctx, 'Gig Harbor tower', proj(xR, 0, -half)[0] - 8, yTop + 4, C.muted, '10px ' + MONO, 'right');
+  }
+
+  // ---------- cross-section ----------
+  function drawXsec(th, om) {
+    const cv = document.getElementById('xsec');
+    const { ctx, W, H } = prep(cv);
+    ctx.fillStyle = C.sky; ctx.fillRect(0, 0, W, H);
+    const cx = W / 2, cy = H * 0.52;
+    const s = Math.min(W * 0.74 / CAL.B, H * 0.6 / CAL.B);
+    const Bh = CAL.B / 2 * s, Dg = CAL.Dg * s;
+    // reference horizontal
+    ctx.strokeStyle = C.rule; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx - Bh * 1.35, cy); ctx.lineTo(cx + Bh * 1.35, cy); ctx.stroke(); ctx.setLineDash([]);
+    // wind streamlines
+    ctx.strokeStyle = C.wind; ctx.lineWidth = 1.2;
+    const off = (P.t * P.U * 0.6) % 26;
+    for (let j = -3; j <= 3; j++) {
+      const y = cy + j * H * 0.12;
+      if (Math.abs(j) <= 1) continue;
+      for (let x = -26 + off; x < W; x += 26) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 12, y); ctx.stroke(); }
+    }
+    arrow(ctx, 10, cy - H * 0.36, 52, cy - H * 0.36, C.wind, 1.6, 7);
+    label(ctx, P.U.toFixed(0) + ' mph', 58, cy - H * 0.36, C.muted, '11px ' + MONO);
+    // H section rotated (positive θ: windward/left edge up)
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(th);
+    ctx.fillStyle = C.deck; ctx.strokeStyle = C.steel; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.rect(-Bh, -Dg * 0.06, 2 * Bh, Dg * 0.14); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = C.steel;
+    [-1, 1].forEach(sg => ctx.fillRect(sg * Bh - (sg > 0 ? 4 : 0), -Dg * 0.45, 4, Dg));
+    // leading-edge vortex (sketch) when flutter and twisting
+    if (M.flutter && Math.abs(th) > 0.02) {
+      const side = om > 0 ? -1 : 1;
+      const vx = -Bh * 0.55 + ((P.t * M.f) % 1) * Bh * 1.1;
+      ctx.strokeStyle = C.flutter; ctx.lineWidth = 1.4; ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      for (let a = 0; a < 4 * Math.PI; a += 0.2) { const rr = 2 + a * 1.6; const px = vx + rr * Math.cos(a), py = side * (Dg * 0.55 + 10) + rr * Math.sin(a) * 0.7; a ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+      ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+    // angle arc
+    const ar = Bh * 0.75;
+    ctx.strokeStyle = C.twist; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(cx, cy, ar, Math.PI, Math.PI + th, th < 0); ctx.stroke();
+    label(ctx, 'θ = ' + fmt(th / D2R, 1) + '°', cx, H - 14, C.twist, '600 13px ' + MONO, 'center');
+    const edge = CAL.B / 2 * Math.sin(th);
+    label(ctx, 'edge ' + (edge >= 0 ? '+' : '') + fmt(edge / 0.3048, 1) + ' ft', cx - Bh - 4, cy - edge * s - 14, C.muted, '10.5px ' + MONO, 'left');
+    label(ctx, '39 ft', cx, cy + Dg * 0.9 + 10, C.muted, '10px ' + MONO, 'center');
+  }
+
+  // ---------- readout & stats ----------
+  function drawReadout(S) {
+    const edge = CAL.B / 2 * Math.sin(S.th);
+    const zEff = M.zNet + M.beta * S.th * S.th;
+    const rows = [
+      ['h', 'Twist at quarter span'],
+      ['θ', 'Rotation', fmt(S.th / D2R, 2), '°', 1],
+      ['θ̇', 'Angular velocity', fmt(S.om / D2R, 2), '°/s', 1],
+      ['θ̈', 'Angular acceleration', fmt(S.al / D2R, 2), '°/s²', 1],
+      ['y_edge', 'Deck edge rise', fmt(edge / 0.3048, 2), 'ft'],
+      ['h', 'Damping right now'],
+      ['ζs+ζlink', 'Structure', fmt((M.zstr) * 100, 2), '%'],
+      ['ζaero', M.flutter ? 'Added by the wind' : 'Added by the wind (none in this model)', fmt(M.zAero * 100, 2), '%'],
+      ['βθ²', 'Saturation at this twist', fmt(M.beta * S.th * S.th * 100, 2), '%'],
+      ['ζeff', zEff < 0 ? 'Net: wind is feeding energy in' : 'Net: energy is being removed', fmt(zEff * 100, 3), '%', 1]
+    ];
+    if (!M.flutter) rows.push(['M', 'Vortex moment per inertia', fmt(M.M0 * Math.sin(2 * Math.PI * M.fs * P.t) / D2R, 3), '°/s²']);
+    document.getElementById('readout').innerHTML = rows.map(r => r[0] === 'h'
+      ? '<tr><th colspan="4">' + r[1] + '</th></tr>'
+      : '<tr' + (r[4] ? ' class="key"' : '') + '><td class="sym">' + r[0] + '</td><td class="desc">' + r[1] + '</td><td class="val">' + r[2] + '</td><td class="unit">' + r[3] + '</td></tr>').join('');
+  }
+  function drawStats() {
+    const chip = document.getElementById('stateChip');
+    const items = [];
+    if (M.flutter) {
+      const unstable = M.zNet < 0;
+      chip.className = 'chip ' + (unstable ? 'bad' : 'good');
+      chip.textContent = unstable ? 'Flutter: wind feeds the twist' : 'Stable: twist dies away';
+      items.push(['Flutter onset U_c', (M.Uc / MPH).toFixed(1) + ' mph']);
+      items.push(['Net damping at this wind', (M.zNet * 100).toFixed(3) + ' %']);
+      if (unstable) {
+        const sig = -M.zNet * M.w;
+        items.push(['Amplitude doubles every', (Math.LN2 / sig).toFixed(0) + ' s (' + (Math.LN2 / sig * M.f).toFixed(1) + ' cycles)']);
+        items.push(['Steady twist reached', P.sat ? (Math.sqrt(-4 * M.zNet / CAL.beta) / D2R).toFixed(1) + '°' : 'none, grows without limit']);
+      } else {
+        items.push(['Twist halves every', (Math.LN2 / (M.zNet * M.w)).toFixed(0) + ' s']);
+      }
+    } else {
+      const r = M.fs / M.f;
+      const amp = M.vortexAmp(P.U, P.zs, P.band, P.f);
+      chip.className = 'chip ' + (amp / D2R > 10 ? 'bad' : 'good');
+      chip.textContent = Math.abs(r - 1) < 0.05 ? 'Vortex forcing in resonance' : 'Vortex forcing off resonance';
+      items.push(['Shedding frequency f_s', M.fs.toFixed(3) + ' Hz']);
+      items.push(['f_s / f', r.toFixed(2)]);
+      items.push(['Tuned (resonant) wind', (P.f * CAL.Dg / CAL.St / MPH).toFixed(1) + ' mph']);
+      items.push(['Steady twist from vortices', (amp / D2R).toFixed(amp / D2R < 0.1 ? 3 : 2) + '°']);
+    }
+    items.push(['Twisting frequency', P.f.toFixed(2) + ' Hz (' + (P.f * 60).toFixed(0) + '/min)']);
+    items.push(['Edge travel at 40° twist', (CAL.B / 2 * Math.sin(40 * D2R) / 0.3048).toFixed(1) + ' ft each way']);
+    document.getElementById('stats').innerHTML = items.map(i => '<div class="stat"><div class="k">' + i[0] + '</div><div class="v">' + i[1] + '</div></div>').join('');
+  }
+
+  // ---------- generic chart ----------
+  function niceStep(range, n) {
+    const raw = range / (n || 4), mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag;
+    return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag;
+  }
+  const decFor = step => step < 1 ? Math.min(4, Math.ceil(-Math.log10(step) - 1e-9)) : 0;
+  function chart(cv, o) {
+    const { ctx, W, H } = prep(cv);
+    const Lm = 54, Rm = 12, Tm = 30, Bm = 30;
+    label(ctx, o.title, 0, 10, C.ink, '600 12.5px ' + SANS, 'left');
+    if (o.value) label(ctx, o.value, W - Rm, 10, o.valueColor || C.ink, '500 12px ' + MONO, 'right');
+    const xs = o.xs;
+    let x0 = o.xr ? o.xr[0] : Math.min(...xs), x1 = o.xr ? o.xr[1] : Math.max(...xs);
+    if (x1 - x0 < 1e-12) { x0 -= 1; x1 += 1; }
+    let lo = Infinity, hi = -Infinity;
+    o.series.forEach(s => { if (s.noRange) return; s.ys.forEach(v => { if (isFinite(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }); });
+    if (o.yMin !== undefined) lo = Math.min(lo, o.yMin);
+    if (o.yMaxMin !== undefined) hi = Math.max(hi, o.yMaxMin);
+    if (o.yClip !== undefined) hi = Math.min(hi, o.yClip);
+    if (o.yClipLo !== undefined) lo = Math.max(lo, o.yClipLo);
+    if (!isFinite(lo)) { lo = -1; hi = 1; }
+    if (hi - lo < 1e-12) { hi += Math.abs(hi) * 0.1 + 1e-6; lo -= Math.abs(lo) * 0.1 + 1e-6; }
+    const ys = niceStep(hi - lo), xst = niceStep(x1 - x0, 5);
+    lo = Math.floor(lo / ys + 1e-9) * ys; hi = Math.ceil(hi / ys - 1e-9) * ys;
+    const pw = W - Lm - Rm, ph = H - Tm - Bm;
+    const X = v => Lm + (v - x0) / (x1 - x0) * pw, Y = v => Tm + (hi - v) / (hi - lo) * ph;
+    ctx.lineWidth = 1;
+    const yd = decFor(ys);
+    for (let v = lo; v <= hi + ys * 0.01; v += ys) {
+      const vv = Math.abs(v) < ys * 1e-6 ? 0 : v;
+      ctx.strokeStyle = vv === 0 && lo < 0 ? C.muted : C.grid;
+      ctx.beginPath(); ctx.moveTo(Lm, Y(vv)); ctx.lineTo(W - Rm, Y(vv)); ctx.stroke();
+      label(ctx, vv.toFixed(yd), Lm - 6, Y(vv), C.muted, '10.5px ' + MONO, 'right');
+    }
+    const xd = decFor(xst);
+    for (let v = Math.ceil(x0 / xst - 1e-9) * xst; v <= x1 + xst * 0.01; v += xst) {
+      const vv = Math.abs(v) < xst * 1e-6 ? 0 : v;
+      ctx.strokeStyle = C.grid;
+      ctx.beginPath(); ctx.moveTo(X(vv), Tm); ctx.lineTo(X(vv), Tm + ph); ctx.stroke();
+      label(ctx, vv.toFixed(xd), X(vv), Tm + ph + 12, C.muted, '10.5px ' + MONO, 'center');
+    }
+    label(ctx, o.yUnit, Lm - 6, Tm - 12, C.muted, '10.5px ' + MONO, 'right');
+    label(ctx, o.xUnit, W - Rm, Tm + ph + 24, C.muted, '10.5px ' + MONO, 'right');
+    ctx.save(); ctx.beginPath(); ctx.rect(Lm, Tm - 1, pw, ph + 2); ctx.clip();
+    (o.vlines || []).forEach(vl => {
+      if (vl.x < x0 || vl.x > x1) return;
+      ctx.strokeStyle = vl.col || C.muted; ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(X(vl.x), Tm); ctx.lineTo(X(vl.x), Tm + ph); ctx.stroke(); ctx.setLineDash([]);
+      label(ctx, vl.t, X(vl.x) + (vl.right ? -4 : 4), Tm + 8 + (vl.dy || 0), vl.col || C.muted, '10px ' + MONO, vl.right ? 'right' : 'left');
+    });
+    o.series.forEach(s => {
+      const sx = s.xs || xs;
+      ctx.strokeStyle = s.col; ctx.lineWidth = s.w || 2; ctx.globalAlpha = s.alpha || 1;
+      ctx.setLineDash(s.dash || []);
+      ctx.beginPath();
+      let pen = false;
+      for (let i = 0; i < s.ys.length; i++) {
+        const v = s.ys[i];
+        if (!isFinite(v)) { pen = false; continue; }
+        const px = X(sx[i]), py = Math.max(Tm - 4, Math.min(Tm + ph + 4, Y(v)));
+        pen ? ctx.lineTo(px, py) : ctx.moveTo(px, py); pen = true;
+      }
+      ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    });
+    ctx.restore();
+    if (o.cursorX !== undefined) {
+      ctx.strokeStyle = C.muted; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(X(o.cursorX), Tm); ctx.lineTo(X(o.cursorX), Tm + ph); ctx.stroke(); ctx.setLineDash([]);
+    }
+    (o.markers || []).forEach(mk => {
+      if (!isFinite(mk.y)) return;
+      const py = Math.max(Tm, Math.min(Tm + ph, Y(mk.y)));
+      ctx.fillStyle = C.sheet; ctx.strokeStyle = mk.col; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(X(mk.x), py, 4, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+    });
+    if (o.legend) {
+      let lx = Lm + 6;
+      o.legend.forEach(l => {
+        ctx.strokeStyle = l.col; ctx.lineWidth = 2; ctx.setLineDash(l.dash || []);
+        ctx.beginPath(); ctx.moveTo(lx, Tm + 8); ctx.lineTo(lx + 14, Tm + 8); ctx.stroke(); ctx.setLineDash([]);
+        ctx.font = '10px ' + MONO;
+        ctx.fillStyle = C.sheet; ctx.globalAlpha = 0.8; ctx.fillRect(lx + 16, Tm + 1, ctx.measureText(l.t).width + 4, 14); ctx.globalAlpha = 1;
+        label(ctx, l.t, lx + 18, Tm + 8, C.muted, '10px ' + MONO, 'left');
+        lx += 26 + ctx.measureText(l.t).width;
+      });
+    }
+    cv._map = { Lm, pw, x0, x1 };
+  }
+
+  function drawCharts(S) {
+    const t = P.t;
+    const thCol = M.flutter ? C.flutter : C.vortex;
+    const env = [];
+    chart(document.getElementById('pTh'), { title: 'Twist θ(t) at quarter span', yUnit: '°', xUnit: 's', xs: D.t,
+      series: [{ ys: D.th, col: thCol, w: 1.4 }], cursorX: t, markers: [{ x: t, y: S.th / D2R, col: thCol }],
+      value: fmt(S.th / D2R, 2) + '°', valueColor: thCol, yMaxMin: 1, yMin: -1 });
+    chart(document.getElementById('pOm'), { title: 'Angular velocity θ̇(t)', yUnit: '°/s', xUnit: 's', xs: D.t,
+      series: [{ ys: D.om, col: C.vel, w: 1.4 }], cursorX: t, markers: [{ x: t, y: S.om / D2R, col: C.vel }],
+      value: fmt(S.om / D2R, 2) + ' °/s', valueColor: C.vel, yMaxMin: 1, yMin: -1 });
+    chart(document.getElementById('pAl'), { title: 'Angular acceleration θ̈(t)', yUnit: '°/s²', xUnit: 's', xs: D.t,
+      series: [{ ys: D.al, col: C.acc, w: 1.4 }], cursorX: t, markers: [{ x: t, y: S.al / D2R, col: C.acc }],
+      value: fmt(S.al / D2R, 2) + ' °/s²', valueColor: C.acc, yMaxMin: 1, yMin: -1 });
+
+    // damping vs wind
+    const us = []; for (let i = 0; i <= 140; i++) us.push(i * 0.5);
+    const zOf = (u, band) => (P.zs / 100 + (band === 'intact' ? CAL.zLink : 0) - (P.mech === 'flutter' ? CAL.a * (u * MPH) ** 2 : 0)) * 100;
+    const zS = us.map(u => zOf(u, 'slipped')), zI = us.map(u => zOf(u, 'intact'));
+    chart(document.getElementById('pZ'), { title: 'Net damping vs wind speed', yUnit: '%', xUnit: 'mph', xs: us, xr: [0, 70],
+      series: [{ ys: zI, col: C.muted, dash: [5, 4], w: 1.6 }, { ys: zS, col: C.flutter, w: 2 }],
+      yClipLo: -3, yMaxMin: 2.5,
+      vlines: [{ x: 42, t: '42 mph', col: C.muted, right: true, dy: 18 }],
+      markers: [{ x: P.U, y: M.zNet * 100, col: C.flutter }], cursorX: P.U,
+      value: (M.zNet * 100).toFixed(2) + ' %', valueColor: C.flutter,
+      legend: [{ t: 'link slipped', col: C.flutter }, { t: 'intact', col: C.muted, dash: [5, 4] }] });
+
+    // steady amplitude vs wind: flutter vs vortex
+    const flA = us.map(u => { const v = M.flutterAmp(u, P.zs, P.band, P.sat); return v === Infinity ? 999 : v / D2R; });
+    const vxA = us.map(u => M.vortexAmp(u, P.zs, P.band, P.f) / D2R);
+    const curA = P.mech === 'flutter' ? M.flutterAmp(P.U, P.zs, P.band, P.sat) : M.vortexAmp(P.U, P.zs, P.band, P.f);
+    chart(document.getElementById('pAmp'), { title: 'Steady twist amplitude vs wind', yUnit: '°', xUnit: 'mph', xs: us, xr: [0, 70],
+      series: [{ ys: vxA, col: C.vortex, w: 2 }, { ys: flA, col: C.flutter, w: 2 }],
+      yMin: 0, yClip: 60, yMaxMin: 10,
+      vlines: [{ x: 42, t: '42 mph', col: C.muted, right: true, dy: 18 }, { x: M.Uc / MPH, t: 'flutter onset', col: C.flutter, dy: 34 }],
+      markers: [{ x: P.U, y: curA === Infinity ? 60 : curA / D2R, col: P.mech === 'flutter' ? C.flutter : C.vortex }], cursorX: P.U,
+      value: curA === Infinity ? 'unbounded' : (curA / D2R).toFixed(2) + '°', valueColor: P.mech === 'flutter' ? C.flutter : C.vortex,
+      legend: [{ t: 'flutter', col: C.flutter }, { t: 'vortex resonance', col: C.vortex }] });
+
+    // frequencies vs wind
+    const fsA = us.map(u => CAL.St * u * MPH / CAL.Dg), fA = us.map(() => P.f);
+    chart(document.getElementById('pFreq'), { title: 'Shedding vs twisting frequency', yUnit: 'Hz', xUnit: 'mph', xs: us, xr: [0, 70],
+      series: [{ ys: fA, col: C.flutter, w: 2 }, { ys: fsA, col: C.vortex, w: 2 }], yMin: 0,
+      vlines: [{ x: 42, t: '42 mph', col: C.muted, right: true, dy: 18 }, { x: P.f * CAL.Dg / CAL.St / MPH, t: 'match', col: C.vortex, dy: 34 }],
+      markers: [{ x: P.U, y: CAL.St * P.U * MPH / CAL.Dg, col: C.vortex }, { x: P.U, y: P.f, col: C.flutter }], cursorX: P.U,
+      value: 'f_s = ' + (CAL.St * P.U * MPH / CAL.Dg).toFixed(2) + ' Hz', valueColor: C.vortex,
+      legend: [{ t: 'bridge twist f', col: C.flutter }, { t: 'shedding f_s', col: C.vortex }] });
+  }
+  [['pTh', 't'], ['pOm', 't'], ['pAl', 't'], ['pZ', 'U'], ['pAmp', 'U'], ['pFreq', 'U']].forEach(([id, what]) => {
+    const cv = document.getElementById(id);
+    let down = false;
+    const setFrom = ev => {
+      if (!cv._map) return;
+      const rect = cv.getBoundingClientRect();
+      const fr = Math.min(1, Math.max(0, (ev.clientX - rect.left - cv._map.Lm) / cv._map.pw));
+      const v = cv._map.x0 + fr * (cv._map.x1 - cv._map.x0);
+      if (what === 't') { P.t = Math.min(P.T, Math.max(0, v)); stopPlay(); syncControls(); refreshInstant(); }
+      else { P.U = Math.round(v * 10) / 10; if (!down2) rebuild(); }
+    };
+    let down2 = false;
+    cv.addEventListener('pointerdown', ev => { down = true; cv.setPointerCapture(ev.pointerId); setFrom(ev); });
+    cv.addEventListener('pointermove', ev => { if (down && what === 't') setFrom(ev); });
+    ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => down = false));
+  });
+
+  function refreshInstant() {
+    readColors();
+    const S = stateAt(P.t);
+    document.getElementById('tLabel').textContent = P.t.toFixed(1) + ' s';
+    const mins = Math.floor(P.t / 60), secs = Math.floor(P.t % 60);
+    document.getElementById('tClock').textContent = '(' + mins + ' min ' + String(secs).padStart(2, '0') + ' s)';
+    drawBridge(S.th); drawXsec(S.th, S.om); drawReadout(S); drawCharts(S);
+  }
+
+  // ---------- animation ----------
+  let playing = false, last = 0, raf = 0;
+  const playBtn = document.getElementById('play');
+  function tick(ts) {
+    if (!playing) return;
+    const dt = last ? Math.min(0.1, (ts - last) / 1000) : 0; last = ts;
+    P.t += dt * parseFloat(document.getElementById('speed').value);
+    if (P.t > P.T) P.t = 0;
+    syncControls(); refreshInstant();
+    raf = requestAnimationFrame(tick);
+  }
+  function startPlay() { if (P.t >= P.T * 0.999) P.t = 0; playing = true; last = 0; playBtn.textContent = 'Pause'; raf = requestAnimationFrame(tick); }
+  function stopPlay() { playing = false; cancelAnimationFrame(raf); playBtn.textContent = 'Play'; }
+  playBtn.addEventListener('click', () => playing ? stopPlay() : startPlay());
+
+  document.querySelectorAll('input[name=mech]').forEach(r => r.addEventListener('change', () => { P.mech = r.value; P.auto = true; rebuild(); }));
+  document.querySelectorAll('input[name=band]').forEach(r => r.addEventListener('change', () => { P.band = r.value; P.auto = true; rebuild(); }));
+  document.getElementById('sat').addEventListener('change', e => { P.sat = e.target.checked; P.auto = true; rebuild(); });
+  document.getElementById('presets').addEventListener('click', ev => {
+    const b = ev.target.closest('button[data-p]'); if (!b) return;
+    Object.assign(P, PRESETS[b.dataset.p]); P.auto = true; P.t = 0;
+    stopPlay(); rebuild();
+  });
+
+  buildControls('gWind', SPECS.gWind);
+  buildControls('gStruct', SPECS.gStruct);
+  buildControls('gTime', SPECS.gTime);
+
+  const ro = new ResizeObserver(() => { if (M) refreshInstant(); });
+  ['bridge', 'xsec', 'pTh'].forEach(id => ro.observe(document.getElementById(id)));
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => M && refreshInstant());
+  new MutationObserver(() => M && refreshInstant()).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => M && refreshInstant());
+
+  rebuild();
+  // open on a frame where the twist is clearly developed
+  (function () {
+    const s = D.raw, t0 = P.T * 0.8, t1 = t0 + 1 / P.f;
+    let best = t0, bv = -1;
+    for (let i = 0; i < s.t.length; i++) if (s.t[i] >= t0 && s.t[i] <= t1 && Math.abs(s.th[i]) > bv) { bv = Math.abs(s.th[i]); best = s.t[i]; }
+    P.t = Math.min(P.T, best); syncControls(); refreshInstant();
+  })();
+})();
+</script>
+</body>
+</html>

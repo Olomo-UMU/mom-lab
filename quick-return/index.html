@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive crank and slotted lever quick return mechanism with Coriolis acceleration and ram kinematics.">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+.sitebar{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:12px 0;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:0.8rem}
+.sitebar a{color:var(--muted);text-decoration:none}
+.sitebar a:hover,.sitebar a:focus-visible{color:var(--ink);text-decoration:underline}
+@media (max-width:420px){.sitebar{padding-inline:16px}}
+</style>
+<title>Quick Return Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: drafting-sheet tool, companion to Slider-Crank Lab. Controls left, live mechanism + polygons right, full-revolution curves below with the cutting stroke shaded. */
+:root {
+  --paper: #eceff3;
+  --sheet: #fbfcfd;
+  --ink: #15212c;
+  --muted: #5b6977;
+  --rule: #cdd5dd;
+  --grid: #e3e8ed;
+  --band: #e4ebf2;
+  --crank: #1d5bbd;
+  --lever: #4b4f86;
+  --rod: #b9600c;
+  --vel: #0b8466;
+  --acc: #b8215f;
+  --cor: #7b36c4;
+  --warn-bg: #fff3e0;
+  --warn-fg: #8a4a00;
+  --focus: #1d5bbd;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e1318; --sheet: #151c24; --ink: #e2e8ee; --muted: #93a1ae; --rule: #2b3641; --grid: #1f2830; --band: #1b2733;
+    --crank: #72a6ff; --lever: #a3a8f0; --rod: #f0a24f; --vel: #3fd0a6; --acc: #ff74ab; --cor: #c493ff;
+    --warn-bg: #3a2a12; --warn-fg: #ffc77a; --focus: #72a6ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e1318; --sheet: #151c24; --ink: #e2e8ee; --muted: #93a1ae; --rule: #2b3641; --grid: #1f2830; --band: #1b2733;
+  --crank: #72a6ff; --lever: #a3a8f0; --rod: #f0a24f; --vel: #3fd0a6; --acc: #ff74ab; --cor: #c493ff;
+  --warn-bg: #3a2a12; --warn-fg: #ffc77a; --focus: #72a6ff;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-inline: 20px; padding-block: 20px 40px; display: grid; gap: 18px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 24px; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 1.9rem; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); max-width: 64ch; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin: 0; }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; min-width: 0; }
+.top { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
+.right { display: grid; gap: 18px; min-width: 0; }
+
+.controls { display: grid; gap: 14px; }
+.ctl { display: grid; gap: 4px; }
+.ctl-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ctl label { font-weight: 600; font-size: 0.86rem; }
+.ctl label .sym { font-family: var(--f-mono); font-weight: 500; color: var(--muted); margin-left: 4px; }
+.ctl .num { display: flex; align-items: center; gap: 4px; font-family: var(--f-mono); font-size: 0.82rem; color: var(--muted); }
+.ctl input[type=number] { width: 78px; font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 2px 6px; text-align: right; font-variant-numeric: tabular-nums; }
+.ctl input[type=range] { width: 100%; accent-color: var(--crank); }
+.ctl .hint { font-size: 0.76rem; color: var(--muted); font-family: var(--f-mono); }
+.group-label { border-top: 1px solid var(--rule); padding-top: 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+button { font: inherit; font-weight: 600; font-size: 0.84rem; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 11px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--crank); color: var(--sheet); border-color: var(--crank); min-width: 84px; }
+button.link { padding: 2px 8px; font-size: 0.76rem; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+select { font: inherit; font-size: 0.84rem; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 5px 6px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 0.86rem; }
+.check input { accent-color: var(--crank); width: 16px; height: 16px; }
+.swatch { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; }
+
+.mech-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 16px; margin-bottom: 8px; }
+.mech-head .note { font-size: 0.78rem; color: var(--muted); }
+.phase { font-family: var(--f-display); font-weight: 600; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; border: 1.5px solid currentColor; }
+.phase.cut { color: var(--vel); }
+.phase.ret { color: var(--rod); }
+canvas { display: block; width: 100%; touch-action: none; }
+#mech { aspect-ratio: 16 / 10.5; max-width: 100%; cursor: grab; }
+.warn { background: var(--warn-bg); color: var(--warn-fg); border-radius: 4px; padding: 10px 12px; font-weight: 500; margin-top: 8px; }
+
+.mid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 18px; }
+.poly-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+.poly-grid canvas { aspect-ratio: 1 / 1; max-width: 100%; }
+.poly-cap { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+td, th { padding: 4px 6px; text-align: left; border-bottom: 1px solid var(--grid); vertical-align: baseline; }
+th { font-family: var(--f-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; color: var(--muted); padding-top: 10px; }
+td.sym { font-family: var(--f-mono); white-space: nowrap; }
+td.val { font-family: var(--f-mono); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.unit { color: var(--muted); font-family: var(--f-mono); font-size: 0.78rem; white-space: nowrap; }
+td.desc { color: var(--muted); }
+tr.key td { font-weight: 600; }
+tr.key td.desc { color: var(--ink); }
+tr.cor td.sym, tr.cor td.val { color: var(--cor); font-weight: 600; }
+.tbl-wrap { overflow-x: auto; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); border-top: 1px solid var(--rule); margin-top: 12px; }
+.stat { padding: 10px 10px 4px 0; }
+.stat .k { font-size: 0.74rem; color: var(--muted); }
+.stat .v { font-family: var(--f-mono); font-size: 1.02rem; font-variant-numeric: tabular-nums; }
+
+.plots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+.plot { min-width: 0; }
+.plot canvas { aspect-ratio: 16 / 10; max-width: 100%; cursor: crosshair; }
+.plots-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; align-items: baseline; }
+.plots-head .note { font-size: 0.78rem; color: var(--muted); }
+.key-band { display: inline-block; width: 14px; height: 10px; background: var(--band); border: 1px solid var(--rule); vertical-align: middle; margin-right: 4px; }
+
+details { font-size: 0.88rem; }
+summary { cursor: pointer; font-family: var(--f-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; font-size: 0.82rem; color: var(--muted); }
+.eqs { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 28px; margin-top: 10px; }
+.eqs p { margin: 4px 0; max-width: 70ch; }
+.eq { font-family: var(--f-mono); font-size: 0.84rem; background: var(--paper); border-radius: 4px; padding: 6px 8px; overflow-x: auto; white-space: nowrap; margin-bottom: 4px; }
+.refs p { padding-left: 2em; text-indent: -2em; margin: 6px 0; max-width: 90ch; }
+
+@media (max-width: 1000px) { .plots { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) {
+  .top, .mid { grid-template-columns: 1fr; }
+  #mech { aspect-ratio: 1 / 1; }
+}
+@media (max-width: 560px) { .plots { grid-template-columns: 1fr; } }
+@media (max-width: 420px) {
+  .wrap { padding-inline: 16px; }
+  .poly-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<nav class="sitebar"><a href="../">← All labs</a></nav>
+<div class="wrap">
+  <header>
+    <h1>Quick Return Lab</h1>
+    <p>Crank and slotted lever, as used on a shaping machine. Change the geometry and crank motion, drag the crank, or scrub any curve. The block at A slides along a rotating lever, so its acceleration includes a Coriolis component.</p>
+  </header>
+
+  <div class="top">
+    <aside class="sheet controls" aria-label="Inputs">
+      <h2>Geometry</h2>
+      <div id="geom"></div>
+      <h2 class="group-label">Crank motion</h2>
+      <div id="motion"></div>
+      <h2 class="group-label">Crank angle</h2>
+      <div id="angle"></div>
+      <div class="row">
+        <button id="play" class="primary" type="button">Play</button>
+        <label class="check" for="speed" style="gap:6px">Speed
+          <select id="speed">
+            <option value="30">Slow</option>
+            <option value="90" selected>Normal</option>
+            <option value="240">Fast</option>
+          </select>
+        </label>
+      </div>
+      <h2 class="group-label">Show on mechanism</h2>
+      <label class="check" for="showV"><input type="checkbox" id="showV" checked> Velocity vectors <span class="swatch" style="background:var(--vel)"></span></label>
+      <label class="check" for="showA"><input type="checkbox" id="showA"> Acceleration vectors <span class="swatch" style="background:var(--acc)"></span></label>
+      <label class="check" for="showC"><input type="checkbox" id="showC" checked> Coriolis component at A <span class="swatch" style="background:var(--cor)"></span></label>
+      <h2 class="group-label">Presets</h2>
+      <div class="row" id="presets">
+        <button type="button" data-p="base">Shaper baseline</button>
+        <button type="button" data-p="high">Ratio 2 : 1</button>
+        <button type="button" data-p="low">Ratio 1.3 : 1</button>
+        <button type="button" data-p="link">Short link BC</button>
+        <button type="button" data-p="accel">Crank speeding up</button>
+      </div>
+    </aside>
+
+    <div class="right">
+      <section class="sheet">
+        <div class="mech-head">
+          <h2>Mechanism at θ₂ = <span id="thLabel">60.0°</span></h2>
+          <span id="phase" class="phase cut">Cutting stroke</span>
+        </div>
+        <canvas id="mech" aria-label="Quick return mechanism drawing"></canvas>
+        <div class="mech-head" style="margin:6px 0 0"><span class="note">Drag the crank to set θ₂. Solid crank-circle arc: cutting stroke. Dashed arc: return stroke. Arrow lengths are scaled for display.</span></div>
+        <div id="warn" class="warn" hidden></div>
+      </section>
+
+      <div class="mid">
+        <section class="sheet">
+          <h2>Results at this crank angle</h2>
+          <div class="tbl-wrap"><table id="readout"></table></div>
+        </section>
+        <section class="sheet">
+          <h2>Vector polygons</h2>
+          <div class="poly-grid">
+            <div><canvas id="vpoly" aria-label="Velocity polygon"></canvas><div class="poly-cap">Velocity: v<sub>A2</sub> = v<sub>A4</sub> + v<sub>slip</sub>, then B and the ram C</div></div>
+            <div><canvas id="apoly" aria-label="Acceleration polygon for point A"></canvas><div class="poly-cap">Acceleration at A: a<sub>A2</sub> = a<sup>n</sup><sub>A4</sub> + a<sup>t</sup><sub>A4</sub> + a<sub>cor</sub> + a<sub>slip</sub></div></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <section class="sheet">
+    <div class="plots-head">
+      <h2>One full revolution</h2>
+      <span class="note"><span class="key-band"></span>Shaded: cutting stroke. Click or drag on any chart to move the crank there.</span>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="plots">
+      <div class="plot"><canvas id="pX"></canvas></div>
+      <div class="plot"><canvas id="pV"></canvas></div>
+      <div class="plot"><canvas id="pA"></canvas></div>
+      <div class="plot"><canvas id="pW4"></canvas></div>
+      <div class="plot"><canvas id="pA4"></canvas></div>
+      <div class="plot"><canvas id="pC"></canvas></div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <details>
+      <summary>Equations and sign conventions</summary>
+      <div class="eqs">
+        <div>
+          <p>Lever pivot O₄ at the origin, crank pivot O₂ a distance d directly above it. The ram C slides on the line y = h. Angles are measured counter-clockwise from +x; positive ω and α are counter-clockwise; positive ram velocity is to the right. s is the distance O₄A along the lever.</p>
+          <p>Position (loop O₄ → O₂ → A)</p>
+          <div class="eq">r·e<sup>iθ₂</sup> + i·d = s·e<sup>iθ₄</sup></div>
+          <div class="eq">s = √[(r cos θ₂)² + (d + r sin θ₂)²],&nbsp; θ₄ = atan2(d + r sin θ₂, r cos θ₂)</div>
+          <p>Velocity, with δ = θ₂ − θ₄</p>
+          <div class="eq">ṡ = −r ω₂ sin δ,&nbsp; ω₄ = r ω₂ cos δ / s</div>
+          <p>Acceleration</p>
+          <div class="eq">s̈ = s ω₄² − r (ω₂² cos δ + α₂ sin δ)</div>
+          <div class="eq">α₄ = [r (α₂ cos δ − ω₂² sin δ) − 2 ṡ ω₄] / s</div>
+          <div class="eq">Coriolis: a<sub>cor</sub> = 2 ṡ ω₄, perpendicular to the lever</div>
+        </div>
+        <div>
+          <p>Ram (loop O₄ → B → C), lever length L, link length l₅</p>
+          <div class="eq">sin θ₅ = (h − L sin θ₄) / l₅,&nbsp; x<sub>C</sub> = L cos θ₄ + l₅ cos θ₅</div>
+          <div class="eq">ω₅ = −L ω₄ cos θ₄ / (l₅ cos θ₅)</div>
+          <div class="eq">v<sub>C</sub> = −L ω₄ sin θ₄ − l₅ ω₅ sin θ₅</div>
+          <div class="eq">α₅ = (L ω₄² sin θ₄ − L α₄ cos θ₄ + l₅ ω₅² sin θ₅) / (l₅ cos θ₅)</div>
+          <div class="eq">a<sub>C</sub> = −L α₄ sin θ₄ − L ω₄² cos θ₄ − l₅ α₅ sin θ₅ − l₅ ω₅² cos θ₅</div>
+          <p>Quick return. The lever is at its extremes when the crank is perpendicular to it, at an angle ψ from O₂O₄ with cos ψ = r/d.</p>
+          <div class="eq">Time ratio = (360° − 2ψ) / 2ψ,&nbsp; ram stroke ≈ 2 L r / d</div>
+          <p>The Coriolis direction is found by rotating the slip velocity ṡ through 90° in the sense of ω₄.</p>
+        </div>
+      </div>
+      <div class="refs">
+        <p style="margin-top:14px"><strong>References</strong></p>
+        <p>Norton, R. L. (2020). <em>Design of machinery: An introduction to the synthesis and analysis of mechanisms and machines</em> (6th ed.). McGraw-Hill Education.</p>
+        <p>Uicker, J. J., Pennock, G. R., &amp; Shigley, J. E. (2017). <em>Theory of machines and mechanisms</em> (5th ed.). Oxford University Press.</p>
+      </div>
+    </details>
+  </section>
+</div>
+
+<script>
+(function () {
+  const D2R = Math.PI / 180;
+  const P = { r: 100, d: 300, L: 600, l5: 200, h: 585, w: 10, al: 0, th: 60 };
+  const PRESETS = {
+    base:  { r: 100, d: 300, L: 600, l5: 200, h: 585, w: 10, al: 0 },
+    high:  { r: 150, d: 300, L: 600, l5: 200, h: 560, w: 10, al: 0 },
+    low:   { r: 70,  d: 350, L: 600, l5: 200, h: 594, w: 10, al: 0 },
+    link:  { r: 100, d: 300, L: 600, l5: 60,  h: 585, w: 10, al: 0 },
+    accel: { r: 100, d: 300, L: 600, l5: 200, h: 585, w: 10, al: 20 }
+  };
+  const recH = () => P.L * (1 + Math.sqrt(Math.max(0, 1 - (P.r / P.d) ** 2))) / 2;
+  const SPECS = {
+    geom: [
+      { k: 'r', label: 'Crank length', sym: 'O₂A = r', unit: 'mm', min: 20, max: 300, step: 1 },
+      { k: 'd', label: 'Pivot distance', sym: 'O₂O₄ = d', unit: 'mm', min: 50, max: 600, step: 1, hint: () => 'r/d = ' + (P.r / P.d).toFixed(3) },
+      { k: 'L', label: 'Lever length', sym: 'O₄B = L', unit: 'mm', min: 100, max: 1000, step: 1 },
+      { k: 'l5', label: 'Link length', sym: 'BC = l₅', unit: 'mm', min: 20, max: 500, step: 1 },
+      { k: 'h', label: 'Ram line height above O₄', sym: 'h', unit: 'mm', min: 50, max: 1100, step: 1, hint: () => 'Least link tilt at h ≈ ' + recH().toFixed(0) + ' mm', btn: true }
+    ],
+    motion: [
+      { k: 'w', label: 'Crank angular velocity', sym: 'ω₂', unit: 'rad/s', min: -50, max: 50, step: 0.5, hint: () => '≈ ' + Math.abs(P.w * 60 / (2 * Math.PI)).toFixed(1) + ' rpm, ' + (P.w >= 0 ? 'counter-clockwise' : 'clockwise') },
+      { k: 'al', label: 'Crank angular acceleration', sym: 'α₂', unit: 'rad/s²', min: -200, max: 200, step: 1 }
+    ],
+    angle: [{ k: 'th', label: 'Crank angle', sym: 'θ₂', unit: '°', min: 0, max: 360, step: 0.5 }]
+  };
+
+  const ctrls = {};
+  function buildControls(containerId, list) {
+    const box = document.getElementById(containerId);
+    box.className = 'controls';
+    list.forEach(s => {
+      const d = document.createElement('div');
+      d.className = 'ctl';
+      d.innerHTML =
+        '<div class="ctl-head"><label for="n_' + s.k + '">' + s.label + '<span class="sym">' + s.sym + '</span></label>' +
+        '<span class="num"><input type="number" id="n_' + s.k + '" min="' + s.min + '" max="' + s.max + '" step="' + s.step + '">' + s.unit + '</span></div>' +
+        '<input type="range" id="r_' + s.k + '" aria-label="' + s.label + '" min="' + s.min + '" max="' + s.max + '" step="' + s.step + '">' +
+        (s.hint ? '<div class="hint"><span id="h_' + s.k + '"></span>' + (s.btn ? ' <button type="button" class="link" id="b_' + s.k + '">Use</button>' : '') + '</div>' : '');
+      box.appendChild(d);
+      const num = d.querySelector('#n_' + s.k), rng = d.querySelector('#r_' + s.k);
+      ctrls[s.k] = { num, rng, spec: s };
+      const set = v => {
+        v = parseFloat(v);
+        if (!isFinite(v)) return;
+        if (s.k === 'th') { P.th = ((v % 360) + 360) % 360; stopPlay(); syncControls(); refreshInstant(); return; }
+        P[s.k] = v; syncControls(); refreshAll();
+      };
+      rng.addEventListener('input', () => set(rng.value));
+      num.addEventListener('change', () => set(num.value));
+    });
+  }
+  function syncControls() {
+    for (const k in ctrls) {
+      const c = ctrls[k];
+      const v = k === 'th' ? Math.round(P.th * 2) / 2 : P[k];
+      if (document.activeElement !== c.num) c.num.value = v;
+      c.rng.value = v;
+      if (c.spec.hint) document.getElementById('h_' + k).textContent = c.spec.hint();
+    }
+  }
+
+  // ---------- kinematics ----------
+  function solve(thDeg) {
+    const r = P.r / 1000, d = P.d / 1000, L = P.L / 1000, l5 = P.l5 / 1000, h = P.h / 1000, w = P.w, a2 = P.al;
+    const t = thDeg * D2R, Ax = r * Math.cos(t), Ay = d + r * Math.sin(t);
+    const s = Math.hypot(Ax, Ay), th4 = Math.atan2(Ay, Ax), dl = t - th4;
+    const sd = -r * w * Math.sin(dl), w4 = r * w * Math.cos(dl) / s;
+    const cor = 2 * sd * w4;
+    const sdd = s * w4 * w4 - r * (w * w * Math.cos(dl) + a2 * Math.sin(dl));
+    const a4 = (r * (a2 * Math.cos(dl) - w * w * Math.sin(dl)) - cor) / s;
+    const c4 = Math.cos(th4), s4 = Math.sin(th4);
+    const Bx = L * c4, By = L * s4;
+    const s5 = (h - By) / l5;
+    if (Math.abs(s5) >= 1) return null;
+    const c5 = Math.sqrt(1 - s5 * s5);
+    const xC = Bx + l5 * c5;
+    const w5 = -L * w4 * c4 / (l5 * c5);
+    const vC = -L * w4 * s4 - l5 * w5 * s5;
+    const a5 = (L * w4 * w4 * s4 - L * a4 * c4 + l5 * w5 * w5 * s5) / (l5 * c5);
+    const aC = -L * a4 * s4 - L * w4 * w4 * c4 - l5 * a5 * s5 - l5 * w5 * w5 * c5;
+    return { t, r, d, L, l5, h, w, a2, Ax, Ay, s, th4, c4, s4, sd, w4, cor, sdd, a4, Bx, By, s5, c5, th5: Math.asin(s5), xC, w5, vC, a5, aC };
+  }
+  const psiDeg = () => Math.acos(Math.min(1, P.r / P.d)) / D2R;
+  function isCutting(thDeg) {
+    // angle of crank measured from the downward direction O2 -> O4
+    let a = ((thDeg + 90) % 360 + 360) % 360; if (a > 180) a -= 360;
+    return Math.abs(a) > psiDeg();
+  }
+  let validMsg = null;
+  function checkValid() {
+    if (P.r >= P.d - 1) return 'The crank (r = ' + P.r + ' mm) must be shorter than the pivot distance (d = ' + P.d + ' mm). Otherwise the lever turns fully and this becomes a Whitworth mechanism.';
+    if (P.d + P.r > P.L) return 'The sliding block would run off the end of the lever. Make the lever length L at least d + r = ' + (P.d + P.r) + ' mm.';
+    for (let i = 0; i < 720; i++) if (!solve(i * 0.5)) {
+      const beta = Math.asin(P.r / P.d), yLo = P.L * Math.cos(beta), yHi = P.L;
+      return 'Link BC (' + P.l5 + ' mm) cannot reach the ram line at every crank angle. The lever tip moves between ' + yLo.toFixed(0) + ' and ' + yHi.toFixed(0) + ' mm above O₄, so keep h between ' + (yHi - P.l5 + 1).toFixed(0) + ' and ' + (yLo + P.l5 - 1).toFixed(0) + ' mm, or lengthen the link.';
+    }
+    return null;
+  }
+
+  let curve = null, stats = null;
+  function computeCurves() {
+    validMsg = checkValid();
+    if (validMsg) { curve = null; stats = null; return; }
+    const N = 721, c = { th: [], x: [], v: [], a: [], w4: [], a4: [], cor: [], cut: [] };
+    for (let i = 0; i < N; i++) {
+      const d = i * 0.5, S = solve(d);
+      c.th.push(d); c.x.push(S.xC * 1000); c.v.push(S.vC); c.a.push(S.aC); c.w4.push(S.w4); c.a4.push(S.a4); c.cor.push(S.cor); c.cut.push(isCutting(d));
+    }
+    curve = c;
+    let xmax = -1e9, xmin = 1e9, vCut = 0, vRet = 0, corMax = 0, aMax = 0;
+    for (let i = 0; i < 3600; i++) {
+      const d = i * 0.1, S = solve(d);
+      xmax = Math.max(xmax, S.xC); xmin = Math.min(xmin, S.xC);
+      if (isCutting(d)) vCut = Math.max(vCut, Math.abs(S.vC)); else vRet = Math.max(vRet, Math.abs(S.vC));
+      corMax = Math.max(corMax, Math.abs(S.cor)); aMax = Math.max(aMax, Math.abs(S.aC));
+    }
+    const psi = psiDeg(), cutDeg = 360 - 2 * psi, retDeg = 2 * psi;
+    const stroke = xmax - xmin, wa = Math.abs(P.w);
+    stats = {
+      stroke: stroke * 1000, cutDeg, retDeg, ratio: cutDeg / retDeg,
+      vCutMean: wa > 0 ? stroke / (cutDeg * D2R / wa) : 0,
+      vRetMean: wa > 0 ? stroke / (retDeg * D2R / wa) : 0,
+      vCut, vRet, corMax, aMax
+    };
+  }
+
+  // ---------- canvas helpers ----------
+  let C = {};
+  function readColors() {
+    const cs = getComputedStyle(document.documentElement);
+    ['paper', 'sheet', 'ink', 'muted', 'rule', 'grid', 'band', 'crank', 'lever', 'rod', 'vel', 'acc', 'cor'].forEach(n => C[n] = cs.getPropertyValue('--' + n).trim());
+  }
+  function prep(cv) {
+    const dpr = window.devicePixelRatio || 1;
+    const W = cv.clientWidth, H = cv.clientHeight;
+    if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    return { ctx, W, H };
+  }
+  const MONO = '"IBM Plex Mono", ui-monospace, Menlo, monospace';
+  const SANS = '"IBM Plex Sans", "Segoe UI", Arial, sans-serif';
+  function arrow(ctx, x1, y1, x2, y2, color, width, head) {
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy);
+    if (L < 0.5) return;
+    head = Math.min(head || 9, L * 0.45);
+    const ux = dx / L, uy = dy / L;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width || 2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux * head * 0.8, y2 - uy * head * 0.8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - ux * head - uy * head * 0.45, y2 - uy * head + ux * head * 0.45);
+    ctx.lineTo(x2 - ux * head + uy * head * 0.45, y2 - uy * head - ux * head * 0.45);
+    ctx.closePath(); ctx.fill();
+  }
+  function label(ctx, txt, x, y, color, font, align, base) {
+    ctx.fillStyle = color; ctx.font = font || ('12px ' + MONO);
+    ctx.textAlign = align || 'left'; ctx.textBaseline = base || 'middle';
+    ctx.fillText(txt, x, y);
+  }
+  function ground(ctx, x, y) {
+    ctx.fillStyle = C.muted; ctx.globalAlpha = 0.25;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 10, y + 15); ctx.lineTo(x + 10, y + 15); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1; ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x - 14, y + 15); ctx.lineTo(x + 14, y + 15); ctx.stroke();
+    for (let i = -12; i <= 10; i += 5) { ctx.beginPath(); ctx.moveTo(x + i, y + 15); ctx.lineTo(x + i - 4, y + 20); ctx.stroke(); }
+  }
+  function pin(ctx, x, y) {
+    ctx.fillStyle = C.sheet; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(x, y, 4.5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+  }
+
+  // ---------- mechanism ----------
+  const mech = document.getElementById('mech');
+  let map = null;
+  function drawMech() {
+    const { ctx, W, H } = prep(mech);
+    map = null;
+    if (validMsg) return;
+    const S = solve(P.th);
+    const r = S.r, d = S.d, L = S.L, l5 = S.l5, h = S.h;
+    const sb = r / d, half = L * sb;
+    const xMinW = -half - 0.22 * L, xMaxW = half + l5 + 0.42 * L;
+    const yMinW = -0.12 * L, yMaxW = Math.max(h, L, d + r) + 0.14 * L;
+    const k = Math.min(W / (xMaxW - xMinW), H / (yMaxW - yMinW));
+    const ox = (W - (xMaxW - xMinW) * k) / 2 - xMinW * k;
+    const oy = (H + (yMaxW - yMinW) * k) / 2 + yMinW * k;
+    const X = x => ox + x * k, Y = y => oy - y * k;
+    map = { X, Y, k, o2x: X(0), o2y: Y(d) };
+
+    // extreme lever positions
+    const beta = Math.asin(sb);
+    ctx.setLineDash([5, 5]); ctx.strokeStyle = C.rule; ctx.lineWidth = 1.2;
+    [-1, 1].forEach(sg => {
+      const a = Math.PI / 2 + sg * beta;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(L * Math.cos(a)), Y(L * Math.sin(a))); ctx.stroke();
+    });
+    // arc of B
+    ctx.beginPath(); ctx.arc(X(0), Y(0), L * k, -(Math.PI / 2 + beta), -(Math.PI / 2 - beta)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // crank circle: cutting arc solid, return arc dashed
+    const psi = Math.acos(sb);
+    const down = -Math.PI / 2;
+    ctx.lineWidth = 2.2; ctx.strokeStyle = C.vel;
+    ctx.beginPath(); ctx.arc(X(0), Y(d), r * k, -(down + psi), -(down - psi + 2 * Math.PI), true); ctx.stroke();
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = C.rod; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(X(0), Y(d), r * k, -(down - psi), -(down + psi), true); ctx.stroke(); ctx.setLineDash([]);
+    label(ctx, 'cutting ' + (360 - 2 * psi / D2R).toFixed(1) + '°', X(0), Y(d + r) - 12, C.vel, '11px ' + MONO, 'center');
+    label(ctx, 'return ' + (2 * psi / D2R).toFixed(1) + '°', X(0) + r * k * 0.15, Y(d - r) + 12, C.rod, '11px ' + MONO, 'left');
+
+    // ram guides and ram
+    const rh = Math.max(12, Math.min(20, 0.035 * L * k));
+    const xs = []; for (let i = 0; i < 360; i += 2) xs.push(solve(i).xC);
+    const cMin = Math.min(...xs), cMax = Math.max(...xs);
+    const ramLen = 0.38 * L, ramBack = 0.04 * L;
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2;
+    [-1, 1].forEach(sg => {
+      const yy = Y(h) + sg * (rh / 2 + 2);
+      const x1 = X(cMin - ramBack) - 6, x2 = X(cMax + ramLen) + 6;
+      ctx.beginPath(); ctx.moveTo(x1, yy); ctx.lineTo(x2, yy); ctx.stroke();
+      ctx.lineWidth = 0.8;
+      for (let xx = x1; xx < x2; xx += 8) { ctx.beginPath(); ctx.moveTo(xx, yy); ctx.lineTo(xx + 5, yy + sg * 5); ctx.stroke(); }
+      ctx.lineWidth = 1.2;
+    });
+    // stroke ends
+    [cMin, cMax].forEach(xe => {
+      ctx.strokeStyle = C.muted; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(X(xe), Y(h) - rh * 1.4); ctx.lineTo(X(xe), Y(h) + rh * 1.4); ctx.stroke(); ctx.setLineDash([]);
+    });
+    ctx.fillStyle = C.sheet; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.rect(X(S.xC - ramBack), Y(h) - rh / 2, (ramLen + ramBack) * k, rh); ctx.fill(); ctx.stroke();
+    // tool
+    const tx = X(S.xC + ramLen) - 6;
+    ctx.fillStyle = C.ink;
+    ctx.beginPath(); ctx.moveTo(tx - 6, Y(h) + rh / 2); ctx.lineTo(tx + 4, Y(h) + rh / 2); ctx.lineTo(tx + 4, Y(h) + rh / 2 + 16); ctx.closePath(); ctx.fill();
+    label(ctx, 'ram', X(S.xC + ramLen / 2), Y(h), C.muted, '11px ' + SANS, 'center');
+
+    // lever (slotted)
+    const Bx = S.Bx, By = S.By;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = C.lever; ctx.lineWidth = 12;
+    ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(Bx), Y(By)); ctx.stroke();
+    ctx.strokeStyle = C.sheet; ctx.lineWidth = 4;
+    const s0 = (d - r) * 0.85, s1 = Math.min(L * 0.94, (d + r) * 1.06);
+    ctx.beginPath(); ctx.moveTo(X(s0 * S.c4), Y(s0 * S.s4)); ctx.lineTo(X(s1 * S.c4), Y(s1 * S.s4)); ctx.stroke();
+
+    // link BC
+    ctx.strokeStyle = C.rod; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.moveTo(X(Bx), Y(By)); ctx.lineTo(X(S.xC), Y(h)); ctx.stroke();
+
+    // crank
+    ctx.strokeStyle = C.crank; ctx.lineWidth = 8;
+    ctx.beginPath(); ctx.moveTo(X(0), Y(d)); ctx.lineTo(X(S.Ax), Y(S.Ay)); ctx.stroke();
+
+    // slider block at A, aligned with lever
+    ctx.save(); ctx.translate(X(S.Ax), Y(S.Ay)); ctx.rotate(-S.th4);
+    const bl = 26, bw = 15;
+    ctx.fillStyle = C.sheet; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.rect(-bl / 2, -bw / 2, bl, bw); ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    ground(ctx, X(0), Y(0)); ground(ctx, X(0), Y(d));
+    pin(ctx, X(0), Y(0)); pin(ctx, X(0), Y(d)); pin(ctx, X(S.Ax), Y(S.Ay)); pin(ctx, X(Bx), Y(By)); pin(ctx, X(S.xC), Y(h));
+
+    // theta2 arc
+    const ar = Math.max(14, r * k * 0.32);
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(X(0), Y(d)); ctx.lineTo(X(0) + ar * 1.5, Y(d)); ctx.stroke();
+    ctx.beginPath(); ctx.arc(X(0), Y(d), ar, 0, -S.t, true); ctx.stroke();
+    label(ctx, 'θ₂', X(0) + (ar + 10) * Math.cos(-S.t / 2), Y(d) + (ar + 10) * Math.sin(-S.t / 2), C.muted, 'italic 12px ' + SANS, 'center');
+
+    // vectors
+    const showV = document.getElementById('showV').checked, showA = document.getElementById('showA').checked, showC = document.getElementById('showC').checked;
+    const vA2 = [-S.w * r * Math.sin(S.t), S.w * r * Math.cos(S.t)];
+    const vB = [-S.w4 * By, S.w4 * Bx];
+    if (showV && Math.abs(S.w) > 1e-9) {
+      const vm = Math.max(Math.hypot(...vA2), Math.hypot(...vB), Math.abs(S.vC), 1e-9);
+      const sv = 0.32 * L / vm;
+      arrow(ctx, X(S.Ax), Y(S.Ay), X(S.Ax + vA2[0] * sv), Y(S.Ay + vA2[1] * sv), C.vel, 2.4);
+      label(ctx, 'v_A', X(S.Ax + vA2[0] * sv) + 6, Y(S.Ay + vA2[1] * sv) - 9, C.vel);
+      arrow(ctx, X(Bx), Y(By), X(Bx + vB[0] * sv), Y(By + vB[1] * sv), C.vel, 2.4);
+      label(ctx, 'v_B', X(Bx + vB[0] * sv), Y(By + vB[1] * sv) - 11, C.vel, null, 'center');
+      arrow(ctx, X(S.xC), Y(h) - rh * 1.2, X(S.xC + S.vC * sv), Y(h) - rh * 1.2, C.vel, 2.4);
+      label(ctx, 'v_C', X(S.xC + S.vC * sv) + (S.vC < 0 ? -6 : 6), Y(h) - rh * 1.2 - 11, C.vel, null, S.vC < 0 ? 'right' : 'left');
+    }
+    const e4 = [S.c4, S.s4], n4 = [-S.s4, S.c4];
+    const aA2 = [-S.a2 * r * Math.sin(S.t) - S.w * S.w * r * Math.cos(S.t), S.a2 * r * Math.cos(S.t) - S.w * S.w * r * Math.sin(S.t)];
+    const aBv = [-S.a4 * By - S.w4 * S.w4 * Bx, S.a4 * Bx - S.w4 * S.w4 * By];
+    const aScale = 0.3 * L / Math.max(Math.hypot(...aA2), Math.hypot(...aBv), Math.abs(S.aC), Math.abs(S.cor), 1e-9);
+    if (showA && Math.hypot(...aA2) > 1e-9) {
+      arrow(ctx, X(S.Ax), Y(S.Ay), X(S.Ax + aA2[0] * aScale), Y(S.Ay + aA2[1] * aScale), C.acc, 2.4);
+      label(ctx, 'a_A', X(S.Ax + aA2[0] * aScale) - 6, Y(S.Ay + aA2[1] * aScale) + 10, C.acc, null, 'right');
+      arrow(ctx, X(Bx), Y(By), X(Bx + aBv[0] * aScale), Y(By + aBv[1] * aScale), C.acc, 2.4);
+      label(ctx, 'a_B', X(Bx + aBv[0] * aScale), Y(By + aBv[1] * aScale) + 12, C.acc, null, 'center');
+      arrow(ctx, X(S.xC), Y(h) + rh * 1.2, X(S.xC + S.aC * aScale), Y(h) + rh * 1.2, C.acc, 2.4);
+      label(ctx, 'a_C', X(S.xC + S.aC * aScale) + (S.aC < 0 ? -6 : 6), Y(h) + rh * 1.2 + 11, C.acc, null, S.aC < 0 ? 'right' : 'left');
+    }
+    if (showC && Math.abs(S.cor) > 1e-9) {
+      const cs = (showA ? aScale : 0.22 * L / Math.abs(S.cor));
+      arrow(ctx, X(S.Ax), Y(S.Ay), X(S.Ax + n4[0] * S.cor * cs), Y(S.Ay + n4[1] * S.cor * cs), C.cor, 2.4);
+      label(ctx, 'a_cor', X(S.Ax + n4[0] * S.cor * cs) + 6, Y(S.Ay + n4[1] * S.cor * cs) + 10, C.cor);
+    }
+
+    const lf = '600 13px ' + SANS;
+    label(ctx, 'O₄', X(0) - 16, Y(0) + 4, C.ink, lf, 'right');
+    label(ctx, 'O₂', X(0) - 14, Y(d) - 8, C.ink, lf, 'right');
+    label(ctx, 'A', X(S.Ax) + 14 * Math.sign(S.Ax || 1), Y(S.Ay) + 12, C.ink, lf, 'center');
+    label(ctx, 'B', X(Bx) - 12, Y(By) - 10, C.ink, lf, 'center');
+    label(ctx, 'C', X(S.xC) - 4, Y(h) - rh / 2 - 10, C.ink, lf, 'center');
+  }
+  let dragging = false;
+  function crankFromPointer(ev) {
+    if (!map) return;
+    const rect = mech.getBoundingClientRect();
+    const ang = Math.atan2(-(ev.clientY - rect.top - map.o2y), ev.clientX - rect.left - map.o2x) / D2R;
+    P.th = Math.round(((ang % 360) + 360) % 360 * 2) / 2 % 360;
+    stopPlay(); syncControls(); refreshInstant();
+  }
+  mech.addEventListener('pointerdown', ev => { dragging = true; mech.setPointerCapture(ev.pointerId); mech.style.cursor = 'grabbing'; crankFromPointer(ev); });
+  mech.addEventListener('pointermove', ev => { if (dragging) crankFromPointer(ev); });
+  ['pointerup', 'pointercancel'].forEach(t => mech.addEventListener(t, () => { dragging = false; mech.style.cursor = 'grab'; }));
+
+  // ---------- polygons ----------
+  function drawPoly(cv, segs, pts, labels) {
+    const { ctx, W, H } = prep(cv);
+    ctx.fillStyle = C.paper; ctx.fillRect(0, 0, W, H);
+    if (!segs) return;
+    let xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+    pts.forEach(p => { xmin = Math.min(xmin, p[0]); xmax = Math.max(xmax, p[0]); ymin = Math.min(ymin, p[1]); ymax = Math.max(ymax, p[1]); });
+    const span = Math.max(xmax - xmin, ymax - ymin, 1e-9);
+    const m = 30, k = (Math.min(W, H) - 2 * m) / span;
+    const cx = W / 2 - (xmin + xmax) / 2 * k, cy = H / 2 + (ymin + ymax) / 2 * k;
+    const X = x => cx + x * k, Y = y => cy - y * k;
+    ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(4, Y(0)); ctx.lineTo(W - 4, Y(0)); ctx.stroke();
+    segs.forEach(s => arrow(ctx, X(s.p[0]), Y(s.p[1]), X(s.q[0]), Y(s.q[1]), s.c, s.w || 2, 8));
+    ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(X(0), Y(0), 3, 0, 2 * Math.PI); ctx.fill();
+    labels.forEach(Lb => {
+      const x = Math.min(W - 6, Math.max(6, X(Lb.p[0]) + (Lb.dx || 0))), y = Math.min(H - 8, Math.max(8, Y(Lb.p[1]) + (Lb.dy || 0)));
+      label(ctx, Lb.t, x, y, Lb.c, '11px ' + MONO, x > W - 44 ? 'right' : (x < 44 ? 'left' : 'center'));
+    });
+  }
+  const add = (a, b) => [a[0] + b[0], a[1] + b[1]], mul = (a, k) => [a[0] * k, a[1] * k], mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  function drawPolys() {
+    const vp = document.getElementById('vpoly'), ap = document.getElementById('apoly');
+    if (validMsg) { drawPoly(vp); drawPoly(ap); return; }
+    const S = solve(P.th);
+    const e4 = [S.c4, S.s4], n4 = [-S.s4, S.c4];
+    const vA2 = [-S.w * S.r * Math.sin(S.t), S.w * S.r * Math.cos(S.t)];
+    const vA4 = mul(n4, S.w4 * S.s);
+    const vB = mul(n4, S.w4 * S.L);
+    const vC = [S.vC, 0];
+    drawPoly(vp,
+      [{ p: [0, 0], q: vB, c: C.lever, w: 1.6 }, { p: [0, 0], q: vA4, c: C.lever },
+       { p: vA4, q: vA2, c: C.muted }, { p: [0, 0], q: vA2, c: C.crank },
+       { p: vB, q: vC, c: C.rod }, { p: [0, 0], q: vC, c: C.vel, w: 2.6 }],
+      [[0, 0], vA2, vA4, vB, vC],
+      [{ t: 'o', p: [0, 0], c: C.ink, dx: -8, dy: 10 }, { t: 'a₂', p: vA2, c: C.crank, dx: 10, dy: -8 }, { t: 'a₄', p: vA4, c: C.lever, dx: -12, dy: -6 },
+       { t: 'b', p: vB, c: C.lever, dy: -10 }, { t: 'c', p: vC, c: C.vel, dy: 12 },
+       { t: 'slip', p: mid(vA4, vA2), c: C.muted, dx: 18 }, { t: 'v_C', p: mid([0, 0], vC), c: C.vel, dy: 12 }]);
+    const an = mul(e4, -S.s * S.w4 * S.w4), at = mul(n4, S.s * S.a4), ac = mul(n4, S.cor), as = mul(e4, S.sdd);
+    const p1 = an, p2 = add(p1, at), p3 = add(p2, ac), p4 = add(p3, as);
+    drawPoly(ap,
+      [{ p: [0, 0], q: p1, c: C.lever }, { p: p1, q: p2, c: C.muted }, { p: p2, q: p3, c: C.cor, w: 2.6 },
+       { p: p3, q: p4, c: C.rod }, { p: [0, 0], q: p4, c: C.crank, w: 2.4 }],
+      [[0, 0], p1, p2, p3, p4],
+      [{ t: "o'", p: [0, 0], c: C.ink, dx: -8, dy: 10 }, { t: 'aⁿ', p: mid([0, 0], p1), c: C.lever, dx: -14 },
+       { t: 'aᵗ', p: mid(p1, p2), c: C.muted, dx: 14 }, { t: 'a_cor', p: mid(p2, p3), c: C.cor, dx: 24 },
+       { t: 'a_slip', p: mid(p3, p4), c: C.rod, dx: 26 }, { t: 'a_A2', p: mid([0, 0], p4), c: C.crank, dy: 12 }]);
+  }
+
+  // ---------- readout ----------
+  const fmt = (v, d) => (Math.abs(v) < 1e-9 ? 0 : v).toFixed(d);
+  const rot = v => Math.abs(v) < 1e-9 ? '' : (v > 0 ? ' CCW' : ' CW');
+  function drawReadout() {
+    const t = document.getElementById('readout'), ph = document.getElementById('phase');
+    if (validMsg) { t.innerHTML = ''; ph.hidden = true; return; }
+    const S = solve(P.th), cut = isCutting(P.th);
+    ph.hidden = false; ph.className = 'phase ' + (cut ? 'cut' : 'ret'); ph.textContent = cut ? 'Cutting stroke (slow)' : 'Return stroke (fast)';
+    const rows = [
+      ['h', 'Position'],
+      ['θ₄', 'Lever tilt from vertical', fmt(90 - S.th4 / D2R, 2), '°'],
+      ['s', 'Block position along lever, O₄A', fmt(S.s * 1000, 1), 'mm'],
+      ['x_C', 'Ram pin position from O₄', fmt(S.xC * 1000, 1), 'mm'],
+      ['h', 'Velocity'],
+      ['v_A2', 'Crank pin speed, r·|ω₂|', fmt(S.r * Math.abs(S.w), 3), 'm/s'],
+      ['ω₄', 'Lever angular velocity' + rot(S.w4), fmt(S.w4, 3), 'rad/s'],
+      ['ṡ', 'Slip of block along lever', fmt(S.sd, 3), 'm/s'],
+      ['v_B', 'Lever tip speed, L·|ω₄|', fmt(S.L * Math.abs(S.w4), 3), 'm/s'],
+      ['ω₅', 'Link BC angular velocity' + rot(S.w5), fmt(S.w5, 3), 'rad/s'],
+      ['v_C', 'Ram velocity', fmt(S.vC, 3), 'm/s', 'key'],
+      ['h', 'Acceleration'],
+      ['a_A2', 'Crank pin, r·√(ω₂⁴+α₂²)', fmt(S.r * Math.hypot(S.w * S.w, S.a2), 3), 'm/s²'],
+      ['aⁿ_A4', 'Lever point at A, centripetal s·ω₄²', fmt(S.s * S.w4 * S.w4, 3), 'm/s²'],
+      ['α₄', 'Lever angular acceleration' + rot(S.a4), fmt(S.a4, 3), 'rad/s²'],
+      ['a_cor', 'Coriolis, 2·ṡ·ω₄', fmt(S.cor, 3), 'm/s²', 'cor'],
+      ['s̈', 'Slip acceleration along lever', fmt(S.sdd, 3), 'm/s²'],
+      ['α₅', 'Link BC angular acceleration' + rot(S.a5), fmt(S.a5, 3), 'rad/s²'],
+      ['a_C', 'Ram acceleration', fmt(S.aC, 3), 'm/s²', 'key']
+    ];
+    t.innerHTML = rows.map(r => r[0] === 'h'
+      ? '<tr><th colspan="4">' + r[1] + '</th></tr>'
+      : '<tr' + (r[4] ? ' class="' + r[4] + '"' : '') + '><td class="sym">' + r[0] + '</td><td class="desc">' + r[1] + '</td><td class="val">' + r[2] + '</td><td class="unit">' + r[3] + '</td></tr>').join('');
+  }
+  function drawStats() {
+    const el = document.getElementById('stats');
+    if (!stats) { el.innerHTML = ''; return; }
+    const items = [
+      ['Ram stroke', stats.stroke.toFixed(1) + ' mm'],
+      ['Crank angle, cutting / return', stats.cutDeg.toFixed(1) + '° / ' + stats.retDeg.toFixed(1) + '°'],
+      ['Time ratio, cutting : return', stats.ratio.toFixed(3) + ' : 1'],
+      ['Mean ram speed, cutting / return', stats.vCutMean.toFixed(3) + ' / ' + stats.vRetMean.toFixed(3) + ' m/s'],
+      ['Peak ram speed, cutting / return', stats.vCut.toFixed(3) + ' / ' + stats.vRet.toFixed(3) + ' m/s'],
+      ['Peak Coriolis acceleration', stats.corMax.toFixed(3) + ' m/s²']
+    ];
+    el.innerHTML = items.map(i => '<div class="stat"><div class="k">' + i[0] + '</div><div class="v">' + i[1] + '</div></div>').join('');
+  }
+
+  // ---------- plots ----------
+  const PLOTS = [
+    { id: 'pX', key: 'x', title: 'Ram position x_C', unit: 'mm', col: 'ink', d: 1, cur: S => S.xC * 1000 },
+    { id: 'pV', key: 'v', title: 'Ram velocity v_C', unit: 'm/s', col: 'vel', d: 3, cur: S => S.vC },
+    { id: 'pA', key: 'a', title: 'Ram acceleration a_C', unit: 'm/s²', col: 'acc', d: 2, cur: S => S.aC },
+    { id: 'pW4', key: 'w4', title: 'Lever angular velocity ω₄', unit: 'rad/s', col: 'lever', d: 3, cur: S => S.w4 },
+    { id: 'pA4', key: 'a4', title: 'Lever angular acceleration α₄', unit: 'rad/s²', col: 'lever', d: 2, cur: S => S.a4 },
+    { id: 'pC', key: 'cor', title: 'Coriolis acceleration 2ṡω₄', unit: 'm/s²', col: 'cor', d: 3, cur: S => S.cor }
+  ];
+  function niceStep(range) {
+    const raw = range / 4, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag;
+    return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag;
+  }
+  function drawPlot(pl) {
+    const cv = document.getElementById(pl.id);
+    const { ctx, W, H } = prep(cv);
+    const Lm = 54, Rm = 12, Tm = 30, Bm = 26;
+    label(ctx, pl.title, 0, 10, C.ink, '600 12.5px ' + SANS, 'left');
+    cv._map = null;
+    if (!curve) return;
+    const ys = curve[pl.key];
+    let lo = Math.min(...ys), hi = Math.max(...ys);
+    if (hi - lo < 1e-9) { hi += 1; lo -= 1; }
+    const step = niceStep(hi - lo);
+    lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+    const pw = W - Lm - Rm, ph = H - Tm - Bm;
+    const X = d => Lm + d / 360 * pw, Y = v => Tm + (hi - v) / (hi - lo) * ph;
+    // cutting bands
+    ctx.fillStyle = C.band;
+    let start = null;
+    curve.cut.forEach((c, i) => {
+      if (c && start === null) start = curve.th[i];
+      if ((!c || i === curve.cut.length - 1) && start !== null) { ctx.fillRect(X(start), Tm, X(curve.th[i]) - X(start), ph); start = null; }
+    });
+    for (let v = lo; v <= hi + step * 0.01; v += step) {
+      const vv = Math.abs(v) < step * 1e-6 ? 0 : v;
+      ctx.strokeStyle = vv === 0 ? C.muted : C.grid; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(Lm, Y(vv)); ctx.lineTo(W - Rm, Y(vv)); ctx.stroke();
+      const dec = step < 1 ? Math.min(3, Math.ceil(-Math.log10(step))) : 0;
+      label(ctx, vv.toFixed(dec), Lm - 6, Y(vv), C.muted, '10.5px ' + MONO, 'right');
+    }
+    for (let d = 0; d <= 360; d += 90) {
+      ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(X(d), Tm); ctx.lineTo(X(d), Tm + ph); ctx.stroke();
+      label(ctx, d + '°', X(d), Tm + ph + 13, C.muted, '10.5px ' + MONO, 'center');
+    }
+    label(ctx, pl.unit, Lm - 6, Tm - 12, C.muted, '10.5px ' + MONO, 'right');
+    ctx.strokeStyle = C[pl.col]; ctx.lineWidth = 2;
+    ctx.beginPath(); ys.forEach((v, i) => i ? ctx.lineTo(X(curve.th[i]), Y(v)) : ctx.moveTo(X(curve.th[i]), Y(v))); ctx.stroke();
+    const S = solve(P.th), cur = pl.cur(S);
+    ctx.strokeStyle = C.muted; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(X(P.th), Tm); ctx.lineTo(X(P.th), Tm + ph); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = C.sheet; ctx.strokeStyle = C[pl.col]; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(X(P.th), Y(cur), 4, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+    label(ctx, fmt(cur, pl.d) + ' ' + pl.unit, W - Rm, 10, C[pl.col], '500 12px ' + MONO, 'right');
+    cv._map = { Lm, pw };
+  }
+  PLOTS.forEach(pl => {
+    const cv = document.getElementById(pl.id);
+    let down = false;
+    const setFrom = ev => {
+      if (!cv._map) return;
+      const rect = cv.getBoundingClientRect();
+      const d = (ev.clientX - rect.left - cv._map.Lm) / cv._map.pw * 360;
+      P.th = Math.round(Math.min(360, Math.max(0, d)) * 2) / 2 % 360;
+      stopPlay(); syncControls(); refreshInstant();
+    };
+    cv.addEventListener('pointerdown', ev => { down = true; cv.setPointerCapture(ev.pointerId); setFrom(ev); });
+    cv.addEventListener('pointermove', ev => { if (down) setFrom(ev); });
+    ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => down = false));
+  });
+
+  // ---------- refresh ----------
+  function refreshInstant() {
+    readColors();
+    document.getElementById('thLabel').textContent = P.th.toFixed(1) + '°';
+    drawMech(); drawPolys(); drawReadout(); PLOTS.forEach(drawPlot);
+  }
+  function refreshAll() {
+    computeCurves();
+    const w = document.getElementById('warn');
+    w.hidden = !validMsg; w.textContent = validMsg || '';
+    if (validMsg) stopPlay();
+    drawStats(); refreshInstant();
+  }
+
+  // ---------- animation ----------
+  let playing = false, last = 0, raf = 0;
+  const playBtn = document.getElementById('play');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function tick(ts) {
+    if (!playing) return;
+    const dt = last ? Math.min(0.1, (ts - last) / 1000) : 0; last = ts;
+    // angular speed of the animation follows the real speed profile when alpha2 = 0 (constant)
+    const sp = parseFloat(document.getElementById('speed').value) * (reduced ? 0.4 : 1);
+    P.th = ((P.th + (P.w >= 0 ? 1 : -1) * sp * dt) % 360 + 360) % 360;
+    syncControls(); refreshInstant();
+    raf = requestAnimationFrame(tick);
+  }
+  function startPlay() { if (validMsg) return; playing = true; last = 0; playBtn.textContent = 'Pause'; raf = requestAnimationFrame(tick); }
+  function stopPlay() { playing = false; cancelAnimationFrame(raf); playBtn.textContent = 'Play'; }
+  playBtn.addEventListener('click', () => playing ? stopPlay() : startPlay());
+
+  ['showV', 'showA', 'showC'].forEach(id => document.getElementById(id).addEventListener('change', refreshInstant));
+  document.getElementById('presets').addEventListener('click', ev => {
+    const b = ev.target.closest('button[data-p]'); if (!b) return;
+    Object.assign(P, PRESETS[b.dataset.p]);
+    if (b.dataset.p === 'accel') document.getElementById('showA').checked = true;
+    syncControls(); refreshAll();
+  });
+
+  buildControls('geom', SPECS.geom);
+  buildControls('motion', SPECS.motion);
+  buildControls('angle', SPECS.angle);
+  document.getElementById('b_h').addEventListener('click', () => { P.h = Math.round(recH()); syncControls(); refreshAll(); });
+  syncControls();
+
+  const ro = new ResizeObserver(() => refreshInstant());
+  ['mech', 'vpoly', 'apoly', 'pX'].forEach(id => ro.observe(document.getElementById(id)));
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', refreshInstant);
+  new MutationObserver(refreshInstant).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshInstant);
+
+  refreshAll();
+})();
+</script>
+</body>
+</html>
