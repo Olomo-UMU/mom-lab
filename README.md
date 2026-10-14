@@ -6,6 +6,7 @@ Interactive, browser-based models for teaching theory of machines and mechanical
 |---|---|---|
 | Slider-Crank Lab | [`slider-crank/`](slider-crank/) | Position, velocity and acceleration analysis by loop closure; velocity and acceleration polygons |
 | Quick Return Lab | [`quick-return/`](quick-return/) | Crank and slotted lever; time ratio; Coriolis acceleration |
+| Turning-Moment & Flywheel Lab | [`flywheel/`](flywheel/) | Gas and inertia forces; turning-moment diagrams; fluctuation of energy; flywheel design |
 | Spring–Mass–Damper Lab | [`vibration/`](vibration/) | Vertical SDOF system; free, forced and base-excited vibration |
 | Tacoma Narrows Flutter Lab | [`tacoma-narrows/`](tacoma-narrows/) | 1940 collapse; self-excited flutter versus vortex resonance |
 
@@ -30,12 +31,18 @@ Billah, K. Y., & Scanlan, R. H. (1991). Resonance, Tacoma Narrows bridge failure
 
 Green, D., & Unruh, W. G. (2004). *Tacoma bridge failure: A physical model* (arXiv:physics/0408101). arXiv. https://arxiv.org/abs/physics/0408101
 
+Heywood, J. B. (2018). *Internal combustion engine fundamentals* (2nd ed.). McGraw-Hill Education.
+
 Inman, D. J. (2014). *Engineering vibration* (4th ed.). Pearson.
+
+Khurmi, R. S., & Gupta, J. K. (2005). *Theory of machines* (14th ed.). S. Chand.
 
 Norton, R. L. (2020). *Design of machinery: An introduction to the synthesis and analysis of mechanisms and machines* (6th ed.). McGraw-Hill Education.
 
 Olson, D. W., Wolf, S. F., & Hook, J. M. (2015). The Tacoma Narrows Bridge collapse. *Physics Today, 68*(11), 64–65. https://doi.org/10.1063/PT.3.2991
 
 Rao, S. S. (2017). *Mechanical vibrations* (6th ed.). Pearson.
+
+Rattan, S. S. (2009). *Theory of machines* (3rd ed.). Tata McGraw-Hill.
 
 Uicker, J. J., Pennock, G. R., & Shigley, J. E. (2017). *Theory of machines and mechanisms* (5th ed.). Oxford University Press.
