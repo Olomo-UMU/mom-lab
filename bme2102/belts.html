@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive notes for BME 2102 Chapter 4, belt drives: the types of flat belt drive in 3D, velocity ratio, slip and creep, belt length and angle of contact, the ratio of tensions, power, centrifugal tension and maximum power, and V-belts, with the worked examples from the notes.">
+<title>Belt Drives</title>
+<link rel="stylesheet" href="assets/notes.css">
+</head>
+<body>
+<nav class="sitebar" aria-label="Site"><a href="../">← All labs</a><a href="./">BME 2102 interactive notes</a><a href="intro.html">1 Introduction</a><a href="mechanisms.html">2 Mechanisms</a><a href="velocity.html">3 Velocity and acceleration</a><a href="belts.html" aria-current="page">4 Belt drives</a><a href="gearing.html">5 Gearing</a><a href="cams.html">6 Cams</a><a href="balancing.html">7 Balancing</a></nav>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">BME 2102 Mechanics of Machines · Chapter 4 · Transmission of power</div>
+  <h1>Belt Drives</h1>
+  <p>The belt drive chapter of the course notes in motion: every type of flat belt drive running in 3D, speed ratios with slip and creep, belt length and angle of contact drawn to scale, the tension building up round a pulley, the speed for maximum power, and the wedge action of a V-belt, with each worked example from the notes.</p>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="On this page"><ol>
+  <li><a href="#s1"><span class="n">4.1</span>Belts and belt drives (3D)</a></li>
+  <li><a href="#s2"><span class="n">4.2</span>Velocity ratio, slip and creep</a></li>
+  <li><a href="#s3"><span class="n">4.5</span>Length of a belt</a></li>
+  <li><a href="#s4"><span class="n">4.6</span>Power and the ratio of tensions</a></li>
+  <li><a href="#s5"><span class="n">4.9</span>Initial tension and maximum power</a></li>
+  <li><a href="#s6"><span class="n">4.11</span>V-belt drive</a></li>
+  <li><a href="#quiz"><span class="n">✓</span>Check yourself</a></li>
+  <li><a href="#refs"><span class="n"></span>References</a></li>
+</ol></nav>
+<main>
+
+<section class="sec prose" id="s1"><h2><span class="n">4.1</span>Belts and belt drives</h2>
+<p>Belts and ropes carry power from one shaft to another by pulleys turning at the same or different speeds. The power a belt can carry depends on (1) the belt speed, (2) the tension it is fitted at, (3) the arc of contact on the smaller pulley, and (4) the conditions it works in.</p>
+<ul><li>The shafts must be in line, so the tension is even across the belt.</li>
+<li>The pulleys should not be too close, so the arc of contact on the smaller pulley stays large, nor too far apart, or the belt's weight loads the bearings and a long belt swings and runs off. For flat belts keep the centre distance at most 10 m and at least 3.5 times the larger pulley diameter.</li>
+<li>Put the tight side at the bottom: sag on the slack side then <i>increases</i> the arc of contact.</li></ul>
+<p>The choice of drive depends on the shaft speeds and the speed ratio, the power, the centre distance, whether the drive must be positive, the shaft layout, the space and the service conditions. <b>Flat belts</b> suit moderate power with pulleys up to about 8 m apart; <b>V-belts</b> moderate power with pulleys close together; <b>circular belts or ropes</b> large power over more than 8 m. Belts are made of leather, cotton or fabric, rubber or balata: strong, flexible, durable and with a high coefficient of friction.</p>
+<div class="panel"><div class="ph"><h4>Types of belt drive (Figure 4.2)</h4><span class="sub" id="bt_sub"></span></div>
+  <canvas class="gl" id="bt3" aria-label="3D belt drives of each type, running"></canvas>
+  <div class="btnrow"><span class="seg" id="bt_seg" role="group" aria-label="Drive"><button type="button" data-v="open" aria-pressed="true">Open</button><button type="button" data-v="cross">Crossed</button><button type="button" data-v="quarter">Quarter turn</button><button type="button" data-v="idler">With idler</button><button type="button" data-v="compound">Compound</button><button type="button" data-v="cone">Stepped pulleys</button><button type="button" data-v="fast">Fast and loose</button><button type="button" data-v="vbelt">V-belts</button></span><button type="button" id="bt_play">Pause</button></div>
+  <div class="caption" id="bt_cap"></div><div class="k3d">Drag to turn the view. The stripes on the belt show it moving.</div></div>
+</section>
+
+<section class="sec prose" id="s2"><h2><span class="n">4.2</span>Velocity ratio, slip and creep</h2>
+<p>With no slip the same length of belt passes over each pulley in a minute, π d<sub>1</sub> N<sub>1</sub> = π d<sub>2</sub> N<sub>2</sub>, so</p>
+<div class="eq"><div><b>Velocity ratio</b> &nbsp; N<sub>2</sub>/N<sub>1</sub> = d<sub>1</sub>/d<sub>2</sub> &nbsp;&nbsp; with belt thickness t: &nbsp; N<sub>2</sub>/N<sub>1</sub> = (d<sub>1</sub> + t)/(d<sub>2</sub> + t)</div>
+<div><b>Compound drive</b> &nbsp; N<sub>4</sub>/N<sub>1</sub> = (d<sub>1</sub> × d<sub>3</sub>)/(d<sub>2</sub> × d<sub>4</sub>): speed of the last driven / speed of the first driver = product of driver diameters / product of driven diameters</div></div>
+<p><b>Slip.</b> If the grip is not enough, the driver can move without carrying the belt, or the belt without carrying the follower. With s<sub>1</sub>% slip between driver and belt and s<sub>2</sub>% between belt and follower, and s = s<sub>1</sub> + s<sub>2</sub> (the small product s<sub>1</sub>s<sub>2</sub> neglected):</p>
+<div class="eq"><div>N<sub>2</sub>/N<sub>1</sub> = (d<sub>1</sub>/d<sub>2</sub>)(1 − s<sub>1</sub>/100)(1 − s<sub>2</sub>/100) ≈ (d<sub>1</sub>/d<sub>2</sub>)(1 − s/100) &nbsp;&nbsp; or with thickness &nbsp; ((d<sub>1</sub> + t)/(d<sub>2</sub> + t))(1 − s/100)</div><div class="w">Because belts slip, they are not used where an exact ratio matters (the hands of a clock).</div></div>
+<p><b>Creep.</b> The belt stretches as it passes from the slack side to the tight side and contracts on the way back, so it creeps relative to the pulley surfaces. With σ<sub>1</sub>, σ<sub>2</sub> the stresses on the tight and slack sides and E the Young's modulus of the belt:</p>
+<div class="eq"><div>N<sub>2</sub>/N<sub>1</sub> = (d<sub>1</sub>/d<sub>2</sub>) × (E + √σ<sub>2</sub>)/(E + √σ<sub>1</sub>)</div></div>
+<div class="panel"><div class="ph"><h4>Speed of the driven pulley</h4><span class="sub" id="vr_sub"></span></div>
+  <canvas class="cv" id="vr" aria-label="Open belt drive with marks showing the pulley speeds"></canvas>
+  <div class="btnrow"><button type="button" id="vr_play">Pause</button></div>
+  <div class="controls" id="vr_c"></div><div class="stats" id="vr_st"></div></div>
+<details class="ex" id="ex1"></details>
+<details class="ex" id="ex2"></details>
+</section>
+
+<section class="sec prose" id="s3"><h2><span class="n">4.5</span>Length of a belt and angle of contact</h2>
+<p><b>Open belt</b> (both pulleys turn the same way). The belt leaves the larger pulley at E and G and the smaller at F and H. With r<sub>1</sub>, r<sub>2</sub> the radii and x the centre distance, sin α = (r<sub>1</sub> − r<sub>2</sub>)/x, and L = 2(arc JE + EF + arc FK). Using α ≈ sin α and the binomial expansion of EF = √(x² − (r<sub>1</sub> − r<sub>2</sub>)²):</p>
+<div class="eq"><div>L = π(r<sub>1</sub> + r<sub>2</sub>) + 2x + (r<sub>1</sub> − r<sub>2</sub>)²/x &nbsp;&nbsp; = (π/2)(d<sub>1</sub> + d<sub>2</sub>) + 2x + (d<sub>1</sub> − d<sub>2</sub>)²/4x</div></div>
+<p><b>Crossed belt</b> (the pulleys turn opposite ways). Now sin α = (r<sub>1</sub> + r<sub>2</sub>)/x and</p>
+<div class="eq"><div>L = π(r<sub>1</sub> + r<sub>2</sub>) + 2x + (r<sub>1</sub> + r<sub>2</sub>)²/x &nbsp;&nbsp; = (π/2)(d<sub>1</sub> + d<sub>2</sub>) + 2x + (d<sub>1</sub> + d<sub>2</sub>)²/4x</div>
+<div class="w">A crossed belt depends only on r<sub>1</sub> + r<sub>2</sub>, so stepped pulleys for a crossed belt just need the sum of each pair of radii to be the same.</div></div>
+<p><b>Angle of contact</b> (4.8). For a crossed belt it is the same on both pulleys: θ = (180° + 2α) π/180 rad with sin α = (r<sub>1</sub> + r<sub>2</sub>)/x. For an open belt it is (180° − 2α) on the smaller pulley and (180° + 2α) on the larger, with sin α = (r<sub>1</sub> − r<sub>2</sub>)/x. The belt slips first on the pulley with the smaller arc, so that is the one used in the ratio of tensions.</p>
+<div class="panel"><div class="ph"><h4>Length and angle of contact, drawn to scale</h4><span class="sub" id="bl_sub"></span></div>
+  <canvas class="cv tall" id="bl" aria-label="Two pulleys with an open or crossed belt, tangent points and angles marked"></canvas>
+  <div class="btnrow"><span class="seg" id="bl_seg" role="group" aria-label="Belt"><button type="button" data-v="open" aria-pressed="true">Open belt</button><button type="button" data-v="cross">Crossed belt</button></span></div>
+  <div class="controls" id="bl_c"></div><div class="stats" id="bl_st"></div></div>
+<details class="ex" id="ex3"></details>
+</section>
+
+<section class="sec prose" id="s4"><h2><span class="n">4.6</span>Power and the ratio of driving tensions</h2>
+<p>The driver pulls the belt from one side and delivers it to the other, so the <b>tight side</b> tension T<sub>1</sub> is larger than the <b>slack side</b> tension T<sub>2</sub>. The effective driving force at the rim is T<sub>1</sub> − T<sub>2</sub>, so</p>
+<div class="eq"><div>P = (T<sub>1</sub> − T<sub>2</sub>) v &nbsp; watts &nbsp;&nbsp; torque on the driver (T<sub>1</sub> − T<sub>2</sub>) r<sub>1</sub>, on the follower (T<sub>1</sub> − T<sub>2</sub>) r<sub>2</sub></div></div>
+<p><b>Ratio of tensions (4.7).</b> Take a short piece of belt PQ over an angle δθ, with tension T at one end and T + δT at the other, a normal reaction R<sub>N</sub> and friction μR<sub>N</sub>. Resolving radially, R<sub>N</sub> = T δθ; resolving along the belt, μR<sub>N</sub> = δT. So δT/T = μ δθ, and integrating from T<sub>2</sub> to T<sub>1</sub> over the angle of contact:</p>
+<div class="eq"><div>log<sub>e</sub>(T<sub>1</sub>/T<sub>2</sub>) = μθ &nbsp;&nbsp; T<sub>1</sub>/T<sub>2</sub> = e<sup>μθ</sup> &nbsp;&nbsp; or &nbsp; 2.3 log<sub>10</sub>(T<sub>1</sub>/T<sub>2</sub>) = μθ</div><div class="w">θ in radians. The tension grows exponentially round the arc, which is why a little more wrap or friction gives a lot more grip.</div></div>
+<div class="panel"><div class="ph"><h4>Tension round the arc of contact</h4><span class="sub" id="tr_sub"></span></div>
+  <div class="figrow"><canvas class="cv" id="tr" aria-label="Pulley with belt tension shown by belt thickness around the arc"></canvas><canvas class="cv" id="tr_g" aria-label="Tension against angle of contact"></canvas></div>
+  <div class="controls" id="tr_c"></div><div class="stats" id="tr_st"></div></div>
+<details class="ex" id="ex4"></details>
+<details class="ex" id="ex5"></details>
+</section>
+
+<section class="sec prose" id="s5"><h2><span class="n">4.9</span>Initial tension and maximum power</h2>
+<p><b>Initial tension.</b> A belt is fitted with an initial tension T<sub>0</sub> so it grips at rest. Running, one side tightens to T<sub>1</sub> and the other slackens to T<sub>2</sub>. If the belt is perfectly elastic and its length stays the same, the stretch on one side equals the contraction on the other, T<sub>1</sub> − T<sub>0</sub> = T<sub>0</sub> − T<sub>2</sub>:</p>
+<div class="eq"><div>T<sub>0</sub> = (T<sub>1</sub> + T<sub>2</sub>)/2 &nbsp; (neglecting centrifugal tension) &nbsp;&nbsp; T<sub>0</sub> = (T<sub>1</sub> + T<sub>2</sub> + 2T<sub>C</sub>)/2 &nbsp; (with it)</div></div>
+<p><b>Maximum power (4.10).</b> A running belt of mass m per metre carries a <b>centrifugal tension</b> T<sub>C</sub> = m v² on both sides, which does no useful work. If T is the largest tension the belt may carry, the tension left for driving is T<sub>1</sub> = T − T<sub>C</sub>, and with C = 1 − 1/e<sup>μθ</sup>:</p>
+<div class="eq"><div>P = (T<sub>1</sub> − T<sub>2</sub>) v = T<sub>1</sub> C v = (T v − m v³) C &nbsp;&nbsp; dP/dv = 0 ⇒ T − 3 m v² = 0</div>
+<div>So for maximum power &nbsp; T<sub>C</sub> = T/3, &nbsp; T<sub>1</sub> = 2T/3, &nbsp; v = √(T/3m)</div><div class="w">Run faster than this and centrifugal tension eats the driving tension; at v = √(T/m) the belt carries no power at all.</div></div>
+<div class="panel"><div class="ph"><h4>Power against belt speed</h4><span class="sub" id="mp_sub"></span></div>
+  <canvas class="cv" id="mp" aria-label="Power transmitted against belt speed with the maximum marked"></canvas>
+  <div class="controls" id="mp_c"></div><div class="stats" id="mp_st"></div></div>
+<details class="ex" id="ex6"></details>
+</section>
+
+<section class="sec prose" id="s6"><h2><span class="n">4.11</span>V-belt drive</h2>
+<p>V-belts are fabric and cord moulded in rubber, trapezoidal in section and made endless, with an included angle usually 30° to 40°. They run in grooved pulleys and touch only the <b>sides</b> of the groove, with clearance at the bottom for wear. The wedging in the groove raises the grip and so the power, for the same friction, arc and tension. Several belts can run side by side; they must stretch equally, so a set is replaced together.</p>
+<p><b>Advantages:</b> compact (short centre distance); the drive is positive, with negligible slip; smooth, as there are no joints; long life, 3 to 5 years; easy to fit and remove; quiet; cushions shock at starting; velocity ratios up to 10; high limiting ratio of tensions; runs either way up, at any angle. <b>Disadvantages:</b> not for large centre distances; less durable than flat belts; grooved pulleys cost more to make; creep makes them unsuitable for constant-speed work such as synchronous machines and timing; life depends on temperature, tension and matched lengths; centrifugal tension limits them to about 5 to 50 m/s.</p>
+<p><b>Ratio of tensions.</b> With R<sub>1</sub> the normal reaction on each side of a groove of angle 2β, and R the total reaction in the plane of the groove, resolving gives R = 2R<sub>1</sub> sin β. The friction force is 2μR<sub>1</sub> = μR cosec β, so the flat-belt result holds with μ replaced by μ cosec β:</p>
+<div class="eq"><div>2.3 log(T<sub>1</sub>/T<sub>2</sub>) = μ θ cosec β &nbsp;&nbsp; T<sub>1</sub>/T<sub>2</sub> = e<sup>μθ cosec β</sup></div></div>
+<div class="panel"><div class="ph"><h4>The wedge action of a V-belt</h4><span class="sub" id="vb_sub"></span></div>
+  <div class="figrow"><canvas class="cv" id="vb" aria-label="Cross-section of a V-belt in its groove with the reactions"></canvas><canvas class="cv" id="vb_g" aria-label="Ratio of tensions for a flat belt and a V-belt"></canvas></div>
+  <div class="controls" id="vb_c"></div><div class="stats" id="vb_st"></div></div>
+<details class="ex" id="ex7"></details>
+</section>
+
+<section class="sec" id="quiz"><h2><span class="n">✓</span>Check yourself</h2><div id="qz"></div></section>
+
+<section class="sec refs" id="refs"><h2><span class="n"></span>References</h2>
+<p>Khurmi, R. S., &amp; Gupta, J. K. (2020). <i>Theory of machines</i> (14th ed.). S. Chand.</p>
+<p>Rattan, S. S. (2019). <i>Theory of machines</i> (5th ed.). McGraw Hill Education.</p>
+<p>Uganda Martyrs University, Department of Mechanical Engineering. (2026). <i>BME 2102 Mechanics of machines: Course notes</i> [Unpublished lecture notes].</p></section>
+</main></div>
+<footer class="foot">BME 2102 interactive notes · Uganda Martyrs University · text CC BY 4.0, code MIT · 3D by three.js (MIT)</footer>
+</div>
+<script src="../vendor/three.min.js"></script>
+<script src="../vendor/OrbitControls.js"></script>
+<script src="assets/notes.js"></script>
+<script src="assets/belts.js"></script>
+<script src="assets/slides.js"></script>
+</body>
+</html>

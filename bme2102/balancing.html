@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive notes for BME 2102 Chapter 7, balancing of rotating masses: spinning shafts in 3D with bearing forces, single and several masses in one or several planes, force and couple polygons, with the worked examples from the notes.">
+<title>Balancing Rotating Masses</title>
+<link rel="stylesheet" href="assets/notes.css">
+</head>
+<body>
+<nav class="sitebar" aria-label="Site"><a href="../">← All labs</a><a href="./">BME 2102 interactive notes</a><a href="intro.html">1 Introduction</a><a href="mechanisms.html">2 Mechanisms</a><a href="velocity.html">3 Velocity and acceleration</a><a href="belts.html">4 Belt drives</a><a href="gearing.html">5 Gearing</a><a href="cams.html">6 Cams</a><a href="balancing.html" aria-current="page">7 Balancing</a></nav>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">BME 2102 Mechanics of Machines · Chapter 7 · Balancing rotating masses</div>
+  <h1>Balancing Rotating Masses</h1>
+  <p>The balancing chapter of the course notes, made to spin. See an unbalanced shaft shake its bearings, then balance it: one mass in one plane, one mass by two in other planes, several masses with the force polygon, and several planes with the couple polygon, including both examples from the notes.</p>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="On this page"><ol>
+  <li><a href="#s1"><span class="n">7.1</span>Why balance (3D)</a></li>
+  <li><a href="#s2"><span class="n">7.2</span>One mass, same plane</a></li>
+  <li><a href="#s3"><span class="n">7.3</span>One mass, two planes (3D)</a></li>
+  <li><a href="#s4"><span class="n">7.4</span>Several masses, one plane</a></li>
+  <li><a href="#s5"><span class="n">7.5</span>Several masses, several planes (3D)</a></li>
+  <li><a href="#quiz"><span class="n">✓</span>Check yourself</a></li>
+  <li><a href="#refs"><span class="n"></span>References</a></li>
+</ol></nav>
+<main>
+
+<section class="sec prose" id="s1"><h2><span class="n">7.1</span>Why balance</h2>
+<p>A mass m whose centre is a radius r from the axis of a shaft turning at ω pulls outwards with the <b>centrifugal force</b> F<sub>C</sub> = m ω² r. The force turns with the shaft, so each bearing feels a load that goes round once per revolution: it bends the shaft, loads the bearings and shakes the frame. Because the force grows with ω², a small error matters a lot at speed. Balancing means adding masses so that the centrifugal forces, and their moments, cancel.</p>
+<div class="panel"><div class="ph"><h4>An unbalanced disc on a shaft</h4><span class="sub" id="u_sub"></span></div>
+  <canvas class="gl" id="u3" aria-label="3D shaft with an unbalanced disc, showing the rotating force at each bearing"></canvas>
+  <div class="btnrow"><button type="button" id="u_play">Pause</button><label class="checks"><input type="checkbox" id="u_bal"> Add the balancing mass (same plane, opposite side)</label></div>
+  <div class="controls" id="u_c"></div><div class="stats" id="u_s"></div>
+  <div class="k3d">Bearing pedestals move in proportion to the force on them (much exaggerated). Arrows: force on each bearing. Drag to turn the view.</div></div>
+<p>The four cases in the notes build on each other: (1) one mass balanced by one mass in the same plane; (2) one mass balanced by two masses in other planes; (3) several masses in one plane; (4) several masses in several planes.</p>
+</section>
+
+<section class="sec prose" id="s2"><h2><span class="n">7.2</span>One mass balanced by one mass in the same plane</h2>
+<p>Put the balancing mass m<sub>2</sub> opposite the disturbing mass m<sub>1</sub>, in the same plane, so the two centrifugal forces are equal and opposite. Since ω is the same for both, only the products matter:</p>
+<div class="eq"><div>m<sub>1</sub> ω² r<sub>1</sub> = m<sub>2</sub> ω² r<sub>2</sub> &nbsp; ⇒ &nbsp; m<sub>1</sub> r<sub>1</sub> = m<sub>2</sub> r<sub>2</sub></div><div class="w">The product m<sub>2</sub>r<sub>2</sub> can be split any way; a large radius keeps the balancing mass small.</div></div>
+<div class="panel"><div class="ph"><h4>End view</h4><span class="sub" id="o_sub"></span></div>
+  <canvas class="cv" id="o2" aria-label="End view of a rotating disc with a disturbing mass and a balancing mass and their forces"></canvas>
+  <div class="controls" id="o_c"></div><div class="btnrow"><button type="button" id="o_play">Pause</button></div><div class="stats" id="o_s"></div></div>
+</section>
+
+<section class="sec prose" id="s3"><h2><span class="n">7.3</span>One mass balanced by two masses in different planes</h2>
+<p>A single balancing mass in another plane cancels the force but leaves a <b>couple</b> that rocks the shaft in its bearings. Two balancing masses in planes L and M can cancel both. With l the distance between L and M, l<sub>1</sub> from A to L and l<sub>2</sub> from A to M:</p>
+<div class="eq"><div><b>A between L and M:</b> &nbsp; m r = m<sub>1</sub>r<sub>1</sub> + m<sub>2</sub>r<sub>2</sub>, &nbsp; m<sub>1</sub>r<sub>1</sub> = m r l<sub>2</sub>/l, &nbsp; m<sub>2</sub>r<sub>2</sub> = m r l<sub>1</sub>/l &nbsp; (both opposite to m)</div>
+<div><b>A outside L and M:</b> &nbsp; m r + m<sub>2</sub>r<sub>2</sub> = m<sub>1</sub>r<sub>1</sub>, same moment equations (one opposite to m, one on the same side)</div>
+<div class="w">Force balance alone is <b>static balance</b>; force and moment balance together is <b>dynamic balance</b>.</div></div>
+<div class="panel"><div class="ph"><h4>Shaft with the disturbing mass in plane A</h4><span class="sub" id="t_sub"></span></div>
+  <canvas class="gl" id="t3" aria-label="3D shaft with a disturbing mass and two balancing masses in planes L and M"></canvas>
+  <div class="btnrow"><span class="seg" role="group" aria-label="Balancing"><button type="button" data-b="none">No balance</button><button type="button" data-b="one">One mass in plane L only</button><button type="button" data-b="two" aria-pressed="true">Two masses, L and M</button></span><button type="button" id="t_play">Pause</button></div>
+  <div class="controls" id="t_c"></div><div class="stats" id="t_s"></div><div class="caption" id="t_cap"></div></div>
+</section>
+
+<section class="sec prose" id="s4"><h2><span class="n">7.4</span>Several masses rotating in the same plane</h2>
+<p><b>Analytical method.</b> Resolve every m r horizontally and vertically, add, find the resultant, and put the balancing mass opposite it:</p>
+<div class="eq"><div>ΣH = Σ m r cos θ, &nbsp; ΣV = Σ m r sin θ, &nbsp; R = √(ΣH² + ΣV²), &nbsp; tan θ′ = ΣV/ΣH</div><div>Balancing mass: m r = R, placed at θ′ + 180°</div></div>
+<p><b>Graphical method.</b> Draw the vectors m r head to tail (ab, bc, cd, de). The closing side ae is the resultant; the balancing vector is ea, the same length pointing the other way. Drag the masses in the space diagram or edit the table.</p>
+<div class="panel"><div class="ph"><h4>Space diagram and vector polygon</h4><span class="sub" id="p_sub"></span></div>
+  <div class="figrow"><canvas class="cv" id="p1" aria-label="Space diagram: masses round the shaft, drag to move them"></canvas><canvas class="cv" id="p2" aria-label="Vector polygon of m r with the closing side"></canvas></div>
+  <div class="tablewrap" style="padding:8px 12px"><table class="t" id="p_t"></table></div>
+  <div class="btnrow"><button type="button" id="p_add">Add a mass</button><button type="button" id="p_ex">Load Example 1 from the notes</button><label class="sel" style="display:flex;gap:6px;align-items:center">Radius of the balancing mass <input type="number" id="p_rb" value="0.2" step="0.01" min="0.01" style="width:80px"> m</label></div>
+  <div class="stats" id="p_s"></div></div>
+<details class="ex" id="ex1"></details>
+</section>
+
+<section class="sec prose" id="s5"><h2><span class="n">7.5</span>Several masses rotating in different planes</h2>
+<p>Move every mass to a <b>reference plane</b> (R.P.), here plane L. Each move leaves its force m r in the R.P. plus a couple m r l, where l is the distance from the R.P. (negative to the left). For complete balance both must vanish:</p>
+<ol><li>The couples must balance: draw the couple polygon of the m r l vectors (outward for masses on one side of the R.P., inward on the other). Its closing side is the couple the mass in plane M must supply: m<sub>M</sub> r<sub>M</sub> l<sub>M</sub>.</li>
+<li>The forces must balance: draw the force polygon of the m r values, now including m<sub>M</sub> r<sub>M</sub>. Its closing side is m<sub>L</sub> r<sub>L</sub>.</li></ol>
+<div class="panel"><div class="ph"><h4>Shaft with masses in several planes</h4><span class="sub" id="m_sub"></span></div>
+  <canvas class="gl" id="m3" aria-label="3D shaft carrying several masses and the two balancing masses"></canvas>
+  <div class="btnrow"><label class="checks"><input type="checkbox" id="m_on" checked> Fit the balancing masses</label><button type="button" id="m_play">Pause</button><button type="button" id="m_ex">Load Example 2 from the notes</button></div>
+  <div class="tablewrap" style="padding:8px 12px"><table class="t" id="m_t"></table></div>
+  <div class="btnrow"><button type="button" id="m_add">Add a mass</button>
+    <label class="sel" style="display:flex;gap:6px;align-items:center">Plane M at <input type="number" id="m_lM" value="0.4" step="0.01" style="width:80px"> m from L</label>
+    <label class="sel" style="display:flex;gap:6px;align-items:center">r<sub>L</sub> <input type="number" id="m_rL" value="0.1" step="0.01" min="0.01" style="width:70px"> m</label>
+    <label class="sel" style="display:flex;gap:6px;align-items:center">r<sub>M</sub> <input type="number" id="m_rM" value="0.1" step="0.01" min="0.01" style="width:70px"> m</label>
+    <label class="sel" style="display:flex;gap:6px;align-items:center">Speed <input type="number" id="m_N" value="300" step="10" min="0" style="width:80px"> rpm</label></div>
+  <div class="figrow"><canvas class="cv short" id="m_c1" aria-label="Couple polygon"></canvas><canvas class="cv short" id="m_c2" aria-label="Force polygon"></canvas></div>
+  <div class="stats" id="m_s"></div></div>
+<details class="ex" id="ex2"></details>
+</section>
+
+<section class="sec" id="quiz"><h2><span class="n">✓</span>Check yourself</h2><div id="qz"></div></section>
+
+<section class="sec refs" id="refs"><h2><span class="n"></span>References</h2>
+<p>Khurmi, R. S., &amp; Gupta, J. K. (2020). <i>Theory of machines</i> (14th ed.). S. Chand.</p>
+<p>Rattan, S. S. (2019). <i>Theory of machines</i> (5th ed.). McGraw Hill Education.</p>
+<p>Uganda Martyrs University, Department of Mechanical Engineering. (2026). <i>BME 2102 Mechanics of machines: Course notes</i> [Unpublished lecture notes].</p>
+<p>Uicker, J. J., Pennock, G. R., &amp; Shigley, J. E. (2017). <i>Theory of machines and mechanisms</i> (5th ed.). Oxford University Press.</p></section>
+</main></div>
+<footer class="foot">BME 2102 interactive notes · Uganda Martyrs University · text CC BY 4.0, code MIT · 3D by three.js (MIT)</footer>
+</div>
+<script src="../vendor/three.min.js"></script>
+<script src="../vendor/OrbitControls.js"></script>
+<script src="assets/notes.js"></script>
+<script src="assets/balancing.js"></script>
+<script src="assets/slides.js"></script>
+</body>
+</html>

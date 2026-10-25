@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive notes for BME 2102 Chapter 6, cam mechanisms: 3D cams and followers, terminology, follower motions, and step-by-step construction of cam profiles, with the worked examples from the notes.">
+<title>Cam Mechanisms</title>
+<link rel="stylesheet" href="assets/notes.css">
+</head>
+<body>
+<nav class="sitebar" aria-label="Site"><a href="../">← All labs</a><a href="./">BME 2102 interactive notes</a><a href="intro.html">1 Introduction</a><a href="mechanisms.html">2 Mechanisms</a><a href="velocity.html">3 Velocity and acceleration</a><a href="belts.html">4 Belt drives</a><a href="gearing.html">5 Gearing</a><a href="cams.html" aria-current="page">6 Cams</a><a href="balancing.html">7 Balancing</a></nav>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">BME 2102 Mechanics of Machines · Chapter 6 · Cam mechanisms</div>
+  <h1>Cam Mechanisms</h1>
+  <p>The cam chapter of the course notes, made to move. Turn cams and followers in 3D, compare the four standard follower motions, and watch a cam profile being constructed point by point exactly as in the notes, then run it.</p>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="On this page"><ol>
+  <li><a href="#s1"><span class="n">6.1</span>What a cam does</a></li>
+  <li><a href="#s2"><span class="n">6.2</span>Kinds of followers (3D)</a></li>
+  <li><a href="#s3"><span class="n">6.3</span>Kinds of cams (3D)</a></li>
+  <li><a href="#s4"><span class="n">6.4</span>Cam terms</a></li>
+  <li><a href="#s5"><span class="n">6.5</span>Motion of the follower</a></li>
+  <li><a href="#s6"><span class="n">6.6</span>Drawing a cam profile</a></li>
+  <li><a href="#ex"><span class="n">6.7</span>Worked examples</a></li>
+  <li><a href="#quiz"><span class="n">✓</span>Check yourself</a></li>
+  <li><a href="#refs"><span class="n"></span>References</a></li>
+</ol></nav>
+<main>
+
+<section class="sec prose" id="s1"><h2><span class="n">6.1</span>What a cam does</h2>
+<p>A <b>cam</b> is a rotating part whose shape pushes another part, the <b>follower</b>, through a motion chosen in advance: up, hold, down, hold. Cam and follower touch along a line, so they form a <b>higher pair</b>. A spring, gravity or a groove keeps the follower on the cam. Cams open and close the valves of every four-stroke engine, and drive feeds in automatic lathes, textile and printing machines.</p>
+<div class="panel"><div class="ph"><h4>Engine valve train</h4><span class="sub">overhead camshaft, bucket tappet (flat-faced follower)</span></div>
+  <canvas class="gl" id="vt" aria-label="3D model of an engine cam opening a valve against its spring"></canvas>
+  <div class="btnrow"><button type="button" id="vt_play">Pause</button><label class="checks"><input type="checkbox" id="vt_cut" checked> Cut away the head</label></div>
+  <div class="caption" id="vt_cap"></div>
+  <div class="k3d">Drag to turn · scroll or pinch to zoom · right-drag or two fingers to move</div></div>
+</section>
+
+<section class="sec prose" id="s2"><h2><span class="n">6.2</span>Kinds of followers</h2>
+<p>Followers are named by the end that touches the cam, by how they move, and by where their line of motion lies.</p>
+<div class="panel"><div class="ph"><h4 id="cf_t">Knife-edge follower</h4><span class="sub" id="cf_sub"></span></div>
+  <canvas class="gl" id="cf" aria-label="3D model of a disc cam with the chosen follower"></canvas>
+  <div class="chips" id="cf_chips" role="group" aria-label="Follower"></div>
+  <div class="btnrow"><button type="button" id="cf_play">Pause</button></div>
+  <div class="caption" id="cf_cap"></div></div>
+<ul>
+<li><b>By the contact surface.</b> <i>Knife edge:</i> simple but wears fast and pushes sideways on its guide. <i>Roller:</i> rolls instead of sliding, so wears far less; used in stationary engines and aircraft engines. <i>Flat faced (mushroom):</i> very little side thrust, compact, used for engine valves; offsetting it makes it spin and spread the wear. <i>Spherical faced:</i> a flat face rounded to cut the contact stress.</li>
+<li><b>By the motion.</b> <i>Reciprocating (translating):</i> slides in a guide. <i>Oscillating (rotating):</i> swings about a pivot.</li>
+<li><b>By the path.</b> <i>Radial:</i> its line of motion passes through the cam centre. <i>Offset:</i> it does not.</li></ul>
+</section>
+
+<section class="sec prose" id="s3"><h2><span class="n">6.3</span>Kinds of cams</h2>
+<p>In a <b>radial (disc) cam</b> the follower moves at right angles to the cam axis, as in everything above. In a <b>cylindrical cam</b> a groove is cut round a cylinder and the follower moves parallel to the axis.</p>
+<div class="panel"><div class="ph"><h4>Cylindrical cam with a reciprocating follower</h4><span class="sub">the groove carries the follower: no spring needed</span></div>
+  <canvas class="gl" id="cy" aria-label="3D model of a cylindrical grooved cam moving a follower along its axis"></canvas>
+  <div class="btnrow"><button type="button" id="cy_play">Pause</button></div></div>
+</section>
+
+<section class="sec prose" id="s4"><h2><span class="n">6.4</span>Cam terms</h2>
+<div class="panel"><div class="ph"><h4>Radial cam with a roller follower</h4><span class="sub">rise 50 mm in 120°, simple harmonic</span></div>
+  <canvas class="cv tall" id="tm" aria-label="Cam with labelled base circle, prime circle, pitch curve and pressure angle"></canvas>
+  <div class="chips" id="tm_chips" role="group" aria-label="Cam terms"></div>
+  <div class="caption" id="tm_cap" aria-live="polite"></div>
+  <div class="controls" id="tm_c"></div></div>
+</section>
+
+<section class="sec prose" id="s5"><h2><span class="n">6.5</span>Motion of the follower</h2>
+<p>Write S for the stroke, θ<sub>O</sub> and θ<sub>R</sub> for the cam angles (in radians) of the outstroke and return stroke, and ω for the cam speed. The time of the outstroke is t<sub>O</sub> = θ<sub>O</sub>/ω. Pick a motion to see how its displacement diagram is constructed, and compare the velocity and acceleration of all four.</p>
+<div class="panel"><div class="ph"><h4 id="dc_t">Constructing the displacement diagram</h4><span class="sub" id="dc_sub"></span></div>
+  <canvas class="cv" id="dc" aria-label="Step-by-step construction of the follower displacement diagram"></canvas>
+  <div class="btnrow"><span class="seg" role="group" aria-label="Motion"><button type="button" data-mo="uv">Uniform velocity</button><button type="button" data-mo="shm" aria-pressed="true">Simple harmonic</button><button type="button" data-mo="uarm">Uniform acceleration and retardation</button><button type="button" data-mo="cyc">Cycloidal</button></span><button type="button" id="dc_play">Pause</button></div>
+  <div class="caption" id="dc_cap"></div></div>
+<div class="panel"><div class="ph"><h4>The four motions on the same outstroke</h4><span class="sub" id="mc_sub"></span></div>
+  <div class="figrow"><canvas class="cv short" id="mc1" aria-label="Velocity of the follower for each motion"></canvas><canvas class="cv short" id="mc2" aria-label="Acceleration of the follower for each motion"></canvas></div>
+  <div class="legend"><span><i style="background:var(--muted)"></i>uniform velocity</span><span><i style="background:var(--crank)"></i>simple harmonic</span><span><i style="background:var(--rod)"></i>uniform acceleration and retardation</span><span><i style="background:var(--vel)"></i>cycloidal</span></div>
+  <div class="controls" id="mc_c"></div>
+  <div class="tablewrap" style="padding:0 12px 10px"><table class="t" id="mc_t"></table></div></div>
+<div class="eq">
+<div><b>Uniform velocity:</b> v = S ω/θ<sub>O</sub>; acceleration infinite at the start and end of each stroke (unless the corners are rounded with parabolas).</div>
+<div><b>Simple harmonic:</b> v<sub>max</sub> = π ω S/(2θ<sub>O</sub>), &nbsp; a<sub>max</sub> = π² ω² S/(2θ<sub>O</sub>²)</div>
+<div><b>Uniform acceleration and retardation:</b> v<sub>max</sub> = 2 ω S/θ<sub>O</sub>, &nbsp; a = 4 ω² S/θ<sub>O</sub>² (constant, then the same retardation)</div>
+<div><b>Cycloidal:</b> x = S[θ/θ<sub>O</sub> − (1/2π) sin(2πθ/θ<sub>O</sub>)], &nbsp; v<sub>max</sub> = 2 ω S/θ<sub>O</sub>, &nbsp; a<sub>max</sub> = 2π ω² S/θ<sub>O</sub>²</div>
+<div class="w">For the return stroke use θ<sub>R</sub> in place of θ<sub>O</sub>.</div></div>
+<p>Only cycloidal motion starts and ends with zero acceleration, so it is the smoothest at high speed. Simple harmonic motion has the lowest peak acceleration but jumps in acceleration at the ends of each stroke; uniform velocity is acceptable only for slow cams.</p>
+</section>
+
+<section class="sec prose" id="s6"><h2><span class="n">6.6</span>Drawing a cam profile</h2>
+<p>The profile is drawn by <b>kinematic inversion</b>: imagine the cam standing still and the follower turning round it in the <b>opposite</b> direction to the cam’s rotation. Lay off the outstroke, dwell and return angles from OA, divide them as in the displacement diagram, set off each displacement along its line, and join the points. For a roller follower the points form the <b>pitch curve</b>; the cam profile is the curve that touches all the roller circles. For a flat follower the profile touches all the follower faces. Choose <i>Construct</i> to build it step by step, <i>Run</i> to see the cam working.</p>
+<div class="panel"><div class="ph"><h4>Cam profile tool</h4><span class="chip" id="ct_status"></span></div>
+  <canvas class="cv tall" id="ct" aria-label="Cam profile construction and running cam"></canvas>
+  <div class="btnrow"><span class="seg" role="group" aria-label="View"><button type="button" data-v="build" aria-pressed="true">Construct</button><button type="button" data-v="run">Run</button></span><button type="button" id="ct_play">Pause</button><button type="button" id="ct_restart">Start the construction again</button>
+    <label class="sel" style="display:flex;gap:6px;align-items:center">Follower <select id="ct_f" style="width:auto"><option value="knife">Knife edge</option><option value="roller">Roller</option><option value="flat">Flat faced</option></select></label>
+    <label class="sel" style="display:flex;gap:6px;align-items:center">Outstroke <select id="ct_mo" style="width:auto"><option value="uv">uniform velocity</option><option value="shm">simple harmonic</option><option value="uarm">uniform acc. and ret.</option><option value="cyc">cycloidal</option></select></label>
+    <label class="sel" style="display:flex;gap:6px;align-items:center">Return <select id="ct_mr" style="width:auto"><option value="uv">uniform velocity</option><option value="shm">simple harmonic</option><option value="uarm">uniform acc. and ret.</option><option value="cyc">cycloidal</option></select></label></div>
+  <div class="controls" id="ct_c"></div>
+  <div class="caption" id="ct_cap" aria-live="polite"></div>
+  <div class="stats" id="ct_s"></div></div>
+<div class="charts" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:14px">
+  <section class="panel" style="margin:0"><div class="ph"><h4>Displacement</h4><span class="sub" id="c1v"></span></div><canvas class="cv short" id="c1"></canvas></section>
+  <section class="panel" style="margin:0"><div class="ph"><h4>Velocity</h4><span class="sub" id="c2v"></span></div><canvas class="cv short" id="c2"></canvas></section>
+  <section class="panel" style="margin:0"><div class="ph"><h4>Acceleration</h4><span class="sub" id="c3v"></span></div><canvas class="cv short" id="c3"></canvas></section>
+</div>
+<p>Two things limit a design. The <b>pressure angle</b> (between the follower’s line of motion and the normal to the pitch curve) should stay below about 30° for a translating follower, or it jams in its guide: make the base circle bigger or the strokes longer in angle. And the cam must not be sharper than the follower: a roller larger than the smallest radius of curvature of the pitch curve, or a flat face on a cam that would need a hollow, cannot follow the motion (the tool warns you).</p>
+</section>
+
+<section class="sec prose" id="ex"><h2><span class="n">6.7</span>Worked examples from the notes</h2>
+<p>Each example loads into the profile tool above with the button under it.</p>
+<details class="ex" id="ex1"></details>
+<details class="ex" id="ex2"></details>
+<details class="ex" id="ex3"></details>
+<details class="ex" id="ex4"></details>
+</section>
+
+<section class="sec" id="quiz"><h2><span class="n">✓</span>Check yourself</h2><div id="qz"></div></section>
+
+<section class="sec refs" id="refs"><h2><span class="n"></span>References</h2>
+<p>Khurmi, R. S., &amp; Gupta, J. K. (2020). <i>Theory of machines</i> (14th ed.). S. Chand.</p>
+<p>Norton, R. L. (2009). <i>Cam design and manufacturing handbook</i> (2nd ed.). Industrial Press.</p>
+<p>Uganda Martyrs University, Department of Mechanical Engineering. (2026). <i>BME 2102 Mechanics of machines: Course notes</i> [Unpublished lecture notes].</p>
+<p>Uicker, J. J., Pennock, G. R., &amp; Shigley, J. E. (2017). <i>Theory of machines and mechanisms</i> (5th ed.). Oxford University Press.</p></section>
+</main></div>
+<footer class="foot">BME 2102 interactive notes · Uganda Martyrs University · text CC BY 4.0, code MIT · 3D by three.js (MIT)</footer>
+</div>
+<script src="../vendor/three.min.js"></script>
+<script src="../vendor/OrbitControls.js"></script>
+<script src="assets/notes.js"></script>
+<script src="assets/cams.js"></script>
+<script src="assets/slides.js"></script>
+</body>
+</html>

@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive friction clutch: torque capacity by uniform pressure and uniform wear, engagement dynamics, slip, heat and stalling, with an animated cut-away.">
+<title>Friction Clutch Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+<style>
+:root{
+  --paper:#eceff3; --sheet:#fbfcfd; --ink:#15212c; --muted:#5b6977; --rule:#cdd5dd; --grid:#e3e8ed; --chip:#f2f5f8;
+  --crank:#1d5bbd; --rod:#b9600c; --mass:#4b4f86; --vel:#0b8466; --acc:#b8215f; --force:#7b36c4;
+  --warn-bg:#fff4e0; --warn-ink:#7a4300; --ok:#0b8466; --bad:#b8215f;
+  --f-head:"Roboto",Arial,Helvetica,sans-serif;
+  --f-body:"Roboto",Arial,Helvetica,sans-serif;
+  --f-mono:"Roboto",Arial,Helvetica,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0e141a; --sheet:#151d25; --ink:#e3e9ef; --muted:#93a1af; --rule:#2c3844; --grid:#1e2832; --chip:#1b252f;
+  --crank:#6ea2f2; --rod:#e89a4c; --mass:#a3a7e6; --vel:#3cc49e; --acc:#f06e9e; --force:#b88ff2;
+  --warn-bg:#3a2a10; --warn-ink:#ffcf8a; --ok:#3cc49e; --bad:#f06e9e; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --paper:#0e141a; --sheet:#151d25; --ink:#e3e9ef; --muted:#93a1af; --rule:#2c3844; --grid:#1e2832; --chip:#1b252f;
+  --crank:#6ea2f2; --rod:#e89a4c; --mass:#a3a7e6; --vel:#3cc49e; --acc:#f06e9e; --force:#b88ff2;
+  --warn-bg:#3a2a10; --warn-ink:#ffcf8a; --ok:#3cc49e; --bad:#f06e9e; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0}
+.sitebar{max-width:1480px;margin:0 auto;padding-inline:20px;padding-block:12px 0;font-size:13px}
+.sitebar a{color:var(--muted);text-decoration:none}
+.sitebar a:hover,.sitebar a:focus-visible{color:var(--ink);text-decoration:underline}
+@media (max-width:600px){.sitebar{padding-inline:16px}}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
+.wrap{max-width:1480px;margin:0 auto;padding-inline:20px;padding-block:20px 40px}
+@media (max-width:600px){.wrap{padding-inline:16px}}
+header.top{display:grid;gap:6px;margin-bottom:16px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.02em}
+h1{font-family:var(--f-head);font-weight:700;font-size:30px;line-height:1.1;margin:0;text-wrap:balance}
+header.top p{margin:0;color:var(--muted);font-size:15px;text-wrap:pretty}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1000px){.layout{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:4px;min-width:0}
+.ph{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--rule)}
+.ph h2,.ph h3{font-family:var(--f-head);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.ph .sub{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+aside.controls{position:sticky;top:env(safe-area-inset-top,0px);max-height:100vh;overflow:auto}
+@media (max-width:1000px){aside.controls{position:static;max-height:none}}
+.grp{padding:10px 12px;border-bottom:1px solid var(--rule);display:grid;gap:8px}
+.grp:last-child{border-bottom:0}
+.grp h4{margin:0;font-family:var(--f-head);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ctl{display:grid;grid-template-columns:1fr 78px;gap:2px 8px;align-items:center}
+.ctl label{font-size:12.5px;grid-column:1/-1;display:flex;justify-content:space-between;gap:6px}
+.ctl label .sym{font-family:var(--f-mono);font-size:12px;color:var(--ink)}
+.ctl label .hint{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.ctl input[type=range]{width:100%;accent-color:var(--crank)}
+.ctl input[type=number],select{width:100%;font-family:var(--f-mono);font-size:12.5px;padding:3px 5px;border:1px solid var(--rule);border-radius:3px;background:var(--chip);color:var(--ink);font-variant-numeric:tabular-nums}
+.sel{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sel label{font-size:12px;display:grid;gap:2px}
+.checks{display:grid;gap:4px;font-size:12.5px}
+.checks label{display:flex;gap:6px;align-items:center}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+button{font-family:var(--f-head);font-weight:600;font-size:12.5px;letter-spacing:.03em;padding:5px 10px;border-radius:3px;border:1px solid var(--rule);background:var(--chip);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--crank)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--crank);outline-offset:1px}
+button.primary{background:var(--crank);border-color:var(--crank);color:var(--sheet)}
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.presets button{text-align:left;font-size:12px;line-height:1.25;padding:6px 8px}
+.presets button small{display:block;font-family:var(--f-body);font-weight:400;letter-spacing:0;color:var(--muted);font-size:11px}
+main{display:grid;gap:16px;min-width:0}
+.row{display:grid;gap:16px;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)}
+@media (max-width:1250px){.row{grid-template-columns:minmax(0,1fr)}}
+.cv{display:block;width:100%}
+#clutch{height:560px}
+.row.first{grid-template-columns:minmax(0,1fr)}
+@media (max-width:700px){#clutch{height:820px}}
+#energy,#face{height:260px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--rule);background:var(--chip);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--vel);display:inline-block;flex:none}
+.warn{margin:8px 12px;padding:8px 10px;background:var(--warn-bg);color:var(--warn-ink);border-radius:3px;font-size:13px}
+.tablewrap{overflow-x:auto}
+table.res{width:100%;border-collapse:collapse;font-size:12.5px}
+table.res td{padding:3px 12px;border-bottom:1px solid var(--grid)}
+table.res td:nth-child(2){font-family:var(--f-mono);color:var(--muted);white-space:nowrap}
+table.res td.v{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.res td.u{font-family:var(--f-mono);color:var(--muted);white-space:nowrap;padding-left:2px}
+table.res tr.sec td{font-family:var(--f-head);font-weight:600;text-transform:uppercase;letter-spacing:.07em;font-size:11px;color:var(--muted);background:var(--chip);border-bottom:1px solid var(--rule)}
+table.res tr.key td{font-weight:600}
+table.res tr.key td.v{color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0}
+.stat{padding:8px 12px;border-right:1px solid var(--grid);border-bottom:1px solid var(--grid)}
+.stat .k{font-family:var(--f-head);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.stat .k .lc{text-transform:none;font-family:var(--f-mono);letter-spacing:0}
+.stat .n{font-family:var(--f-mono);font-size:16px;font-weight:500;font-variant-numeric:tabular-nums}
+.stat .n small{font-size:11px;color:var(--muted);font-weight:400}
+.charts{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));gap:16px}
+.charts canvas{height:220px;cursor:crosshair;touch-action:none}
+details.eq{padding:0}
+details.eq summary{cursor:pointer;padding:10px 12px;font-family:var(--f-head);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:13px}
+.eqbody{padding:4px 16px 16px;display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr))}
+.eqbody section{min-width:0}
+.eqbody h5{font-family:var(--f-head);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;margin:6px 0 4px;color:var(--muted)}
+.eqbody p,.eqbody li{margin:2px 0;max-width:70ch}
+.eqbody ul{padding-left:18px;margin:2px 0}
+.m{font-family:var(--f-mono);font-size:12.5px;background:var(--chip);padding:1px 4px;border-radius:2px}
+.eqblock{font-size:13px;background:var(--chip);border:1px solid var(--grid);padding:6px 8px;border-radius:3px;overflow-x:auto;line-height:1.6;display:grid;gap:1px}
+.er{display:flex;flex-wrap:wrap;gap:4px 18px;white-space:nowrap}
+.er .en{color:var(--muted)}
+.refs p{padding-left:2em;text-indent:-2em;max-width:none}
+.note{font-size:12px;color:var(--muted)}
+
+body{font-variant-numeric:tabular-nums}
+.chip.slip i{background:var(--acc)}
+.chip.lock i{background:var(--vel)}
+.chip.stall i{background:var(--bad)}
+.chip.idle i{background:var(--muted)}
+.ok{color:var(--ok)} .badv{color:var(--bad);font-weight:600}
+.partbtns{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;border-top:1px solid var(--grid)}
+.partbtns button{font-size:12px;padding:3px 9px;font-weight:500}
+.partbtns button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--sheet)}
+.partinfo{padding:10px 12px;border-top:1px solid var(--grid);min-height:44px}
+.partinfo .pi-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.partinfo .pi-head h4{margin:0;font-size:16px;font-family:var(--f-head)}
+.partinfo .pi-head .sub{font-size:12px;color:var(--muted)}
+.partinfo .pi-head button{margin-left:auto;font-size:12px;padding:2px 8px}
+dl.pi{display:grid;grid-template-columns:150px minmax(0,1fr);gap:6px 14px;margin:8px 0 0;font-size:13.5px}
+dl.pi dt{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+dl.pi dd{margin:0;max-width:85ch}
+@media (max-width:600px){dl.pi{grid-template-columns:minmax(0,1fr)}dl.pi dd{margin-bottom:6px}}
+.legend-sm{display:flex;flex-wrap:wrap;gap:4px 14px;padding:6px 12px;font-size:12px;color:var(--muted);border-top:1px solid var(--grid)}
+.legend-sm span{display:inline-flex;align-items:center;gap:5px}
+.legend-sm i{width:12px;height:12px;border-radius:2px;display:inline-block}
+</style>
+</head>
+<body>
+<nav class="sitebar"><a href="../">← All labs</a></nav>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">BME 3102 Dynamics of machines · Friction clutches</div>
+  <h1>Friction Clutch Lab</h1>
+  <p>A single- or multi-plate friction clutch joining an engine to a load. Springs clamp the friction disc between the flywheel and the pressure plate; friction then carries torque across. Hold the pedal down, then release it over a chosen time, and watch the three stages: disengaged, slipping (heat) and locked, or a stalled engine. Torque capacity follows the uniform-pressure or uniform-wear theory. Click any part of the clutch to see what it does, how it is made and what it is made of. Click a graph to go to that moment.</p>
+</header>
+
+<div class="layout">
+<aside class="controls panel" id="controls" aria-label="Inputs">
+  <div class="ph"><h2>Inputs</h2><span class="sub">SI units</span></div>
+  <div class="grp">
+    <h4>Clutch</h4>
+    <div class="sel">
+      <label>Pressure law<select id="theory"><option value="uw">Uniform wear</option><option value="up">Uniform pressure</option></select></label>
+      <label>Friction surfaces<select id="npairs"><option value="2">2 (single plate)</option><option value="4">4</option><option value="6">6</option><option value="8">8</option><option value="10">10</option><option value="12">12</option></select></label>
+    </div>
+    <div id="g-clutch" style="display:grid;gap:8px"></div>
+  </div>
+  <div class="grp"><h4>Engine (driving side)</h4><div id="g-eng" style="display:grid;gap:8px"></div></div>
+  <div class="grp"><h4>Load (driven side)</h4><div id="g-load" style="display:grid;gap:8px"></div></div>
+  <div class="grp"><h4>Engagement and heat</h4><div id="g-eng2" style="display:grid;gap:8px"></div></div>
+  <div class="grp"><h4>Time</h4><div id="g-time" style="display:grid;gap:8px"></div>
+    <div class="btnrow">
+      <button id="play" class="primary" type="button">Play</button>
+      <select id="speed" aria-label="Playback speed" style="width:auto"><option value="0.1">0.1× (very slow)</option><option value="0.2" selected>0.2× (slow)</option><option value="0.5">0.5×</option><option value="1">Real time</option></select>
+      <button id="restart" type="button">Restart</button>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="loop" checked> Loop the animation</label>
+      <label><input type="checkbox" id="showForce" checked> Clamp force and torque arrows</label>
+      <label><input type="checkbox" id="showHeat" checked> Heat glow on the linings</label>
+      <label><input type="checkbox" id="showLabels" checked> Part names</label>
+    </div>
+  </div>
+  <div class="grp"><h4>Presets</h4>
+    <div class="presets" id="presets"></div>
+  </div>
+</aside>
+
+<main>
+  <div class="row first">
+    <section class="panel">
+      <div class="ph"><h3>Clutch: cut-away and end view</h3><span class="chip" id="status"><i></i><span></span></span></div>
+      <div id="warnbox"></div>
+      <canvas id="clutch" class="cv" aria-label="Animated cut-away of a friction clutch and an end view of the two shafts"></canvas>
+      <div class="partbtns" id="partBtns" role="group" aria-label="Clutch parts"></div>
+      <div class="partinfo" id="partInfo" aria-live="polite"></div>
+      <div class="legend-sm"><span><i style="background:var(--crank)"></i>turns with the engine: flywheel, cover</span><span><i style="background:var(--mass)"></i>pressure plate (turns with the engine, slides along the axis)</span><span><i style="background:var(--rod)"></i>turns with the gearbox: friction disc and shaft</span><span><i style="background:var(--force)"></i>springs and clamp force</span><span><i style="background:var(--muted)"></i>release lever and bearing</span></div>
+    </section>
+    <section class="panel">
+      <div class="ph"><h3>At this instant</h3><span class="sub" id="instSub"></span></div>
+      <div class="tablewrap"><table class="res" id="res"></table></div>
+    </section>
+  </div>
+  <div class="row">
+    <section class="panel">
+      <div class="ph"><h3>Energy account</h3><span class="sub" id="enSub"></span></div>
+      <canvas id="energy" class="cv" aria-label="Where the engine's energy has gone so far"></canvas>
+    </section>
+    <section class="panel">
+      <div class="ph"><h3>Pressure on the lining</h3><span class="sub" id="faceSub">same clamp force, two laws</span></div>
+      <canvas id="face" class="cv" aria-label="Lining pressure across the friction face for uniform pressure and uniform wear"></canvas>
+    </section>
+  </div>
+  <section class="panel">
+    <div class="ph"><h3>Results</h3><span class="sub" id="statSub"></span></div>
+    <div class="stats" id="stats"></div>
+  </section>
+  <div class="charts">
+    <section class="panel"><div class="ph"><h3>Shaft speeds</h3><span class="sub">engine and driven side</span></div><canvas class="cv" id="c1"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Torques</h3><span class="sub">capacity, transmitted, engine</span></div><canvas class="cv" id="c2"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Slip power</h3><span class="sub">turned into heat at the linings</span></div><canvas class="cv" id="c3"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Plate temperature rise</h3><span class="sub">lumped, no cooling</span></div><canvas class="cv" id="c4"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Pressure across the face</h3><span class="sub">at full clamp force</span></div><canvas class="cv" id="c5"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Best inner radius</h3><span class="sub">capacity at the allowable pressure</span></div><canvas class="cv" id="c6"></canvas></section>
+  </div>
+  <details class="panel eq" id="eqpanel">
+    <summary>Equations, assumptions and references</summary>
+    <div class="eqbody">
+      <section>
+        <h5>Sign conventions and set-up</h5>
+        <ul>
+          <li>Both shafts turn the same way; speeds ω₁ (engine side) and ω₂ (driven side) are positive in that direction. Slip speed ω<sub>s</sub> = ω₁ − ω₂.</li>
+          <li>Friction torque T<sub>f</sub> on the driven side is positive when it drives it forward; the engine feels −T<sub>f</sub>.</li>
+          <li>The pedal is held down for t<sub>d</sub> (clamp force 0), then the clamp force rises in a straight line from 0 to W over the release time t<sub>e</sub> as the pedal comes up, and stays at W.</li>
+          <li>n is the number of pairs of friction surfaces: 2 for a single plate (two faces), n = n₁ + n₂ − 1 for a multi-plate clutch with n₁ driving and n₂ driven plates.</li>
+        </ul>
+        <h5>Torque capacity of a flat annular face</h5>
+        <p>An element of radius r and width dr carries normal force p·2πr dr and friction torque μ p 2πr² dr. Integrating from R<sub>i</sub> to R<sub>o</sub> over n surfaces:</p>
+<div class="eqblock"><div class="er"><span><b>Uniform pressure</b> (new lining): p = W / π(R<sub>o</sub>² − R<sub>i</sub>²)</span></div>
+<div class="er"><span>T = n μ W R<sub>m</sub>,  R<sub>m</sub> = ⅔ (R<sub>o</sub>³ − R<sub>i</sub>³)/(R<sub>o</sub>² − R<sub>i</sub>²)</span></div>
+<div class="er"><span><b>Uniform wear</b> (worn in): wear ∝ p·v ∝ p·r, so p·r = C</span></div>
+<div class="er"><span>C = W / 2π(R<sub>o</sub> − R<sub>i</sub>),  p<sub>max</sub> = C/R<sub>i</sub> at the inner edge</span></div>
+<div class="er"><span>T = n μ W (R<sub>o</sub> + R<sub>i</sub>)/2</span></div></div>
+        <p>Uniform wear gives slightly less torque, so designers use it: it is the safe figure once the lining has bedded in.</p>
+        <h5>Best inner radius</h5>
+<div class="eqblock"><div class="er"><span>At allowable pressure p<sub>a</sub> (uniform wear): T = π μ n p<sub>a</sub> R<sub>i</sub>(R<sub>o</sub>² − R<sub>i</sub>²)</span></div>
+<div class="er"><span>dT/dR<sub>i</sub> = 0  ⇒  R<sub>i</sub> = R<sub>o</sub>/√3 ≈ 0.577 R<sub>o</sub></span></div>
+<div class="er"><span>Uniform pressure: T = ⅔ π μ n p<sub>a</sub>(R<sub>o</sub>³ − R<sub>i</sub>³), largest as R<sub>i</sub> → 0</span></div></div>
+      </section>
+      <section>
+        <h5>Engagement dynamics</h5>
+<div class="eqblock"><div class="er"><span>Capacity: T<sub>c</sub>(t) = n μ W(t) R<sub>eff</sub></span></div>
+<div class="er"><span>Slipping: I₁ ω̇₁ = T<sub>e</sub> − T<sub>c</sub> sgn(ω<sub>s</sub>)</span></div>
+<div class="er"><span>          I₂ ω̇₂ = T<sub>c</sub> sgn(ω<sub>s</sub>) − T<sub>L</sub></span></div>
+<div class="er"><span>Locked: (I₁ + I₂) ω̇ = T<sub>e</sub> − T<sub>L</sub>,  T<sub>f</sub> = (I₁T<sub>L</sub> + I₂T<sub>e</sub>)/(I₁ + I₂)</span></div>
+<div class="er"><span>Stays locked while |T<sub>f</sub>| ≤ T<sub>c</sub>; otherwise it slips again</span></div>
+<div class="er"><span>Slip power P<sub>s</sub> = T<sub>c</sub>|ω₁ − ω₂|,  heat Q = ∫P<sub>s</sub> dt,  ΔT = Q/(m<sub>h</sub> c)</span></div></div>
+        <ul>
+          <li><b>Engine:</b> a governor holds speed N<sub>set</sub> with droop δ: T<sub>e</sub> = T<sub>max</sub>(ω<sub>set</sub> − ω₁)/(δ ω<sub>set</sub>), limited to 0…T<sub>max</sub>. Below the stall speed (400 rpm here) the engine stops.</li>
+          <li><b>Load:</b> a constant resisting torque T<sub>L</sub> (rolling resistance, a hill or a machine) referred to the clutch shaft. The driven side is held still until the clutch torque exceeds the load, as if the brakes were released at the right moment.</li>
+          <li><b>Heat:</b> all slip energy goes into a lumped mass m<sub>h</sub> of steel and iron (c = 460 J/kg·K) with no cooling during the event. Real faces run hotter at the surface.</li>
+          <li>Solved with fourth-order Runge–Kutta, step 0.1 ms, with the lock-up instant found by interpolation and momentum conserved at lock-up.</li>
+        </ul>
+        <h5>Two classic results the model reproduces</h5>
+<div class="eqblock"><div class="er"><span>Constant-speed driver Ω, no load, full clamp at once:</span></div>
+<div class="er"><span>t<sub>slip</sub> = I₂Ω/T<sub>c</sub>,  heat = ½I₂Ω² (half the input energy is lost)</span></div>
+<div class="er"><span>Two free inertias: ω<sub>f</sub> = (I₁ω₁₀ + I₂ω₂₀)/(I₁ + I₂)</span></div>
+<div class="er"><span>heat = ½ I₁I₂/(I₁ + I₂)·(ω₁₀ − ω₂₀)²</span></div></div>
+        <p class="note">Checked numerically: torque formulas against direct integration of μp·2πr², both classic results to 5 significant figures, and an energy balance (engine work + initial kinetic energy = kinetic energy + load work + heat) to better than 1 part in 10⁸.</p>
+      </section>
+      <section class="refs">
+        <h5>References</h5>
+        <p>Budynas, R. G., &amp; Nisbett, J. K. (2020). <i>Shigley’s mechanical engineering design</i> (11th ed.). McGraw-Hill Education.</p>
+        <p>Childs, P. R. N. (2019). <i>Mechanical design engineering handbook</i> (2nd ed.). Butterworth-Heinemann.</p>
+        <p>Khurmi, R. S., &amp; Gupta, J. K. (2005). <i>Theory of machines</i> (14th ed.). S. Chand.</p>
+        <p>Norton, R. L. (2020). <i>Design of machinery: An introduction to the synthesis and analysis of mechanisms and machines</i> (6th ed.). McGraw-Hill Education.</p>
+        <p>Rattan, S. S. (2019). <i>Theory of machines</i> (5th ed.). McGraw Hill Education.</p>
+        <p class="note">Default values are typical of a small car (single-plate dry clutch, organic lining, μ ≈ 0.3) and a motorcycle wet multi-plate clutch (μ ≈ 0.1); they are teaching values, not data for a particular vehicle.</p>
+      </section>
+    </div>
+  </details>
+
+</main>
+</div>
+</div>
+<script>
+(function(){
+"use strict";
+// MODEL START
+// Units inside the model: SI (m, N, N·m, rad/s, s, J). Inputs: Ro, Ri in mm; N in rpm; pa in MPa.
+function capacity(P){
+  const Ro = P.Ro/1000, Ri = P.Ri/1000, n = P.npairs, mu = P.mu, W = P.W;
+  const ok = Ro > Ri && Ri >= 0 && n >= 1 && mu > 0;
+  const A = Math.PI*(Ro*Ro - Ri*Ri);
+  const Rup = (2/3)*(Ro**3 - Ri**3)/(Ro*Ro - Ri*Ri);          // uniform pressure
+  const Ruw = (Ro + Ri)/2;                                      // uniform wear
+  const pUP = W/A;                                              // Pa, constant
+  const Cw = W/(2*Math.PI*(Ro - Ri));                           // p·r = C
+  const pmaxUW = Ri > 0 ? Cw/Ri : Infinity, pminUW = Cw/Ro;
+  const Tup = n*mu*W*Rup, Tuw = n*mu*W*Ruw;
+  const Reff = P.theory === 'up' ? Rup : Ruw;
+  const pmax = P.theory === 'up' ? pUP : pmaxUW;
+  // torque capacity limited by allowable pressure pa (MPa), for any Ri at this Ro
+  const pa = P.pa*1e6;
+  const TupAt = ri => (2/3)*Math.PI*mu*n*pa*(Ro**3 - ri**3);    // W = pa·A
+  const TuwAt = ri => Math.PI*mu*n*pa*ri*(Ro*Ro - ri*ri);       // W = 2π pa ri (Ro−ri)
+  return { ok, Ro, Ri, A, Rup, Ruw, Reff, pUP, Cw, pmaxUW, pminUW, Tup, Tuw, Tc:n*mu*W*Reff, pmax, TupAt, TuwAt,
+    ratioOpt:1/Math.sqrt(3), Wa_uw: Ri > 0 ? 2*Math.PI*pa*Ri*(Ro - Ri) : 0, Wa_up: pa*A };
+}
+function engineTorque(P, w1){
+  const ws = P.Nset*Math.PI/30, d = Math.max(1e-6, P.droop/100);
+  return Math.min(P.Temax, Math.max(0, P.Temax*(ws - w1)/(d*ws)));
+}
+function buildModel(P){
+  const cap = capacity(P);
+  const out = { cap, ok:cap.ok };
+  if (!cap.ok) return out;
+  const I1 = P.I1, I2 = P.I2, TL = P.TL, te = Math.max(0, P.te), td = Math.max(0, P.td || 0);
+  const Wt = t => t < td ? 0 : te > 0 ? P.W*Math.min(1, (t - td)/te) : P.W;
+  const Tct = t => P.npairs*P.mu*Wt(t)*cap.Reff;
+  const wstall = P.Nstall*Math.PI/30;
+  let w1 = P.Nset*Math.PI/30, w2 = P.N2*Math.PI/30, t = 0;
+  let Ee = 0, EL = 0, Eh = 0, th1 = 0, th2 = 0;
+  const KE0 = 0.5*I1*w1*w1 + 0.5*I2*w2*w2;
+  const dt = 1e-4;
+  let locked = Math.abs(w1 - w2) < 1e-9 && false, tLock = null, tStall = null, tUnlock = null;
+  const tmaxGuess = td + Math.max(3*te, 2.5);
+  let tEnd = tmaxGuess;
+  // state derivative in a given mode. held: driven side held by brakes until clutch torque beats the load
+  function deriv(tt, y, mode, sgn){
+    const [a1, a2] = [y[0], y[1]];
+    const Te = engineTorque(P, a1), Tc = Tct(tt);
+    let d1, d2, Tf, ps = 0;
+    if (mode === 'lock'){ const a = (Te - TL)/(I1 + I2); d1 = a; d2 = a; Tf = Te - I1*a; }
+    else {
+      const s = sgn; Tf = s*Tc;
+      d1 = (Te - Tf)/I1; d2 = (Tf - TL)/I2;
+      if (a2 <= 0 && d2 < 0 && TL >= 0 && Tf <= TL){ d2 = 0; } // load held: driven side cannot run backwards
+      ps = Tc*Math.abs(a1 - a2);
+    }
+    const TLe = (y[1] <= 0 && mode !== 'lock' && Tf <= TL) ? 0 : TL;   // no load work while held
+    return [d1, d2, Te*a1, TLe*a2, ps, a1, a2];
+  }
+  const rec = { t:[], w1:[], w2:[], Tc:[], Tf:[], Te:[], W:[], Ps:[], Eh:[], dT:[], th1:[], th2:[], st:[], Ee:[], EL:[] };
+  const mh = P.mh*P.ch;
+  function push(mode, y){
+    const Te = engineTorque(P, y[0]), Tc = Tct(t);
+    let Tf; if (mode === 'lock') Tf = Te - I1*(Te - TL)/(I1 + I2); else Tf = (Math.sign(y[0] - y[1]) || 1)*Tc;
+    rec.t.push(t); rec.w1.push(y[0]); rec.w2.push(y[1]); rec.Tc.push(Tc); rec.Tf.push(Tf); rec.Te.push(Te); rec.W.push(Wt(t));
+    rec.Ps.push(mode === 'lock' ? 0 : Tc*Math.abs(y[0] - y[1])); rec.Eh.push(y[4]); rec.dT.push(y[4]/mh); rec.th1.push(y[5]); rec.th2.push(y[6]); rec.Ee.push(y[2]); rec.EL.push(y[3]);
+    rec.st.push(mode === 'stall' ? 3 : mode === 'lock' ? 2 : Tc > 0 ? 1 : 0);
+  }
+  let y = [w1, w2, 0, 0, 0, 0, 0], mode = 'slip';
+  const every = 20; let k = 0;
+  push(mode, y);
+  while (t < tEnd - 1e-12){
+    const h = Math.min(dt, tEnd - t);
+    const sg = Math.sign(y[0] - y[1]) || 1;
+    const f = (tt, yy) => deriv(tt, yy, mode, sg);
+    const k1 = f(t, y), y2 = y.map((v, i) => v + h/2*k1[i]), k2 = f(t + h/2, y2), y3 = y.map((v, i) => v + h/2*k2[i]),
+      k3 = f(t + h/2, y3), y4 = y.map((v, i) => v + h*k3[i]), k4 = f(t + h, y4);
+    let yn = y.map((v, i) => v + h/6*(k1[i] + 2*k2[i] + 2*k3[i] + k4[i]));
+    if (mode === 'slip'){
+      if (yn[1] < 0 && y[1] >= 0 && P.N2 >= 0) yn[1] = 0;
+      const s0 = Math.sign(y[0] - y[1]), s1 = Math.sign(yn[0] - yn[1]);
+      if (s0 !== 0 && s1 !== s0){
+        // shafts reach the same speed inside this step: interpolate to the crossing, conserve momentum
+        const f0 = y[0] - y[1], f1 = yn[0] - yn[1], q = f0/(f0 - f1);
+        const yc = y.map((v, i) => v + q*(yn[i] - v));
+        const wc = (I1*yc[0] + I2*yc[1])/(I1 + I2); yc[0] = wc; yc[1] = wc;
+        t += q*h; y = yc;
+        const Te = engineTorque(P, wc), Treq = (I1*TL + I2*Te)/(I1 + I2);
+        if (Math.abs(Treq) <= Tct(t)){ mode = 'lock'; if (tLock === null) tLock = t; tEnd = Math.min(Math.max(tEnd, t + Math.max(1.5, 0.6*(t - td))), 14); }
+        push(mode, y); continue;
+      }
+    } else if (mode === 'lock'){
+      const Te = engineTorque(P, yn[0]), Treq = (I1*TL + I2*Te)/(I1 + I2);
+      if (Math.abs(Treq) > Tct(t + h)){ mode = 'slip'; tUnlock = t + h; }
+    }
+    y = yn; t += h;
+    if (y[0] < wstall){ mode = 'stall'; tStall = t; push(mode, y); break; }
+    if (mode === 'slip' && t >= tEnd - 1e-9 && tLock === null && tEnd < 12 && Tct(t) > 0){ tEnd = Math.min(12, tEnd + 1); }
+    if (++k % every === 0) push(mode, y);
+  }
+  if (rec.t[rec.t.length - 1] < t) push(mode, y);
+  const KE1 = 0.5*I1*y[0]*y[0], KE2 = 0.5*I2*y[1]*y[1];
+  Object.assign(out, { rec, tLock, tStall, tUnlock, tEnd:t, Ee:y[2], EL:y[3], Eh:y[4], KE0, KE1, KE2, KE10:0.5*I1*(P.Nset*Math.PI/30)**2, KE20:0.5*I2*(P.N2*Math.PI/30)**2,
+    resid:y[2] + KE0 - (KE1 + KE2 + y[3] + y[4]), dTend:y[4]/mh, Wt, Tct,
+    peakPs:Math.max(...rec.Ps), minN1:Math.min(...rec.w1)*30/Math.PI });
+  return out;
+}
+// MODEL END
+/* ---------- inputs ---------- */
+const $ = id => document.getElementById(id);
+const specs = {
+  'g-clutch':[['Ro','Outer radius of lining','R_o','mm',20,250,1,110,()=>`mean ${(((P.Ro+P.Ri)/2)).toFixed(1)} mm`],
+              ['Ri','Inner radius of lining','R_i','mm',5,240,1,75,()=>`R_i/R_o = ${(P.Ri/P.Ro).toFixed(3)}`],
+              ['mu','Coefficient of friction','μ','',0.05,0.6,0.01,0.3,v=>v<0.15?'wet (oil) range':'dry range'],
+              ['W','Spring clamp force','W','N',100,20000,10,4000,null],
+              ['pa','Allowable lining pressure','p_a','MPa',0.05,2,0.01,0.3,null]],
+  'g-eng':[['Nset','Engine speed (no load)','N_1','rpm',500,6000,10,1500,v=>`ω = ${(v*Math.PI/30).toFixed(1)} rad/s`],
+           ['Temax','Engine maximum torque','T_max','N·m',0,20000,1,150,null],
+           ['droop','Governor droop','δ','%',1,30,0.5,10,null],
+           ['I1','Engine-side inertia','I_1','kg·m²',0.01,1000,0.01,0.25,null]],
+  'g-load':[['I2','Driven-side inertia','I_2','kg·m²',0.01,100,0.01,0.59,null],
+            ['N2','Driven speed at start','N_2','rpm',0,6000,10,0,null],
+            ['TL','Load torque','T_L','N·m',0,500,0.5,4,null]],
+  'g-eng2':[['td','Pedal held down for','t_d','s',0,3,0.05,0.6,null],
+            ['te','Pedal release time','t_e','s',0,5,0.01,0.8,v=>v===0?'clamped at once':`W rises over ${v} s`],
+            ['mh','Mass that absorbs the heat','m_h','kg',0.2,100,0.1,6,null]],
+  'g-time':[['t','Time','t','s',0,3.5,0.001,1.0,null]]
+};
+const P = { theory:'uw', npairs:2, ch:460, Nstall:400 };
+const hints = {};
+for (const g in specs) for (const s of specs[g]){
+  const [k,lab,sym,unit,mn,mx,st,val,hint] = s; P[k] = val;
+  const box = document.createElement('div'); box.className = 'ctl';
+  box.innerHTML = `<label for="${k}_n"><span>${lab} <span class="sym">${sym.replace(/_(\w+)/,'<sub>$1</sub>')}${unit?` [${unit}]`:''}</span></span><span class="hint" id="${k}_h"></span></label>
+    <input type="range" id="${k}_r" min="${mn}" max="${mx}" step="${st}" value="${val}" aria-label="${lab}">
+    <input type="number" id="${k}_n" min="${mn}" max="${mx}" step="${st}" value="${val}">`;
+  $(g).appendChild(box); hints[k] = hint;
+  const rr = box.querySelector('input[type=range]'), nn = box.querySelector('input[type=number]');
+  rr.addEventListener('input', () => { nn.value = rr.value; setP(k, +rr.value); });
+  nn.addEventListener('change', () => { let v = +nn.value; if (!isFinite(v)) v = P[k]; v = Math.min(+nn.max, Math.max(+nn.min, v)); nn.value = v; rr.value = v; setP(k, v); });
+}
+function setInput(k, v){ P[k] = v; const rr = $(k+'_r'), nn = $(k+'_n'); if (rr){ rr.value = v; nn.value = v; } }
+function setP(k, v){ P[k] = v; if (k === 't') refreshInstant(); else refreshAll(); }
+$('theory').addEventListener('change', e => { P.theory = e.target.value; refreshAll(); });
+$('npairs').addEventListener('change', e => { P.npairs = +e.target.value; refreshAll(); });
+['showForce','showHeat','showLabels'].forEach(id => $(id).addEventListener('change', () => refreshInstant()));
+function updHints(){ for (const k in hints){ const h = $(k+'_h'); if (h) h.textContent = hints[k] ? hints[k](P[k]) : ''; } }
+
+/* ---------- presets ---------- */
+const BASE = { td:0.6, theory:'uw', npairs:2, Ro:110, Ri:75, mu:0.3, W:4000, pa:0.3, Nset:1500, Temax:150, droop:10, I1:0.25, I2:0.59, N2:0, TL:4, te:0.8, mh:6 };
+const PRESETS = [
+  ['Car pull-away', 'flat road, 1st gear', {}, 0.45],
+  ['Hill start', '10% grade, more revs', { TL:30, Nset:1800 }, 0.5],
+  ['Stall it', 'low revs, quick release', { Nset:900, te:0.1, TL:30, Temax:110 }, 0.12],
+  ['Worn lining', 'μ = 0.15 on the hill', { mu:0.15, TL:30, Nset:2200 }, 1.0],
+  ['Motor and flywheel', 'textbook: half the energy lost', { I1:400, Temax:20000, droop:2, te:0, TL:0, I2:2, Nset:1000, W:4500, mh:20 }, 0.2],
+  ['Multi-plate', 'wet motorcycle clutch', { npairs:8, Ro:65, Ri:42, mu:0.12, W:1800, pa:0.4, I1:0.05, I2:0.15, Temax:60, Nset:3000, te:0.6, TL:2, mh:2 }, 0.35]
+];
+PRESETS.forEach(([name, sub, over, t0], i) => { const b = document.createElement('button'); b.type = 'button';
+  b.innerHTML = `${name}<small>${sub}</small>`; b.addEventListener('click', () => loadPreset(i)); $('presets').appendChild(b); });
+function loadPreset(i){ const [,, over, t0] = PRESETS[i]; const v = Object.assign({}, BASE, over);
+  for (const k in v){ if (k === 'theory'){ P.theory = v[k]; $('theory').value = v[k]; } else if (k === 'npairs'){ P.npairs = v[k]; $('npairs').value = v[k]; } else setInput(k, v[k]); }
+  refreshAll(); setInput('t', Math.min(t0 + (P.td || 0), M.tEnd || t0)); refreshInstant(); }
+
+/* ---------- drawing helpers ---------- */
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let C = {};
+function readColors(){ for (const k of ['paper','sheet','ink','muted','rule','grid','chip','crank','rod','mass','vel','acc','force','ok','bad']) C[k] = css('--'+k); C.mono = css('--f-mono'); C.head = css('--f-head'); }
+function prep(cv){
+  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== Math.round(W*dpr) || cv.height !== Math.round(H*dpr)){ cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr); }
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+  return { ctx, W, H };
+}
+function alpha(col, a){
+  if (col.startsWith('#')){ let h = col.slice(1); if (h.length === 3) h = h.split('').map(c=>c+c).join('');
+    const n = parseInt(h,16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; }
+  return col;
+}
+function arrow(ctx, x0, y0, x1, y1, col, w=2){
+  const dx = x1-x0, dy = y1-y0, L = Math.hypot(dx,dy); if (L < 2) return;
+  const ux = dx/L, uy = dy/L, hl = Math.min(10, L*0.45);
+  ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = w;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1-ux*hl*0.8, y1-uy*hl*0.8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1-ux*hl-uy*hl*0.45, y1-uy*hl+ux*hl*0.45); ctx.lineTo(x1-ux*hl+uy*hl*0.45, y1-uy*hl-ux*hl*0.45); ctx.closePath(); ctx.fill();
+}
+function richParts(txt){ const out = []; const re = /_([A-Za-z0-9]+)/g; let i = 0, m;
+  while ((m = re.exec(txt))){ if (m.index > i) out.push([txt.slice(i, m.index), false]); out.push([m[1], true]); i = re.lastIndex; }
+  if (i < txt.length) out.push([txt.slice(i), false]); return out; }
+function richWidth(ctx, txt){ const f = ctx.font, sz = parseFloat((f.match(/(\d+(?:\.\d+)?)px/)||[0,12])[1]); let w = 0;
+  for (const [t, sub] of richParts(txt)){ if (sub){ ctx.font = f.replace(/\d+(?:\.\d+)?px/, (sz*0.78).toFixed(1)+'px'); w += ctx.measureText(t).width; ctx.font = f; } else w += ctx.measureText(t).width; }
+  return w; }
+function rich(ctx, txt, x, y){ const f = ctx.font, sz = parseFloat((f.match(/(\d+(?:\.\d+)?)px/)||[0,12])[1]), al = ctx.textAlign, w = richWidth(ctx, txt);
+  let cx = al === 'right' ? x - w : al === 'center' ? x - w/2 : x; ctx.textAlign = 'left';
+  for (const [t, sub] of richParts(txt)){ if (sub){ ctx.font = f.replace(/\d+(?:\.\d+)?px/, (sz*0.78).toFixed(1)+'px'); ctx.fillText(t, cx, y + sz*0.28); cx += ctx.measureText(t).width; ctx.font = f; } else { ctx.fillText(t, cx, y); cx += ctx.measureText(t).width; } }
+  ctx.textAlign = al; return w; }
+function label(ctx, txt, x, y, col, align='left', size=11.5, bg=true){
+  ctx.font = `500 ${size}px ${C.mono}`; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  if (bg){ const w = richWidth(ctx, txt), x0 = align==='left'?x:align==='right'?x-w:x-w/2;
+    ctx.fillStyle = alpha(C.sheet.startsWith('#')?C.sheet:'#ffffff', 0.86); ctx.fillRect(x0-2, y-8, w+4, 16); }
+  ctx.fillStyle = col; rich(ctx, txt, x, y);
+}
+function niceStep(span, target){ const raw = span/Math.max(target,1), p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw/p;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10)*p; }
+function fmt(v, d=2){ if (!isFinite(v)) return 'n/a'; const a = Math.abs(v);
+  if (a !== 0 && (a >= 1e6 || a < 1e-3)) return v.toExponential(2);
+  return v.toLocaleString('en-US', { minimumFractionDigits:d, maximumFractionDigits:d }); }
+function fmtTick(v, step){ const d = Math.max(0, -Math.floor(Math.log10(step) + 1e-9)); return Math.abs(v) >= 1e5 ? v.toExponential(1) : v.toFixed(Math.min(d,4)); }
+
+/* reusable chart: o = {x, series:[{y,color,w,dash,label}], hlines, vlines, cursor, value, ylab, xlab, markers, fill} */
+function chart(cv, o){
+  const { ctx, W, H } = prep(cv);
+  const pl = 56, pr = 12, pt = 26, pb = 30, w = W-pl-pr, h = H-pt-pb;
+  const x = o.x, xmin = o.xmin != null ? o.xmin : x[0], xmax = o.xmax != null ? o.xmax : x[x.length-1];
+  let ymin = Infinity, ymax = -Infinity;
+  for (const s of o.series) for (let j = 0; j < s.y.length; j++){ const v = s.y[j]; if (isFinite(v)){ if (v < ymin) ymin = v; if (v > ymax) ymax = v; } }
+  for (const hl of (o.hlines||[])){ ymin = Math.min(ymin, hl.v); ymax = Math.max(ymax, hl.v); }
+  if (o.zero !== false){ ymin = Math.min(ymin, 0); ymax = Math.max(ymax, 0); }
+  if (!(ymax > ymin)){ ymax = ymin + 1; }
+  const padv = (ymax-ymin)*0.08; ymax += padv; if (ymin < 0) ymin -= padv;
+  const X = v => pl + (v-xmin)/(xmax-xmin)*w, Y = v => pt + (ymax-v)/(ymax-ymin)*h;
+  cv._map = { pl, w, xmin, xmax };
+  ctx.font = `11px ${C.mono}`; ctx.textBaseline = 'middle'; ctx.lineWidth = 1;
+  const ys = niceStep(ymax-ymin, 5);
+  for (let v = Math.ceil(ymin/ys)*ys; v <= ymax; v += ys){
+    ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(pl, Y(v)); ctx.lineTo(pl+w, Y(v)); ctx.stroke();
+    ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.fillText(fmtTick(v, ys), pl-6, Y(v)); }
+  const xs = niceStep(xmax-xmin, Math.max(3, Math.floor(w/70)));
+  for (let v = Math.ceil(xmin/xs)*xs; v <= xmax+1e-9; v += xs){
+    ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(X(v), pt); ctx.lineTo(X(v), pt+h); ctx.stroke();
+    ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.fillText(fmtTick(v, xs), X(v), pt+h+11); }
+  ctx.textAlign = 'right'; ctx.fillText(o.xlab || 'time t [s]', pl+w, pt+h+24);
+  ctx.save(); ctx.translate(12, pt+h/2); ctx.rotate(-Math.PI/2); ctx.textAlign = 'center'; rich(ctx, o.ylab||'', 0, 0); ctx.restore();
+  for (const sh of (o.shade||[])){ ctx.fillStyle = alpha(sh.color, 0.08); ctx.fillRect(X(sh.a), pt, Math.max(0, X(sh.b)-X(sh.a)), h);
+    if (sh.label){ ctx.fillStyle = C.muted; ctx.textAlign='center'; ctx.font = `10px ${C.mono}`; ctx.fillText(sh.label, (X(sh.a)+X(Math.min(sh.b,xmax)))/2, pt+h-8); ctx.font = `11px ${C.mono}`; } }
+  if (ymin < 0 && ymax > 0){ ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(pl, Y(0)); ctx.lineTo(pl+w, Y(0)); ctx.stroke(); }
+  if (o.fill){ const f = o.fill; ctx.fillStyle = alpha(f.color, 0.2); ctx.beginPath(); ctx.moveTo(X(x[0]), Y(0)); for (let j = 0; j < x.length; j++) ctx.lineTo(X(x[j]), Y(f.y[j])); ctx.lineTo(X(x[x.length-1]), Y(0)); ctx.closePath(); ctx.fill(); }
+  for (const hl of (o.hlines||[])){ ctx.strokeStyle = hl.color; ctx.lineWidth = 1.2; ctx.setLineDash(hl.dash||[5,4]); ctx.beginPath(); ctx.moveTo(pl, Y(hl.v)); ctx.lineTo(pl+w, Y(hl.v)); ctx.stroke(); ctx.setLineDash([]);
+    if (hl.label){ ctx.textAlign = hl.right ? 'right' : 'left'; ctx.fillStyle = hl.color; rich(ctx, hl.label, hl.right ? pl+w-4 : pl+4, Y(hl.v) - 8); } }
+  for (const vl of (o.vlines||[])){ if (vl.v < xmin || vl.v > xmax) continue; ctx.strokeStyle = vl.color; ctx.lineWidth = 1.2; ctx.setLineDash(vl.dash||[4,3]); ctx.beginPath(); ctx.moveTo(X(vl.v), pt); ctx.lineTo(X(vl.v), pt+h); ctx.stroke(); ctx.setLineDash([]);
+    if (vl.label){ ctx.fillStyle = vl.color; ctx.textAlign = X(vl.v) > pl + w*0.7 ? 'right' : 'left'; rich(ctx, vl.label, X(vl.v) + (ctx.textAlign === 'left' ? 4 : -4), pt + 10 + (vl.dy||0)); } }
+  ctx.save(); ctx.beginPath(); ctx.rect(pl, pt, w, h); ctx.clip();
+  for (const s of o.series){
+    ctx.strokeStyle = s.color; ctx.lineWidth = s.w || 1.8; ctx.setLineDash(s.dash || []);
+    ctx.beginPath(); let on = false;
+    for (let j = 0; j < x.length; j++){ const v = s.y[j]; if (!isFinite(v)){ on = false; continue; } const xx = X(x[j]), yy = Y(v); if (on) ctx.lineTo(xx, yy); else { ctx.moveTo(xx, yy); on = true; } }
+    ctx.stroke(); ctx.setLineDash([]); }
+  for (const mk of (o.markers||[])){ ctx.fillStyle = mk.color; ctx.beginPath(); ctx.arc(X(mk.x), Y(mk.y), 4, 0, 7); ctx.fill();
+    if (mk.label){ ctx.textAlign = X(mk.x) > pl + w*0.6 ? 'right' : 'left'; rich(ctx, mk.label, X(mk.x) + (ctx.textAlign==='left'?7:-7), Y(mk.y) + (mk.dy||-10)); } }
+  ctx.restore();
+  if (o.cursor != null){
+    const cx = X(o.cursor); ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(cx, pt); ctx.lineTo(cx, pt+h); ctx.stroke(); ctx.setLineDash([]);
+    const s0 = o.series[o.cursorSeries||0], j = o.cursorIndex;
+    if (s0 && j != null && isFinite(s0.y[j])){ ctx.fillStyle = s0.color; ctx.beginPath(); ctx.arc(cx, Y(s0.y[j]), 4, 0, 7); ctx.fill(); } }
+  ctx.font = `11px ${C.mono}`; ctx.textBaseline = 'middle'; let lx = pl;
+  for (const s of o.series){ if (!s.label) continue; ctx.strokeStyle = s.color; ctx.lineWidth = 2; ctx.setLineDash(s.dash||[]); ctx.beginPath(); ctx.moveTo(lx, 12); ctx.lineTo(lx+14, 12); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = C.muted; ctx.textAlign = 'left'; lx += 26 + rich(ctx, s.label, lx+18, 12); if (lx > W - 150) break; }
+  if (o.value){ ctx.font = `600 12px ${C.mono}`; ctx.fillStyle = C.ink; ctx.textAlign = 'right'; rich(ctx, o.value, W-pr, 12); }
+}
+
+/* ---------- state ---------- */
+let M = null, J = 0;
+const RPM = w => w*30/Math.PI;
+function idxAt(t){ const r = M.rec.t; let lo = 0, hi = r.length - 1; while (hi - lo > 1){ const m = (lo + hi) >> 1; if (r[m] <= t) lo = m; else hi = m; } return (t - r[lo] <= r[hi] - t) ? lo : hi; }
+function refreshAll(){
+  M = buildModel(P);
+  const tr = $('t_r'), tn = $('t_n');
+  if (M.ok){ const tm = +M.tEnd.toFixed(3); tr.max = tm; tn.max = tm; if (P.t > tm) setInput('t', tm); }
+  updHints(); drawStats(); refreshInstant();
+}
+function refreshInstant(){
+  readColors(); updHints();
+  const wb = $('warnbox');
+  if (!M.ok){ wb.innerHTML = `<div class="warn">The inner radius must be smaller than the outer radius. Lower R<sub>i</sub> or raise R<sub>o</sub>.</div>`;
+    const { ctx } = prep($('clutch')); return; }
+  const msgs = [];
+  if (M.cap.pmax > P.pa*1e6) msgs.push(`Peak lining pressure ${fmt(M.cap.pmax/1e6, 3)} MPa is above the allowable ${fmt(P.pa, 2)} MPa: the lining would wear fast or burn. Lower W or enlarge the face.`);
+  if (M.tStall != null) msgs.push(`The engine stalls at t = ${fmt(M.tStall, 2)} s: the clutch took more torque than the engine could give before its speed fell below ${P.Nstall} rpm. Release more slowly, raise the revs, or reduce the load.`);
+  if (M.tLock == null && M.tStall == null) msgs.push(`The clutch never locks in ${fmt(M.tEnd, 1)} s: its torque capacity cannot carry the engine torque plus the load. It slips and overheats.`);
+  if (P.npairs > 2 && P.mu > 0.2) msgs.push(`Multi-plate clutches usually run wet in oil with μ ≈ 0.08–0.12; μ = ${fmt(P.mu, 2)} is a dry value.`);
+  wb.innerHTML = msgs.map(m => `<div class="warn">${m}</div>`).join('');
+  J = idxAt(P.t);
+  drawStatus(); drawClutch(); drawTable(); drawEnergy(); drawFace(); drawCharts();
+}
+
+/* ---------- status ---------- */
+function drawStatus(){
+  const st = M.rec.st[J], ch = $('status'); let cls, txt;
+  const ws = M.rec.w1[J] - M.rec.w2[J];
+  if (st === 3){ cls = 'stall'; txt = 'Engine stalled'; }
+  else if (st === 2){ cls = 'lock'; txt = 'Locked: both shafts turn together'; }
+  else if (st === 1 && Math.abs(ws) > 1e-3){ cls = 'slip'; txt = `Slipping: ${fmt(RPM(ws), 0)} rpm, ${fmt(M.rec.Ps[J]/1000, 1)} kW into heat`; }
+  else if (st === 1){ cls = 'lock'; txt = 'Gripping'; }
+  else { cls = 'idle'; txt = 'Disengaged: the disc turns freely'; }
+  ch.className = 'chip ' + cls; ch.querySelector('span').textContent = txt;
+  $('instSub').textContent = `t = ${fmt(P.t, 3)} s`;
+}
+
+/* ---------- table ---------- */
+function drawTable(){
+  const r = M.rec, j = J, c = M.cap, frac = r.W[j]/P.W;
+  const rows = [
+    ['sec','Clamping'],
+    ['Clamp force','W(t)', fmt(r.W[j], 0), 'N'],
+    ['Peak lining pressure','p_max', fmt(c.pmax*frac/1e3, 1), 'kPa'],
+    ['key','Torque capacity','T_c', fmt(r.Tc[j], 1), 'N·m'],
+    ['sec','Motion'],
+    ['Engine speed','N_1', fmt(RPM(r.w1[j]), 0), 'rpm'],
+    ['Driven speed','N_2', fmt(RPM(r.w2[j]), 0), 'rpm'],
+    ['key','Slip speed','N_1 − N_2', fmt(RPM(r.w1[j] - r.w2[j]), 0), 'rpm'],
+    ['sec','Torque'],
+    ['Engine torque','T_e', fmt(r.Te[j], 1), 'N·m'],
+    ['key','Torque through the clutch','T_f', fmt(r.Tf[j], 1), 'N·m'],
+    ['Load torque','T_L', fmt(P.TL, 1), 'N·m'],
+    ['sec','Heat'],
+    ['key','Slip power','P_s', fmt(r.Ps[j]/1000, 2), 'kW'],
+    ['Heat so far','Q', fmt(r.Eh[j]/1000, 2), 'kJ'],
+    ['Temperature rise','ΔT', fmt(r.dT[j], 1), 'K']
+  ];
+  const sub = s => s.replace(/_([A-Za-z0-9]+)/g, '<sub>$1</sub>');
+  $('res').innerHTML = rows.map(rw => rw[0] === 'sec' ? `<tr class="sec"><td colspan="4">${rw[1]}</td></tr>`
+    : rw[0] === 'key' ? `<tr class="key"><td>${rw[1]}</td><td>${sub(rw[2])}</td><td class="v">${rw[3]}</td><td class="u">${rw[4]}</td></tr>`
+    : `<tr><td>${rw[0]}</td><td>${sub(rw[1])}</td><td class="v">${rw[2]}</td><td class="u">${rw[3]}</td></tr>`).join('');
+}
+
+/* ---------- stats ---------- */
+function drawStats(){
+  const el = $('stats'); if (!M.ok){ el.innerHTML = ''; return; }
+  const c = M.cap, ke2 = 0.5*P.I2*(M.rec.w2[M.rec.w2.length-1])**2 - M.KE20;
+  const td0 = P.td || 0, lockTxt = M.tStall != null ? `stalls ${fmt(M.tStall - td0, 2)}` : M.tLock != null ? fmt(M.tLock - td0, 3) : 'never';
+  const S = [
+    ['Capacity, uniform wear', `${fmt(c.Tuw, 1)} <small>N·m</small>`],
+    ['Capacity, uniform pressure', `${fmt(c.Tup, 1)} <small>N·m</small>`],
+    [`Effective radius <span class="lc">R_eff</span>`, `${fmt(c.Reff*1000, 1)} <small>mm</small>`],
+    ['Peak lining pressure', `<span class="${c.pmax > P.pa*1e6 ? 'badv' : ''}">${fmt(c.pmax/1e3, 0)}</span> <small>kPa (allow ${fmt(P.pa*1000, 0)})</small>`],
+    [`Capacity ÷ <span class="lc">T_max</span>`, P.Temax > 0 ? `${fmt(c.Tc/P.Temax, 2)} <small>× engine</small>` : '–'],
+    ['Lock-up, after release starts', `${lockTxt} <small>${M.tStall != null || M.tLock != null ? 's' : ''}</small>`],
+    ['Lowest engine speed', `${fmt(M.minN1, 0)} <small>rpm</small>`],
+    ['Heat generated', `${fmt(M.Eh/1000, 2)} <small>kJ</small>`],
+    ['Plate temperature rise', `${fmt(M.dTend, 1)} <small>K</small>`],
+    ['Heat ÷ KE gained by load', ke2 > 1 ? `${fmt(M.Eh/ke2, 2)}` : '–']
+  ];
+  el.innerHTML = S.map(([k, n]) => `<div class="stat"><div class="k">${k.replace(/_([A-Za-z0-9]+)/g, '<sub>$1</sub>')}</div><div class="n">${n.replace(/_([A-Za-z0-9]+)/g, '<sub>$1</sub>')}</div></div>`).join('');
+  $('statSub').textContent = `${P.theory === 'uw' ? 'uniform wear' : 'uniform pressure'} used for the dynamics · n = ${P.npairs}`;
+}
+
+
+/* ---------- parts: what each one is for ---------- */
+const PARTS = {
+  crank:{ name:'Crankshaft (engine output)', group:'Engine side',
+    purpose:'Delivers the engine torque to the flywheel and so to the clutch.',
+    construction:'A forged or cast shaft whose rear flange carries a ring of bolts that hold the flywheel. The front of the gearbox input shaft runs in a small spigot (pilot) bearing in its end.',
+    materials:'Forged carbon or alloy steel (for example 42CrMo4 / AISI 4140), or spheroidal-graphite (SG) cast iron in many petrol engines; journals induction-hardened.' },
+  flywheel:{ name:'Flywheel', group:'Turns with the engine',
+    purpose:'Stores rotational energy to smooth the engine’s torque pulses, gives the clutch its first friction face, and carries the ring gear the starter motor turns.',
+    construction:'A heavy disc bolted to the crankshaft flange. The friction face is machined flat and smooth; a steel ring gear is shrunk onto the rim. Many modern diesels use a dual-mass flywheel: two masses joined by springs to absorb vibration.',
+    materials:'Grey cast iron (good wear and heat capacity), SG iron or steel for high-performance engines; ring gear of hardened medium-carbon steel.' },
+  disc:{ name:'Friction disc (driven plate)', group:'Turns with the gearbox',
+    purpose:'Carries the torque from the flywheel and pressure plate to the gearbox input shaft by friction, and slips while the car pulls away.',
+    construction:'A thin steel plate with wavy cushion segments under the facings so it engages smoothly. A splined hub slides along the gearbox shaft; torsional damper springs between hub and plate soak up engine vibration. Facings are riveted or bonded to both sides.',
+    materials:'Plate and cushion segments of spring steel; hub of medium-carbon steel; damper springs of spring steel; facings, see linings.' },
+  lining:{ name:'Friction linings (facings)', group:'Turns with the gearbox',
+    purpose:'Give a high, steady coefficient of friction, resist wear and take the heat of slipping. They are the part that wears out.',
+    construction:'Two annular facings about 3–4 mm thick, one on each side of the disc. Grooves clear dust and help cooling; rivet heads are sunk below the surface so they do not touch the metal faces until the lining is worn.',
+    materials:'Dry clutches: organic composites (glass, aramid and mineral fibres with brass or copper wire in a phenolic resin), μ ≈ 0.3–0.4; sintered bronze or iron-based cerametallic pads for heavy duty, μ ≈ 0.4. Wet clutches: paper-based or sintered facings in oil, μ ≈ 0.1. Asbestos was used until it was banned.' },
+  inter:{ name:'Intermediate (driving) plates', group:'Turns with the engine',
+    purpose:'In a multi-plate clutch they add extra pairs of friction surfaces, so a small clutch carries a large torque.',
+    construction:'Plain plates with tabs on the outside edge that slide in slots in the clutch drum (basket), so they turn with the engine but can move along the axis; they alternate with the friction discs, which are splined to the hub.',
+    materials:'Steel plates, often hardened and flat-ground. In motorcycle wet clutches the friction plates are aluminium or steel with cork or paper facings.' },
+  pp:{ name:'Pressure plate', group:'Turns with the engine, slides along the axis',
+    purpose:'Squeezes the friction disc against the flywheel with the spring force, forms the second friction face, and absorbs much of the heat.',
+    construction:'A heavy ring with a flat ground face. It is driven by the cover through lugs or tangential leaf straps, which pass the torque but let it slide along the axis. The back carries a fulcrum ridge for the springs or levers, and often cooling fins.',
+    materials:'Grey cast iron (high heat capacity, good wear and damping), sometimes SG iron.' },
+  spring:{ name:'Clamp springs', group:'Springs',
+    purpose:'Provide the clamping force W that sets the torque the clutch can carry: T = nμW·R.',
+    construction:'Shown here as coil springs (usually 6 to 12 round the plate, between cover and pressure plate). Most cars now use a single diaphragm (Belleville) spring instead: its fingers also act as the release levers, its force stays nearly constant as the lining wears, and the pedal is lighter.',
+    materials:'Spring steel such as silicon-chrome or chrome-vanadium (for example 50CrV4), hardened and tempered, then shot-peened for fatigue life.' },
+  cover:{ name:'Clutch cover', group:'Turns with the engine',
+    purpose:'Bolted to the flywheel, it holds the springs and levers, takes the reaction of the spring force, and drives the pressure plate. Cover, springs and pressure plate are sold together as the “pressure plate assembly”.',
+    construction:'A pressed-steel shell with a bolting flange, ventilation openings and pivot points for the levers; heavy-duty clutches may have a cast cover.',
+    materials:'Low-carbon sheet steel (for example DC01 / SAE 1010), pressed to shape; cast iron for some heavy clutches.' },
+  lever:{ name:'Release levers', group:'Release parts',
+    purpose:'Turn a small push from the release bearing into a pull on the pressure plate, lifting it off the disc; they multiply force by about 4 to 6 times.',
+    construction:'Usually three levers, each pivoting on an eye bolt or pin in the cover and joined to the pressure plate by a strut or pull rod. In a diaphragm clutch the spring fingers do this job.',
+    materials:'Forged or pressed steel, with hardened contact tips; pins of hardened steel.' },
+  bearing:{ name:'Release (throw-out) bearing', group:'Release parts',
+    purpose:'Passes the pedal force from the fork, which does not turn, to the levers or diaphragm fingers, which turn with the engine.',
+    construction:'A sealed thrust or angular-contact ball bearing in a carrier that slides on a guide tube on the front of the gearbox. Many cars combine it with a hydraulic concentric slave cylinder (CSC).',
+    materials:'Races and balls of bearing steel (100Cr6 / AISI 52100); pressed-steel or plastic carrier; grease sealed in for life.' },
+  fork:{ name:'Release fork', group:'Release parts',
+    purpose:'A lever between the pedal’s cable or hydraulic slave cylinder and the release bearing.',
+    construction:'Pivots on a ball stud in the bell housing; one end is pushed or pulled by the pedal linkage, the other pushes the bearing carrier.',
+    materials:'Pressed or forged steel; sometimes cast iron or aluminium.' },
+  shaft:{ name:'Gearbox input shaft', group:'Turns with the gearbox',
+    purpose:'Takes the torque from the friction disc into the gearbox.',
+    construction:'A splined shaft: the disc hub slides on the splines. Its front end runs in the spigot bearing in the crankshaft, its rear in a bearing in the gearbox; the input gear is cut on the shaft.',
+    materials:'Case-hardened alloy steel (for example 20MnCr5 or AISI 8620), carburised and ground.' },
+  chalk:{ name:'Chalk mark (teaching aid)', group:'End view',
+    purpose:'A line drawn across the disc and flywheel at the start of the run. It splits while the two slip and its two halves keep the same distance apart once they lock.',
+    construction:'Not a real part: mechanics do use paint marks like this to check whether a clutch is slipping.',
+    materials:'Chalk or paint.' }
+};
+let HITS = [], SELPART = null, HOVER = null;
+function hitTest(x, y){
+  for (let i = HITS.length - 1; i >= 0; i--){ const h = HITS[i];
+    if (h.t === 'r' && x >= Math.min(h.x0, h.x1) - 2 && x <= Math.max(h.x0, h.x1) + 2 && y >= Math.min(h.y0, h.y1) - 2 && y <= Math.max(h.y0, h.y1) + 2) return h.id;
+    if (h.t === 'l'){ for (let q = 1; q < h.p.length; q++){ const [ax, ay] = h.p[q-1], [bx, by] = h.p[q], dx = bx - ax, dy = by - ay, L2 = dx*dx + dy*dy || 1;
+      const u2 = Math.max(0, Math.min(1, ((x - ax)*dx + (y - ay)*dy)/L2)), d = Math.hypot(x - ax - u2*dx, y - ay - u2*dy); if (d < h.tol) return h.id; } }
+    if (h.t === 'c'){ const d = Math.hypot(x - h.cx, y - h.cy); if (d >= h.r0 && d <= h.r1) return h.id; } }
+  return null; }
+function drawHighlight(ctx, id, strong){
+  ctx.save(); ctx.strokeStyle = strong ? C.acc : alpha(C.ink, 0.5); ctx.lineWidth = strong ? 3 : 2; ctx.setLineDash(strong ? [] : [4,3]);
+  for (const h of HITS){ if (h.id !== id) continue;
+    if (h.t === 'r'){ ctx.strokeRect(Math.min(h.x0, h.x1) - 1.5, Math.min(h.y0, h.y1) - 1.5, Math.abs(h.x1 - h.x0) + 3, Math.abs(h.y1 - h.y0) + 3); }
+    else if (h.t === 'l'){ ctx.beginPath(); h.p.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.globalAlpha = 0.5; ctx.lineWidth = h.tol*1.6; ctx.stroke(); ctx.globalAlpha = 1; }
+    else { ctx.beginPath(); ctx.arc(h.cx, h.cy, h.r1 + 1.5, 0, 2*Math.PI); ctx.stroke(); if (h.r0 > 0){ ctx.beginPath(); ctx.arc(h.cx, h.cy, Math.max(0, h.r0 - 1.5), 0, 2*Math.PI); ctx.stroke(); } } }
+  ctx.restore(); }
+function showPart(id){
+  SELPART = id; const p = PARTS[id], box = $('partInfo');
+  document.querySelectorAll('#partBtns button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.part === id)));
+  if (!p){ box.innerHTML = '<p class="note" style="margin:0">Click any part of the drawing, or a name above, to see what it does, how it is made and what it is made of.</p>'; }
+  else box.innerHTML = `<div class="pi-head"><h4>${p.name}</h4><span class="sub">${p.group}</span><button type="button" id="piClose" aria-label="Close part details">Close</button></div>
+    <dl class="pi"><dt>Purpose</dt><dd>${p.purpose}</dd><dt>Construction</dt><dd>${p.construction}</dd><dt>Typical materials</dt><dd>${p.materials}</dd></dl>`;
+  const c = $('piClose'); if (c) c.addEventListener('click', () => showPart(null));
+  if (M && M.ok) drawClutch(); }
+
+/* ---------- clutch drawing ---------- */
+const STROBE = 40;   // rotation in the end view is drawn at 1/STROBE of real speed
+function heatCol(f, a = 1){ // lining colour: brown → red → orange → yellow as slip power rises
+  const st = [[0,[150,98,58]],[0.35,[210,64,32]],[0.7,[245,140,35]],[1,[255,212,80]]];
+  f = Math.max(0, Math.min(1, f)); let k = 1; while (k < st.length - 1 && f > st[k][0]) k++;
+  const [f0, c0] = st[k-1], [f1, c1] = st[k], q = (f - f0)/(f1 - f0);
+  return `rgba(${c0.map((v, i) => Math.round(v + (c1[i] - v)*q)).join(',')},${a})`; }
+function wrapText(ctx, txt, x, y, maxW, lh){ const words = txt.split(' '); let line = '', yy = y;
+  for (const w of words){ const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line){ ctx.fillText(line, x, yy); line = w; yy += lh; } else line = t; }
+  if (line) ctx.fillText(line, x, yy); return yy; }
+function stageOf(j){ const r = M.rec, st = r.st[j]; if (st === 3) return 3; if (st === 2) return 2;
+  if (st === 1 && Math.abs(r.w1[j] - r.w2[j]) < 1e-3) return 2; return st === 1 ? 1 : 0; }
+const STAGES = [
+  ['1', 'Pedal down: disengaged'], ['2', 'Pedal rising: slipping'], ['3', 'Pedal up: locked'] ];
+function stageText(stg, pedal, before){
+  if (stg === 3) return 'Stalled. The clutch asked for more torque than the engine could give, and the engine stopped.';
+  if (stg === 0) return before ? 'The pedal is held down. The release bearing pushes the levers, which pull the pressure plate back and squash the springs. The disc is free: the engine turns, the gearbox shaft does not.'
+    : 'The pedal is coming up. The springs push the pressure plate towards the disc, but it has not touched yet (free travel).';
+  if (stg === 1) return 'The springs now clamp the disc between the pressure plate and the flywheel. The faces rub: friction drives the gearbox shaft faster while the engine is pulled down, and the rubbing turns energy into heat.';
+  return 'Full spring force. Friction holds the disc to the flywheel, so both shafts turn at the same speed: no rubbing, no heat.'; }
+function drawClutch(){
+  const cv = $('clutch'), { ctx, W, H } = prep(cv), r = M.rec, j = J;
+  const narrow = W < 700, TAU = 2*Math.PI; HITS = [];
+  { const ib = document.querySelector('#partBtns [data-part=inter]'); if (ib) ib.hidden = P.npairs <= 2; if (P.npairs <= 2 && SELPART === 'inter') SELPART = null; }
+  const hitL = (id, pts, tol = 6) => HITS.push({ id, t:'l', p:pts, tol }), hitC = (id, cx, cy2, r0, r1) => HITS.push({ id, t:'c', cx, cy:cy2, r0, r1 });
+  const tt = r.t[j], td = P.td || 0;
+  const e = P.W > 0 ? r.W[j]/P.W : 0;
+  const pedal = tt < td ? 1 : P.te > 0 ? Math.max(0, 1 - (tt - td)/P.te) : 0;    // 1 = fully down
+  const gapF = Math.max(0, Math.min(1, (pedal - 0.8)/0.2));                       // the plate touches after the first 20% of release
+  const glow = $('showHeat').checked && M.peakPs > 0 ? r.Ps[j]/M.peakPs : 0;
+  const showL = $('showLabels').checked, showF = $('showForce').checked;
+  const stg = stageOf(j);
+  // ---------- stage banner
+  const bannerH = narrow ? 112 : 74;
+  ctx.textBaseline = 'middle';
+  { const n = 3, gapB = 6, pedW = narrow ? 0 : 150, bw = (W - 16 - pedW - gapB*(n - 1) - (pedW ? 12 : 0))/n;
+    STAGES.forEach(([num, txt], i) => { const x = 8 + i*(bw + gapB), on = stg === i || (stg === 3 && i === 1);
+      ctx.fillStyle = on ? (stg === 3 ? C.bad : i === 2 ? C.vel : i === 1 ? C.acc : C.muted) : C.chip;
+      ctx.fillRect(x, 6, bw, 26); ctx.strokeStyle = C.rule; ctx.strokeRect(x + 0.5, 6.5, bw - 1, 25);
+      ctx.fillStyle = on ? C.sheet : C.muted; ctx.font = `${on ? 700 : 500} ${narrow ? 11 : 12.5}px ${C.head}`; ctx.textAlign = 'center';
+      ctx.fillText(narrow ? txt.split(':')[0].replace('Pedal ', '') + (i === 0 ? ': free' : i === 1 ? ': slip' : ': locked') : `${num}  ${txt}`, x + bw/2, 19); });
+    if (pedW){ const x = W - 8 - pedW; ctx.fillStyle = C.ink; ctx.font = `500 12px ${C.mono}`; ctx.textAlign = 'left';
+      ctx.fillText('Pedal released', x, 13); ctx.fillStyle = C.chip; ctx.fillRect(x, 21, pedW, 10); ctx.fillStyle = C.crank; ctx.fillRect(x, 21, pedW*(1 - pedal), 10);
+      ctx.strokeStyle = C.rule; ctx.strokeRect(x + 0.5, 21.5, pedW - 1, 9); ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.fillText(`${fmt(100*(1 - pedal), 0)}%`, x + pedW, 13); }
+    ctx.fillStyle = C.ink; ctx.font = `${narrow ? 12 : 13}px ${C.body || C.mono}`; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    wrapText(ctx, stageText(stg, pedal, tt < td), 10, 50, W - 20, narrow ? 15 : 17); ctx.textBaseline = 'middle'; }
+  // ---------- section geometry (mm); z along the axis from the flywheel face
+  const secW = narrow ? W : W*0.6, top = bannerH + 8, labH = showL ? (narrow ? 44 : 30) : 6;
+  const secBottom = narrow ? top + (H - top)*0.58 : H - labH;
+  const s = P.Ro/110, Ro = P.Ro, Ri = P.Ri, nd = Math.max(1, Math.round(P.npairs/2));
+  const flyT = 26*s, Rfw = Ro*1.22, rc = 20*s, rsh = 11*s, tl = 4*s, tc = 2*s, tInt = 5*s, tp = 14*s, Ls0 = 30*s, gd = 4*s;
+  const G = P.npairs*gd;
+  // engaged stack
+  const stackLen = nd*(2*tl + tc) + (nd - 1)*tInt;
+  const zPP0 = stackLen, zW = zPP0 + tp + Ls0;            // cover wall (springs sit between the plate and the wall)
+  const rA = Ro*1.1, rF = Ro*0.98, rT = Math.max(rsh*2.6, Ro*0.34), lam = (rF - rT)/(rA - rF);
+  const zF = zW + 5*s, rod = zF - (zPP0 + tp - 3*s);    // pull rod from the plate lug through the cover to the lever
+  const gap = gd*gapF, zPP = zPP0 + P.npairs*gap;
+  const zA = zPP + tp - 3*s + rod, zT = zF - lam*(zA - zF), bw = 10*s;
+  const zStart = -flyT - 34*s, zEnd = zF + 40*s;
+  const cy = (top + secBottom)/2;
+  const k = Math.min((secW - 20)/(zEnd - zStart), (secBottom - top)/2/(Rfw + 3*s));
+  const xOrg = 10 + (secW - 20 - (zEnd - zStart)*k)/2 - zStart*k;
+  const X = z => xOrg + z*k, Y = rr => cy - rr*k;
+  const both = f => { f(1); f(-1); };
+  const rectZ = (z0, z1, r0, r1, sg, fill, stroke, lw = 1.2, id) => { const x0 = X(z0), x1 = X(z1), y0 = cy - sg*r0*k, y1 = cy - sg*r1*k; if (id) HITS.push({ id, t:'r', x0, y0, x1, y1 });
+    ctx.fillStyle = fill; ctx.fillRect(x0, Math.min(y0, y1), x1 - x0, Math.abs(y1 - y0)); if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.strokeRect(x0, Math.min(y0, y1), x1 - x0, Math.abs(y1 - y0)); } };
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  // axis
+  ctx.strokeStyle = C.muted; ctx.setLineDash([10,4,2,4]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(4, cy); ctx.lineTo(secW - 4, cy); ctx.stroke(); ctx.setLineDash([]);
+  // shafts
+  rectZ(zStart, -flyT, -rc, rc, 1, alpha(C.crank, 0.35), C.crank, 1.2, 'crank');
+  rectZ(-8*s, zEnd, -rsh, rsh, 1, alpha(C.rod, 0.3), C.rod, 1.2, 'shaft');
+  both(sg => {
+    // flywheel
+    rectZ(-flyT, 0, rsh*1.3, Rfw, sg, alpha(C.crank, 0.3), C.crank, 1.5, 'flywheel');
+    // cover: from the flywheel rim to the wall
+    ctx.strokeStyle = C.crank; ctx.lineWidth = Math.max(3, 3*s*k); ctx.beginPath(); ctx.moveTo(X(0), Y(sg*Ro*1.17)); ctx.lineTo(X(zW), Y(sg*Ro*1.17)); ctx.lineTo(X(zW), Y(sg*Ro*0.45)); ctx.stroke();
+    hitL('cover', [[X(0), Y(sg*Ro*1.17)], [X(zW), Y(sg*Ro*1.17)], [X(zW), Y(sg*Ro*0.45)]], 6);
+    // friction disc(s) and intermediate plates
+    let z = 0;
+    for (let d = 0; d < nd; d++){
+      z += gap; const zl1 = z; z += tl; const zc = z; z += tc; const zl2 = z; z += tl;
+      rectZ(zc, zc + tc, rsh*2.2, Ro, sg, alpha(C.rod, 0.9), null, 1.2, 'disc');
+      for (const zl of [zl1, zl2]) rectZ(zl, zl + tl, Ri, Ro, sg, glow > 0.02 ? heatCol(glow) : heatCol(0, 0.85), C.rod, 1, 'lining');
+      rectZ(zc - 6*s, zc + tc + 6*s, rsh, rsh*2.2, sg, alpha(C.rod, 0.55), C.rod, 1.2, 'disc');   // hub on the splines
+      if (d < nd - 1){ z += gap; rectZ(z, z + tInt, Ri*0.95, Ro*1.14, sg, alpha(C.crank, 0.35), C.crank, 1.2, 'inter'); z += tInt; }
+    }
+    // pressure plate with lug
+    rectZ(zPP, zPP + tp, Ri*0.92, Ro*1.04, sg, alpha(C.mass, 0.45), C.mass, 1.5, 'pp');
+    rectZ(zPP + tp - 5*s, zPP + tp, Ro*1.04, rA + 2*s, sg, alpha(C.mass, 0.45), C.mass, 1.2, 'pp');
+    // coil spring between plate and cover wall
+    { const rsC = Ro*0.7, amp = Ro*0.09, z0 = zPP + tp, z1 = zW, nC = 7; ctx.strokeStyle = C.force; ctx.lineWidth = 2.4; ctx.beginPath();
+      ctx.moveTo(X(z0), Y(sg*rsC)); for (let q = 1; q < 2*nC; q++){ const zz = z0 + (z1 - z0)*q/(2*nC); ctx.lineTo(X(zz), Y(sg*(rsC + (q % 2 ? amp : -amp)))); } ctx.lineTo(X(z1), Y(sg*rsC)); ctx.stroke();
+      HITS.push({ id:'spring', t:'r', x0:X(z0), x1:X(z1), y0:Y(sg*(rsC + amp)), y1:Y(sg*(rsC - amp)) }); }
+    // pull rod through the cover, release lever on a pivot, release bearing
+    ctx.strokeStyle = C.ink; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(zPP + tp - 3*s), Y(sg*rA)); ctx.lineTo(X(zA), Y(sg*rA)); ctx.stroke();
+    ctx.strokeStyle = C.muted; ctx.lineWidth = Math.max(3.5, 3.5*s*k); ctx.beginPath(); ctx.moveTo(X(zA), Y(sg*(rA + 3*s))); ctx.lineTo(X(zT), Y(sg*rT)); ctx.stroke();
+    hitL('lever', [[X(zPP + tp - 3*s), Y(sg*rA)], [X(zA), Y(sg*rA)], [X(zA), Y(sg*(rA + 3*s))], [X(zT), Y(sg*rT)]], 6);
+    ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(X(zF), Y(sg*rF), 3.5, 0, TAU); ctx.fill();
+    ctx.strokeStyle = C.crank; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(zW), Y(sg*rF)); ctx.lineTo(X(zF), Y(sg*rF)); ctx.stroke();   // pivot bracket on the cover
+    rectZ(zT, zT + bw, rsh + 3*s, rT + 1*s, sg, alpha(C.muted, 0.45), C.muted, 1.5, 'bearing');
+  });
+  rectZ(zT - 4*s, zEnd - 6*s, -rsh - 3*s, rsh + 3*s, 1, alpha(C.muted, 0.12));   // guide sleeve (fixed)
+  // fork (top) pushing the bearing, with the pedal pull
+  const fpZ = zT + bw + 18*s; ctx.strokeStyle = C.ink; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(zT + bw), Y(rT*0.7)); ctx.lineTo(X(fpZ), Y(Ro*0.62)); ctx.lineTo(X(fpZ + 6*s), Y(Rfw*0.95)); ctx.stroke();
+  hitL('fork', [[X(zT + bw), Y(rT*0.7)], [X(fpZ), Y(Ro*0.62)], [X(fpZ + 6*s), Y(Rfw*0.95)]], 7);
+  ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(X(fpZ), Y(Ro*0.62), 3.5, 0, TAU); ctx.fill();
+  if (showF && pedal > 0.02){ arrow(ctx, X(fpZ + 6*s) + 2, Y(Rfw*0.95), X(fpZ + 6*s) + 30, Y(Rfw*0.95), C.ink, 2); if (X(fpZ + 6*s) + 110 < secW) label(ctx, 'pedal pulls', X(fpZ + 6*s) + 34, Y(Rfw*0.95), C.ink, 'left', 11); else label(ctx, 'pedal pulls', X(fpZ + 6*s) + 30, Y(Rfw*0.95) + 16, C.ink, 'right', 11); }
+  // clamp force arrows
+  if (showF && e > 0.01){ const L = 10 + 30*e; both(sg => { const ym = Y(sg*(Ro + Ri)/2); arrow(ctx, X(zPP) + L + 2, ym, X(zPP) + 2, ym, C.force, 2.6); });
+    label(ctx, `W = ${fmt(r.W[j], 0)} N`, X(zPP + tp) + 6, Y((Ro + Ri)/2) - 2, C.force, 'left', 12); }
+  // shaft speed tags
+  label(ctx, `Engine ${fmt(RPM(r.w1[j]), 0)} rpm`, X(zStart) + 2, cy - rc*k - 12, C.crank, 'left', 12);
+  label(ctx, `Gearbox ${fmt(RPM(r.w2[j]), 0)} rpm`, X(zEnd) - 2, cy + rsh*k + 14, C.rod, 'right', 12);
+  if (glow > 0.3) label(ctx, 'hot', X(nd*(2*tl + tc)/2) , Y(Ro) - 10, heatCol(glow), 'center', 11);
+  // part names: one row below the drawing, pointers to the lower half
+  if (showL){
+    const tags = [['Flywheel', X(-flyT/2), Y(-Rfw*0.8), C.crank], [nd > 1 ? 'Discs' : 'Friction disc', X(gap + tl/2), Y(-(Ro*0.9)), C.rod],
+      ['Pressure plate', X(zPP + tp/2), Y(-Ro*0.95), C.mass], ['Spring', X((zPP + tp + zW)/2), Y(-Ro*0.62), C.force],
+      ['Cover', X(zW), Y(-Ro*1.0), C.crank], ['Lever', X((zA + zT)/2), Y(-(rA + rT)/2), C.muted], ['Bearing', X(zT + bw/2), Y(-rT*0.75), C.muted]];
+    ctx.font = `500 ${narrow ? 10.5 : 11.5}px ${C.mono}`;
+    const items = tags.map(([t, x, y, c]) => ({ t, x, y, c, w:richWidth(ctx, t) + 10 }));
+    const rowsN = narrow ? 2 : 1, rows = Array.from({ length:rowsN }, () => []), base = secBottom + (narrow ? 12 : 16);
+    items.forEach((it, i) => rows[i % rowsN].push(it));
+    rows.forEach((rw, ri) => { let last = 4; for (const it of rw){ it.lx = Math.max(it.x, last + it.w/2); last = it.lx + it.w/2; }
+      let over = last - (secW - 4); for (let q = rw.length - 1; q >= 0 && over > 0; q--){ rw[q].lx -= over; over = q ? rw[q - 1].lx + rw[q - 1].w/2 - (rw[q].lx - rw[q].w/2) : 0; }
+      for (const it of rw){ const ly = base + ri*16; ctx.strokeStyle = alpha(it.c, 0.6); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(it.lx, ly - 7); ctx.lineTo(it.x, it.y); ctx.stroke();
+        label(ctx, it.t, it.lx, ly, it.c, 'center', narrow ? 10.5 : 11.5); } });
+  }
+  if (!narrow){ ctx.font = `10.5px ${C.mono}`; ctx.fillStyle = C.muted; ctx.textAlign = 'left'; ctx.fillText('Section through the axis; gaps drawn larger than real', 8, top + 6); }
+  // ---------- end view: flywheel ring and friction disc
+  const ex = narrow ? W/2 : secW + (W - secW)/2, ey = narrow ? secBottom + labH + (H - secBottom - labH)/2 - 4 : top + (H - top)/2 - 10;
+  const Rv = Math.min(narrow ? (H - secBottom - labH)*0.36 : (W - secW)*0.36, narrow ? W*0.3 : (H - top)*0.36);
+  const a1 = -r.th1[j]/STROBE, a2 = -r.th2[j]/STROBE;
+  ctx.fillStyle = alpha(C.crank, 0.2); ctx.strokeStyle = C.crank; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(ex, ey, Rv, 0, TAU); ctx.fill(); ctx.stroke();
+  for (let i = 0; i < 12; i++){ const a = a1 + i*TAU/12; ctx.strokeStyle = C.crank; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ex + Math.cos(a)*Rv*0.86, ey + Math.sin(a)*Rv*0.86); ctx.lineTo(ex + Math.cos(a)*Rv*0.97, ey + Math.sin(a)*Rv*0.97); ctx.stroke(); }
+  const rO = Rv*0.78, rI = rO*Ri/Ro;
+  hitC('flywheel', ex, ey, rO, Rv); hitC('lining', ex, ey, rI, rO); hitC('disc', ex, ey, 0, rI);
+  ctx.fillStyle = glow > 0.02 ? heatCol(glow) : heatCol(0, 0.85); ctx.strokeStyle = C.rod; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(ex, ey, rO, 0, TAU); ctx.arc(ex, ey, rI, TAU, 0, true); ctx.fill(); ctx.stroke();
+  for (let i = 0; i < 8; i++){ const a = a2 + i*TAU/8; ctx.strokeStyle = alpha(C.sheet, 0.8); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ex + Math.cos(a)*rI, ey + Math.sin(a)*rI); ctx.lineTo(ex + Math.cos(a)*rO, ey + Math.sin(a)*rO); ctx.stroke(); }
+  ctx.fillStyle = alpha(C.rod, 0.35); ctx.beginPath(); ctx.arc(ex, ey, rI, 0, TAU); ctx.fill();
+  for (let i = 0; i < 4; i++){ const a = a2 + i*TAU/4; ctx.strokeStyle = C.rod; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ex + Math.cos(a)*rI*0.3, ey + Math.sin(a)*rI*0.3); ctx.lineTo(ex + Math.cos(a)*rI, ey + Math.sin(a)*rI); ctx.stroke(); }
+  ctx.fillStyle = C.rod; ctx.beginPath(); ctx.arc(ex, ey, rI*0.3, 0, TAU); ctx.fill();
+  // chalk mark
+  ctx.strokeStyle = C.ink; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(ex + Math.cos(a2)*rI*0.3, ey + Math.sin(a2)*rI*0.3); ctx.lineTo(ex + Math.cos(a2)*rO, ey + Math.sin(a2)*rO); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ex + Math.cos(a1)*rO*1.04, ey + Math.sin(a1)*rO*1.04); ctx.lineTo(ex + Math.cos(a1)*Rv, ey + Math.sin(a1)*Rv); ctx.stroke();
+  hitL('chalk', [[ex + Math.cos(a2)*rI*0.3, ey + Math.sin(a2)*rI*0.3], [ex + Math.cos(a2)*rO, ey + Math.sin(a2)*rO]], 6); hitL('chalk', [[ex + Math.cos(a1)*rO*1.04, ey + Math.sin(a1)*rO*1.04], [ex + Math.cos(a1)*Rv, ey + Math.sin(a1)*Rv]], 6);
+  label(ctx, `Flywheel ${fmt(RPM(r.w1[j]), 0)} rpm`, ex, ey - Rv - 14, C.crank, 'center', 12);
+  label(ctx, `Disc ${fmt(RPM(r.w2[j]), 0)} rpm`, ex, ey + Rv + 14, C.rod, 'center', 12);
+  ctx.font = `11px ${C.mono}`; ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  const lockedNow = stg === 2, slipT = Math.abs(r.th1[j] - r.th2[j])/TAU;
+  wrapText(ctx, `End view. A chalk line drawn across the disc and flywheel at the start ${lockedNow ? (slipT > 0.05 ? 'split while the clutch slipped; now both halves turn together and keep the same distance apart' : 'stays in one piece: both turn together') : stg === 1 ? `has split: the disc has slipped ${fmt(slipT, 1)} turns` : 'splits as soon as they turn at different speeds'}. Turning drawn ${STROBE}× slower than real.`, ex, ey + Rv + 34, narrow ? W - 20 : (W - secW) - 16, 14);
+  if (HOVER && HOVER !== SELPART) drawHighlight(ctx, HOVER, false);
+  if (SELPART) drawHighlight(ctx, SELPART, true);
+}
+
+/* ---------- energy account ---------- */
+function drawEnergy(){
+  const cv = $('energy'), { ctx, W, H } = prep(cv), r = M.rec, j = J;
+  const KE1 = 0.5*P.I1*r.w1[j]**2, KE2 = 0.5*P.I2*r.w2[j]**2;
+  const inn = [['Engine work', r.Ee[j], C.crank], ['KE at start', M.KE10 + M.KE20, alpha(C.crank, 0.45)]];
+  const outp = [['Engine-side KE', KE1, alpha(C.crank, 0.45)], ['Driven-side KE', KE2, C.vel], ['Work on load', r.EL[j], C.mass], ['Heat in clutch', r.Eh[j], C.acc]];
+  const tot = Math.max(1, inn[0][1] + inn[1][1]);
+  const pl = 120, pr = 16, bw = W - pl - pr, bh = 26;
+  ctx.font = `12px ${C.mono}`; ctx.textBaseline = 'middle';
+  const bar = (y, items, title) => { ctx.fillStyle = C.ink; ctx.textAlign = 'right'; ctx.fillText(title, pl - 10, y + bh/2);
+    let xx = pl; for (const [n, v, col] of items){ const w = Math.max(0, v/tot*bw); ctx.fillStyle = col; ctx.fillRect(xx, y, w, bh); xx += w; } ctx.strokeStyle = C.rule; ctx.strokeRect(pl, y, bw, bh); };
+  bar(28, inn, 'Energy in'); bar(74, outp, 'Where it went');
+  let ly = 124; const col2 = W > 520;
+  [...inn, ...outp].forEach(([n, v, col], i) => { const cx = col2 ? (i % 2 ? pl + bw/2 : 16) : 16, cyy = col2 ? ly + Math.floor(i/2)*20 : ly + i*18;
+    ctx.fillStyle = col; ctx.fillRect(cx, cyy - 6, 12, 12); ctx.fillStyle = C.ink; ctx.textAlign = 'left'; ctx.fillText(`${n}: ${fmt(v/1000, 2)} kJ (${fmt(v/tot*100, 0)}%)`, cx + 18, cyy); });
+  $('enSub').textContent = `at t = ${fmt(P.t, 2)} s · balance error ${fmt(Math.abs(r.Ee[j] + M.KE10 + M.KE20 - KE1 - KE2 - r.EL[j] - r.Eh[j]), 3)} J`;
+}
+
+/* ---------- friction face ---------- */
+function drawFace(){
+  const cv = $('face'), { ctx, W, H } = prep(cv), c = M.cap;
+  const pUP = c.pUP, pUW = r => c.Cw/(r/1000), pmx = Math.max(pUP, c.pmaxUW);
+  const R = Math.min(W/4 - 16, H/2 - 40), y = H/2 + 8;
+  const col = f => { const a = 0.12 + 0.8*f; return alpha(C.acc, a); };
+  [[W/4, 'up', 'Uniform pressure (new)'], [3*W/4, 'uw', 'Uniform wear (worn in)']].forEach(([cx, th, title]) => {
+    const N = 40; for (let i = 0; i < N; i++){ const r0 = P.Ri + (P.Ro - P.Ri)*i/N, r1 = P.Ri + (P.Ro - P.Ri)*(i + 1)/N, p = th === 'up' ? pUP : pUW((r0 + r1)/2);
+      ctx.fillStyle = col(p/pmx); ctx.beginPath(); ctx.arc(cx, y, R*r1/P.Ro, 0, 2*Math.PI); ctx.arc(cx, y, R*r0/P.Ro, 2*Math.PI, 0, true); ctx.fill(); }
+    ctx.strokeStyle = th === P.theory ? C.ink : C.rule; ctx.lineWidth = th === P.theory ? 2 : 1;
+    ctx.beginPath(); ctx.arc(cx, y, R, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(cx, y, R*P.Ri/P.Ro, 0, 7); ctx.stroke();
+    const Rm = th === 'up' ? c.Rup : c.Ruw; ctx.setLineDash([4,3]); ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, y, R*Rm*1000/P.Ro, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = `600 12px ${C.mono}`; ctx.fillStyle = C.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `600 ${W < 520 ? 11 : 12}px ${C.mono}`; ctx.fillText(title + (th === P.theory ? ' · used' : ''), cx, 14);
+    ctx.font = `${W < 520 ? 10 : 11}px ${C.mono}`; ctx.fillStyle = C.muted;
+    ctx.fillText(th === 'up' ? `p = ${fmt(pUP/1e3, 0)} kPa everywhere` : `p ${fmt(c.pmaxUW/1e3, 0)} → ${fmt(c.pminUW/1e3, 0)} kPa (in → out)`, cx, H - 26);
+    ctx.fillText(`T = ${fmt(th === 'up' ? c.Tup : c.Tuw, 1)} N·m · R = ${fmt(Rm*1000, 1)} mm`, cx, H - 10);
+  });
+}
+
+/* ---------- charts ---------- */
+function drawCharts(){
+  const r = M.rec, t = r.t, j = J, lockV = M.tLock != null ? [{ v:M.tLock, color:C.vel, label:'lock-up' }] : [], stV = M.tStall != null ? [{ v:M.tStall, color:C.bad, label:'stall' }] : [];
+  const vl = [...lockV, ...stV, ...(P.te > 0 && P.te < M.tEnd ? [{ v:P.te, color:C.muted, label:'pedal up', dy:14 }] : [])];
+  const n1 = r.w1.map(RPM), n2 = r.w2.map(RPM);
+  chart($('c1'), { x:t, series:[{ y:n1, color:C.crank, label:'N_1 engine' }, { y:n2, color:C.rod, label:'N_2 driven' }], ylab:'speed [rpm]', cursor:P.t, cursorIndex:j, vlines:vl,
+    value:`${fmt(n1[j], 0)} / ${fmt(n2[j], 0)} rpm` });
+  chart($('c2'), { x:t, series:[{ y:r.Tf, color:C.rod, label:'T_f through clutch' }, { y:r.Tc, color:C.force, dash:[5,3], label:'T_c capacity' }, { y:r.Te, color:C.crank, w:1.3, label:'T_e engine' }],
+    hlines:P.TL > 0 ? [{ v:P.TL, color:C.mass, label:'T_L load', right:true }] : [], ylab:'torque [N·m]', cursor:P.t, cursorIndex:j, vlines:vl, value:`T_f ${fmt(r.Tf[j], 0)} N·m` });
+  const pk = r.Ps.map(v => v/1000);
+  chart($('c3'), { x:t, series:[{ y:pk, color:C.acc }], fill:{ y:pk, color:C.acc }, ylab:'slip power [kW]', cursor:P.t, cursorIndex:j, vlines:vl, value:`${fmt(pk[j], 2)} kW` });
+  chart($('c4'), { x:t, series:[{ y:r.dT, color:C.acc }], ylab:'ΔT [K]', cursor:P.t, cursorIndex:j, vlines:vl, value:`ΔT ${fmt(r.dT[j], 1)} K · Q ${fmt(r.Eh[j]/1000, 2)} kJ` });
+  // pressure across the face, kPa vs r mm
+  const c = M.cap, N = 80, rr = [], pu = [], pw = [];
+  for (let i = 0; i <= N; i++){ const x = P.Ri + (P.Ro - P.Ri)*i/N; rr.push(x); pu.push(c.pUP/1e3); pw.push(c.Cw/(x/1000)/1e3); }
+  chart($('c5'), { x:rr, series:[{ y:pw, color:C.acc, label:'uniform wear', w:P.theory === 'uw' ? 2.4 : 1.4 }, { y:pu, color:C.crank, dash:[5,3], label:'uniform pressure', w:P.theory === 'up' ? 2.4 : 1.4 }],
+    hlines:[{ v:P.pa*1000, color:C.bad, label:'allowable p_a', right:true }], xlab:'radius r [mm]', ylab:'pressure p [kPa]', value:`W = ${fmt(P.W, 0)} N` });
+  // capacity vs Ri/Ro at allowable pressure
+  const xs = [], tu = [], tw = []; for (let i = 2; i <= 95; i++){ const q = i/100, ri = q*c.Ro; xs.push(q); tu.push(c.TupAt(ri)); tw.push(c.TuwAt(ri)); }
+  const q0 = P.Ri/P.Ro, opt = 1/Math.sqrt(3);
+  chart($('c6'), { x:xs, series:[{ y:tw, color:C.acc, label:'uniform wear' }, { y:tu, color:C.crank, dash:[5,3], label:'uniform pressure' }], xlab:'R_i / R_o', ylab:'T at p_a [N·m]',
+    vlines:[{ v:opt, color:C.vel, label:'1/√3 = 0.577', dy:14 }], markers:q0 > 0.02 && q0 < 0.95 ? [{ x:q0, y:c.TuwAt(c.Ri), color:C.ink, label:'this clutch' }] : [],
+    value:`best ${fmt(c.TuwAt(opt*c.Ro), 0)} N·m` });
+}
+// clicking a part of the clutch shows what it is
+{ const cv = $('clutch');
+  const pos = e => { const b = cv.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
+  cv.addEventListener('click', e => { const id = hitTest(...pos(e)); showPart(id); if (id) $('partInfo').scrollIntoView({ block:'nearest', behavior: reduce.matches ? 'auto' : 'smooth' }); });
+  cv.addEventListener('pointermove', e => { const id = hitTest(...pos(e)); cv.style.cursor = id ? 'pointer' : 'default'; cv.title = id ? PARTS[id].name + ' (click for details)' : '';
+    if (id !== HOVER){ HOVER = id; if (!playing) drawClutch(); } });
+  cv.addEventListener('pointerleave', () => { HOVER = null; if (!playing) drawClutch(); });
+  const ids = ['flywheel','disc','lining','pp','spring','cover','lever','bearing','fork','shaft','crank','inter','chalk'];
+  $('partBtns').innerHTML = '<span class="note">Parts:</span>' + ids.map(id => `<button type="button" data-part="${id}" aria-pressed="false">${PARTS[id].name.replace(/ \(.*\)/, '')}</button>`).join('');
+  $('partBtns').querySelectorAll('button').forEach(b => b.addEventListener('click', () => showPart(SELPART === b.dataset.part ? null : b.dataset.part)));
+  showPart(null);
+}
+// clicking a time chart sets t
+['c1','c2','c3','c4'].forEach(id => { const cv = $(id); let down = false;
+  const go = e => { const m = cv._map; if (!m) return; const b = cv.getBoundingClientRect(); const v = m.xmin + (e.clientX - b.left - m.pl)/m.w*(m.xmax - m.xmin);
+    setInput('t', Math.max(0, Math.min(M.tEnd, +v.toFixed(3)))); refreshInstant(); };
+  cv.addEventListener('pointerdown', e => { down = true; cv.setPointerCapture(e.pointerId); go(e); });
+  cv.addEventListener('pointermove', e => { if (down) go(e); });
+  cv.addEventListener('pointerup', () => { down = false; }); });
+
+/* ---------- animation ---------- */
+let playing = false, last = 0;
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+$('play').addEventListener('click', () => { playing = !playing; $('play').textContent = playing ? 'Pause' : 'Play'; last = 0; if (playing){ if (P.t >= M.tEnd - 1e-6) setInput('t', 0); requestAnimationFrame(tick); } });
+$('restart').addEventListener('click', () => { setInput('t', 0); refreshInstant(); if (!playing) $('play').click(); });
+function tick(ts){
+  if (!playing) return;
+  if (last){ const dt = Math.min(0.05, (ts - last)/1000); let rate = +$('speed').value; if (reduce.matches) rate = Math.min(rate, 0.1);
+    let v = P.t + rate*dt; if (v >= M.tEnd){ if ($('loop').checked) v = 0; else { v = M.tEnd; playing = false; $('play').textContent = 'Play'; } }
+    setInput('t', Math.round(v*1000)/1000); refreshInstant(); }
+  last = ts; if (playing) requestAnimationFrame(tick);
+}
+
+/* ---------- redraw triggers ---------- */
+const ro = new ResizeObserver(() => refreshInstant()); ['clutch','energy','face','c1','c2','c3','c4','c5','c6'].forEach(id => ro.observe($(id)));
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => refreshInstant());
+new MutationObserver(() => refreshInstant()).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => refreshInstant());
+
+refreshAll();
+
+})();
+</script>
+</body>
+</html>

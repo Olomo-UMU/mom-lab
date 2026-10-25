@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Interactive engineering mechanics labs: slider crank, quick return mechanism, turning moment and flywheel, spring-mass-damper vibration and the Tacoma Narrows Bridge collapse.">
+<meta name="description" content="Interactive engineering mechanics labs: slider crank, quick return mechanism, spur gear meshing, turning moment and flywheel, friction clutches, spring-mass-damper vibration and the Tacoma Narrows Bridge collapse, and an atlas of Uganda's electricity system.">
 <title>Mechanics Labs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -81,12 +81,48 @@ footer { color: var(--muted); font-size: 0.82rem; }
           <span class="go">Open lab →</span>
         </div>
       </a>
+      <a class="card" href="bme2102/">
+        <img src="bme2102/img/gearing.jpg" alt="3D spur gears from the BME 2102 interactive notes" width="640" height="360">
+        <div class="body">
+          <span class="topic">BME 2102 interactive notes</span>
+          <h3>Mechanics of Machines, Chapters 1 to 7</h3>
+          <p>The whole course as slide decks with 3D models, animations, live worked examples and self-checks: introduction, simple mechanisms, velocity and acceleration, belt drives, toothed gearing, cams and balancing.</p>
+          <span class="go">Open notes →</span>
+        </div>
+      </a>
+      <a class="card" href="gears/">
+        <img src="img/gears.jpg" alt="Spur gear mesh lab showing a pinion and gear in mesh with the results table" width="640" height="360">
+        <div class="body">
+          <span class="topic">Toothed gearing</span>
+          <h3>Spur Gear Mesh Lab</h3>
+          <p>Involute pinion with a gear or rack. Path and arc of contact, contact ratio, interference and minimum teeth, sliding, tooth load and contact stress.</p>
+          <span class="go">Open lab →</span>
+        </div>
+      </a>
       <a class="card" href="flywheel/">
         <img src="img/flywheel.jpg" alt="Turning-moment and flywheel lab showing the engine, results table and turning-moment diagram" width="640" height="360">
         <div class="body">
           <span class="topic">Dynamics of machines</span>
           <h3>Turning-Moment &amp; Flywheel Lab</h3>
           <p>Gas and inertia forces in a slider-crank engine. Piston effort, crank effort, turning-moment diagrams, fluctuation of energy and flywheel rim design.</p>
+          <span class="go">Open lab →</span>
+        </div>
+      </a>
+      <a class="card" href="clutch/">
+        <img src="img/clutch.jpg" alt="Friction clutch lab showing a cut-away of the clutch and an end view of the slipping shafts" width="640" height="360">
+        <div class="body">
+          <span class="topic">Dynamics of machines</span>
+          <h3>Friction Clutch Lab</h3>
+          <p>Single- and multi-plate clutches. Torque capacity by uniform pressure and uniform wear, then the engagement itself: slip, heat, lock-up and stalling.</p>
+          <span class="go">Open lab →</span>
+        </div>
+      </a>
+      <a class="card" href="engine/">
+        <img src="img/engine.jpg" alt="Four-cylinder engine lab showing a section through cylinder 1 and a side view of the four pistons" width="640" height="360">
+        <div class="body">
+          <span class="topic">Mechanics of Machines II · use with the cut-out engines</span>
+          <h3>Four-Cylinder Engine Lab</h3>
+          <p>Measure a real inline-four, then see piston motion, cylinder pressure, the turning moment diagram, the flywheel it needs and the forces and couples left unbalanced. Comes with a printable lab sheet and degree wheel.</p>
           <span class="go">Open lab →</span>
         </div>
       </a>
@@ -108,6 +144,24 @@ footer { color: var(--muted); font-size: 0.82rem; }
           <span class="go">Open lab →</span>
         </div>
       </a>
+      <a class="card" href="https://olomo-umu.github.io/solar-installer-training/">
+        <img src="img/solar-training.jpg" alt="Solar Installer Training course home page with the course map" width="640" height="360">
+        <div class="body">
+          <span class="topic">Renewable energy · Vocational</span>
+          <h3>Solar Installer Training</h3>
+          <p>A full course for solar PV installers in Uganda: 14 lessons, seven simulators, quizzes, field checklists and a certificate. Opens in its own site.</p>
+          <span class="go">Open course →</span>
+        </div>
+      </a>
+      <a class="card" href="https://olomo-umu.github.io/uganda-electricity-atlas/">
+        <img src="img/electricity-atlas.jpg" alt="Map of Uganda's power stations, transmission grid and power flows" width="640" height="360">
+        <div class="body">
+          <span class="topic">Power systems</span>
+          <h3>Uganda Electricity Atlas</h3>
+          <p>Uganda’s power system for renewable energy and power systems units: load flow, frequency after a trip, blackout replays, new demand, losses, access and open data. Opens in its own site.</p>
+          <span class="go">Open lab →</span>
+        </div>
+      </a>
     </div>
   </section>
 
@@ -126,7 +180,9 @@ footer { color: var(--muted); font-size: 0.82rem; }
       <ul>
         <li>Check the worked-example values in the results table by hand.</li>
         <li>Find the crank angle of peak slider speed. Why isn't it 90°?</li>
+        <li>Find the fewest pinion teeth that mesh with a rack at 14.5° and at 20° without interference.</li>
         <li>Size a flywheel for 1 % speed fluctuation, then see how much smaller it can be with four cylinders.</li>
+        <li>Release a clutch over 0.1, 0.5 and 1.5 s. Which one heats the plates most, and which stalls the engine?</li>
         <li>Measure the logarithmic decrement from the x(t) graph and recover ζ.</li>
         <li>Find the wind speed at which the Tacoma deck becomes unstable.</li>
       </ul>

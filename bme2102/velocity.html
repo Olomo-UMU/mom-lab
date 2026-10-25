@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive notes for BME 2102 Chapter 3, velocity and acceleration in mechanisms: instantaneous centres and Kennedy's theorem, live velocity and acceleration diagrams for four-bar and slider-crank mechanisms, rubbing velocity, mechanical advantage, and every worked example from the notes calculated exactly.">
+<title>Velocity and Acceleration</title>
+<link rel="stylesheet" href="assets/notes.css">
+</head>
+<body>
+<nav class="sitebar" aria-label="Site"><a href="../">← All labs</a><a href="./">BME 2102 interactive notes</a><a href="intro.html">1 Introduction</a><a href="mechanisms.html">2 Mechanisms</a><a href="velocity.html" aria-current="page">3 Velocity and acceleration</a><a href="belts.html">4 Belt drives</a><a href="gearing.html">5 Gearing</a><a href="cams.html">6 Cams</a><a href="balancing.html">7 Balancing</a></nav>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">BME 2102 Mechanics of Machines · Chapter 3 · Velocity and acceleration analysis</div>
+  <h1>Velocity and Acceleration in Mechanisms</h1>
+  <p>The velocity and acceleration chapter of the course notes, with the diagrams drawn live. Find instantaneous centres with Kennedy's theorem, watch velocity and acceleration polygons change as the crank turns, and check each worked example against an exact calculation instead of a scale drawing.</p>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="On this page"><ol>
+  <li><a href="#s1"><span class="n">3.1</span>Instantaneous centres</a></li>
+  <li><a href="#s2"><span class="n">3.1.2</span>Velocity by instantaneous centres</a></li>
+  <li><a href="#s3"><span class="n">3.2</span>Relative velocity method</a></li>
+  <li><a href="#s4"><span class="n">3.2.2</span>Slider-crank and rubbing (3D)</a></li>
+  <li><a href="#s5"><span class="n">3.3</span>Forces and mechanical advantage</a></li>
+  <li><a href="#s6"><span class="n">3.4</span>Acceleration analysis</a></li>
+  <li><a href="#quiz"><span class="n">✓</span>Check yourself</a></li>
+  <li><a href="#refs"><span class="n"></span>References</a></li>
+</ol></nav>
+<main>
+
+<section class="sec prose" id="s1"><h2><span class="n">3.1</span>Instantaneous centres</h2>
+<p>A link that moves from AB to A<sub>1</sub>B<sub>1</sub> both translates and rotates. The same move can be made as a <b>pure rotation</b> about one point I, where the perpendicular bisectors of AA<sub>1</sub> and BB<sub>1</sub> meet. As the move shrinks to an instant, I becomes the <b>instantaneous centre</b> (centro, or virtual centre). Its path in space is the <b>space centrode</b>; its path relative to the body is the <b>body centrode</b>. The line through I perpendicular to the plane is the <b>instantaneous axis</b>, and its locus is the <b>axode</b>.</p>
+<div class="panel"><div class="ph"><h4>Any plane move is a rotation about one point</h4><span class="sub" id="mv_sub"></span></div>
+  <canvas class="cv" id="mv" aria-label="A link moved from AB to A1B1, and the centre I about which the same move is a rotation"></canvas>
+  <div class="btnrow"><button type="button" id="mv_play">Pause</button></div>
+  <div class="controls" id="mv_c"></div></div>
+<h3>Properties and number</h3>
+<p>Two rigid links rotate relative to each other about their instantaneous centre, and at that point they have no velocity relative to each other: it is a point common to both, with the same velocity relative to any third link. A chain of n links has N = n(n − 1)/2 instantaneous centres. <b>Fixed</b> centres stay put, <b>permanent</b> centres move but stay at a joint (together these are the <b>primary</b> centres), and centres that are <b>neither fixed nor permanent</b> (secondary) change with the configuration.</p>
+<p><b>Locating them.</b> (1) At a pin joint the centre is the pin. (2) For pure rolling it is the contact point, and velocities are in proportion to the distance from it: v<sub>A</sub>/v<sub>B</sub> = I<sub>12</sub>A/I<sub>12</sub>B. (3) For sliding it lies on the common normal: at infinity for a straight guide, at the centre of curvature for a curved one. <b>Kennedy's theorem</b> finds the rest: the three instantaneous centres of any three bodies lie on one straight line.</p>
+<div class="panel"><div class="ph"><h4>Where the instantaneous centre lies</h4><span class="sub" id="rl_sub"></span></div>
+  <canvas class="cv" id="rl" aria-label="Pin joint, rolling wheel and sliders with their instantaneous centres and velocity arrows"></canvas>
+  <div class="btnrow"><span class="seg" id="rl_seg" role="group" aria-label="Case"><button type="button" data-v="pin" aria-pressed="true">Pin joint</button><button type="button" data-v="roll">Rolling</button><button type="button" data-v="slide">Sliding, straight guide</button><button type="button" data-v="curve">Sliding, curved guide</button></span><button type="button" id="rl_play">Pause</button></div>
+  <div class="caption" id="rl_cap"></div></div>
+</section>
+
+<section class="sec prose" id="s2"><h2><span class="n">3.1.2</span>Velocity by the instantaneous centre method</h2>
+<p>Every point of a link moves as if the link turned about its instantaneous centre, so v = r ω with r measured from that centre, and the velocity is perpendicular to r. For a four-bar there are 4 × 3/2 = 6 centres: I<sub>12</sub>, I<sub>23</sub>, I<sub>34</sub> and I<sub>14</sub> are found by inspection; Kennedy's theorem and the circle diagram give I<sub>13</sub> and I<sub>24</sub>. Step through the procedure.</p>
+<div class="panel"><div class="ph"><h4>The six instantaneous centres of a four-bar</h4><span class="sub" id="ic_sub"></span></div>
+  <div class="figrow"><canvas class="cv tall" id="ic" aria-label="Four-bar mechanism with its instantaneous centres"></canvas><canvas class="cv tall" id="ic_k" aria-label="Kennedy circle diagram"></canvas></div>
+  <div class="btnrow"><span class="seg" id="ic_seg" role="group" aria-label="Step"><button type="button" data-v="1">1 Count</button><button type="button" data-v="2">2 By inspection</button><button type="button" data-v="3">3 Find I₁₃</button><button type="button" data-v="4" aria-pressed="true">4 Find I₂₄</button></span><label class="checks"><input type="checkbox" id="ic_cent"> Trace the centrodes of link 3</label><button type="button" id="ic_play">Play</button></div>
+  <div class="controls" id="ic_c"></div><div class="stats" id="ic_st"></div></div>
+<details class="ex" id="ex1"></details>
+</section>
+
+<section class="sec prose" id="s3"><h2><span class="n">3.2</span>The relative velocity method</h2>
+<p>For two bodies A and B, the velocity of A relative to B is v<sub>AB</sub> = v<sub>A</sub> − v<sub>B</sub> (vector <b>ba</b> = <b>oa</b> − <b>ob</b>), and v<sub>BA</sub> = −v<sub>AB</sub>. On a rigid link, the velocity of any point relative to another point of the same link is <b>perpendicular to the line joining them</b>, with v<sub>BA</sub> = ω × AB. A point C on AB divides <b>ab</b> in the same ratio as it divides AB: the <b>velocity image</b>.</p>
+<p><b>Drawing the diagram.</b> Take a pole o. Draw <b>oa</b> equal and parallel to the known v<sub>A</sub>. Through a draw a line perpendicular to AB (the direction of v<sub>BA</sub>); through o draw the known direction of v<sub>B</sub>. They meet at b. Then ω<sub>AB</sub> = ab/AB, and its sense follows from the direction of <b>ab</b>.</p>
+<div class="panel"><div class="ph"><h4>Velocity diagram of a four-bar (Example 7.1)</h4><span class="sub" id="fv_sub"></span></div>
+  <div class="figrow"><canvas class="cv tall" id="fv" aria-label="Space diagram of the four-bar"></canvas><canvas class="cv tall" id="fv_d" aria-label="Velocity diagram"></canvas></div>
+  <div class="btnrow"><button type="button" id="fv_play">Play</button></div>
+  <div class="controls" id="fv_c"></div><div class="stats" id="fv_st"></div></div>
+<details class="ex" id="ex2"></details>
+</section>
+
+<section class="sec prose" id="s4"><h2><span class="n">3.2.2</span>The slider-crank mechanism and rubbing velocity</h2>
+<p>For a crank OB of radius r turning at ω, <b>ob</b> = v<sub>B</sub> = ω r, perpendicular to OB. The rod AB is rigid, so <b>ba</b> is perpendicular to AB; the slider moves along the line of stroke, so <b>oa</b> is along AO. Their meeting point gives v<sub>A</sub> = oa, and ω<sub>AB</sub> = ab/AB.</p>
+<p><b>Rubbing velocity</b> at a pin joint is the pin radius times the relative angular velocity of the two links: (ω<sub>1</sub> − ω<sub>2</sub>) r if they turn the same way, (ω<sub>1</sub> + ω<sub>2</sub>) r if they turn opposite ways.</p>
+<div class="panel"><div class="ph"><h4>Steam engine mechanism in 3D (Example 7.2)</h4><span class="sub" id="se_sub"></span></div>
+  <div class="figrow"><canvas class="gl" id="se3" aria-label="3D steam engine crank, connecting rod and cross-head with velocity arrows"></canvas>
+  <canvas class="cv" id="se_d" aria-label="Velocity diagram of the engine"></canvas></div>
+  <div class="btnrow"><button type="button" id="se_play">Pause</button><label class="checks"><input type="checkbox" id="se_slow"> Slow motion</label></div>
+  <div class="stats" id="se_st"></div><div class="k3d">Arrows: velocity of the crank pin B (blue), the piston P (green), the point E (orange) and the slowest point G (purple). Drag to turn the view.</div></div>
+<details class="ex" id="ex3"></details>
+</section>
+
+<section class="sec prose" id="s5"><h2><span class="n">3.3</span>Forces in a mechanism and mechanical advantage</h2>
+<p>A force F<sub>A</sub> at joint A (in the direction of v<sub>A</sub>) is passed to joint B as F<sub>B</sub>. Ignoring friction and changes of kinetic energy, the power in equals the power out:</p>
+<div class="eq"><div>F<sub>A</sub> v<sub>A</sub> = F<sub>B</sub> v<sub>B</sub> &nbsp;&nbsp; or with torques &nbsp; T<sub>A</sub> ω<sub>A</sub> = T<sub>B</sub> ω<sub>B</sub> &nbsp;&nbsp; with efficiency η: &nbsp; η = T<sub>B</sub> ω<sub>B</sub> / T<sub>A</sub> ω<sub>A</sub></div>
+<div>Mechanical advantage (load/effort): &nbsp; M.A.(ideal) = F<sub>B</sub>/F<sub>A</sub> = v<sub>A</sub>/v<sub>B</sub> = ω<sub>A</sub>/ω<sub>B</sub> &nbsp;&nbsp; M.A.(actual) = η ω<sub>A</sub>/ω<sub>B</sub></div>
+<div class="w">If a force does not act along the velocity of its point, use its component along the velocity.</div></div>
+<div class="panel"><div class="ph"><h4>Mechanical advantage round a revolution (Example 7.10)</h4><span class="sub" id="ma_sub"></span></div>
+  <div class="figrow"><canvas class="cv" id="ma" aria-label="Four-bar with driving and resisting torques"></canvas><canvas class="cv" id="ma_g" aria-label="Mechanical advantage against crank angle"></canvas></div>
+  <div class="btnrow"><button type="button" id="ma_play">Play</button></div>
+  <div class="controls" id="ma_c"></div><div class="stats" id="ma_st"></div></div>
+<details class="ex" id="ex4"></details>
+</section>
+
+<section class="sec prose" id="s6"><h2><span class="n">3.4</span>Acceleration analysis</h2>
+<p>When B moves relative to A on a rigid link that turns at ω with angular acceleration α, the acceleration of B relative to A has two parts: a <b>radial</b> (centripetal) part a<sup>r</sup><sub>BA</sub> = ω² AB = v<sub>BA</sub>²/AB, along the link towards A, and a <b>tangential</b> part a<sup>t</sup><sub>BA</sub> = α AB, perpendicular to the link. Their vector sum b′a′ is the <b>acceleration image</b> of the link.</p>
+<div class="panel"><div class="ph"><h4>The two components of acceleration</h4><span class="sub" id="ac_sub"></span></div>
+  <canvas class="cv" id="ac" aria-label="A link with its radial and tangential acceleration components"></canvas>
+  <div class="controls" id="ac_c"></div><div class="stats" id="ac_st"></div></div>
+<h3>Drawing the acceleration diagram</h3>
+<p>From a pole o′ draw o′a′ for the known a<sub>A</sub>. From a′ draw a′x parallel to AB for a<sup>r</sup><sub>BA</sub> (worked out from the velocity diagram), then through x a line perpendicular to AB for the unknown a<sup>t</sup><sub>BA</sub>. Through o′ draw the known direction of a<sub>B</sub>; the lines meet at b′. Then α<sub>AB</sub> = a<sup>t</sup><sub>BA</sub>/AB. A third point C of the link is found by drawing triangle a′b′c′ similar to ABC.</p>
+<div class="panel"><div class="ph"><h4>Slider-crank: velocity and acceleration diagrams (Example 8.1)</h4><span class="sub" id="sa_sub"></span></div>
+  <div class="figrow three"><canvas class="cv short" id="sa" aria-label="Space diagram of the slider-crank"></canvas><canvas class="cv short" id="sa_v" aria-label="Velocity diagram"></canvas><canvas class="cv short" id="sa_a" aria-label="Acceleration diagram"></canvas></div>
+  <div class="btnrow"><button type="button" id="sa_play">Play</button></div>
+  <div class="controls" id="sa_c"></div><div class="stats" id="sa_st"></div></div>
+<details class="ex" id="ex5"></details>
+<details class="ex" id="ex6"></details>
+<div class="panel"><div class="ph"><h4>Four-bar: velocity and acceleration diagrams (Example 8.4)</h4><span class="sub" id="fa_sub"></span></div>
+  <div class="figrow three"><canvas class="cv short" id="fa" aria-label="Space diagram of the four-bar PQRS"></canvas><canvas class="cv short" id="fa_v" aria-label="Velocity diagram"></canvas><canvas class="cv short" id="fa_a" aria-label="Acceleration diagram"></canvas></div>
+  <div class="btnrow"><button type="button" id="fa_play">Play</button></div>
+  <div class="controls" id="fa_c"></div><div class="stats" id="fa_st"></div></div>
+<details class="ex" id="ex7"></details>
+</section>
+
+<section class="sec" id="quiz"><h2><span class="n">✓</span>Check yourself</h2><div id="qz"></div></section>
+
+<section class="sec refs" id="refs"><h2><span class="n"></span>References</h2>
+<p>Khurmi, R. S., &amp; Gupta, J. K. (2020). <i>Theory of machines</i> (14th ed.). S. Chand.</p>
+<p>Rattan, S. S. (2019). <i>Theory of machines</i> (5th ed.). McGraw Hill Education.</p>
+<p>Uganda Martyrs University, Department of Mechanical Engineering. (2026). <i>BME 2102 Mechanics of machines: Course notes</i> [Unpublished lecture notes].</p>
+<p>Uicker, J. J., Pennock, G. R., &amp; Shigley, J. E. (2017). <i>Theory of machines and mechanisms</i> (5th ed.). Oxford University Press.</p></section>
+</main></div>
+<footer class="foot">BME 2102 interactive notes · Uganda Martyrs University · text CC BY 4.0, code MIT · 3D by three.js (MIT)</footer>
+</div>
+<script src="../vendor/three.min.js"></script>
+<script src="../vendor/OrbitControls.js"></script>
+<script src="assets/notes.js"></script>
+<script src="assets/velocity.js"></script>
+<script src="assets/slides.js"></script>
+</body>
+</html>

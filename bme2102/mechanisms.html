@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive notes for BME 2102 Chapter 2, kinematics of simple mechanisms: links, constrained motion and kinematic pairs in 3D, kinematic chains, the Kutzbach and Grubler criteria, Grashof's law, inversions of the four-bar, slider-crank and double slider-crank chains, quick return mechanisms and Oldham's coupling.">
+<title>Simple Mechanisms</title>
+<link rel="stylesheet" href="assets/notes.css">
+</head>
+<body>
+<nav class="sitebar" aria-label="Site"><a href="../">← All labs</a><a href="./">BME 2102 interactive notes</a><a href="intro.html">1 Introduction</a><a href="mechanisms.html" aria-current="page">2 Mechanisms</a><a href="velocity.html">3 Velocity and acceleration</a><a href="belts.html">4 Belt drives</a><a href="gearing.html">5 Gearing</a><a href="cams.html">6 Cams</a><a href="balancing.html">7 Balancing</a></nav>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">BME 2102 Mechanics of Machines · Chapter 2 · Kinematics</div>
+  <h1>Simple Mechanisms</h1>
+  <p>The kinematics chapter of the course notes as models you can run: links and pairs in 3D, chains that lock or move, degrees of freedom counted as joints are added, Grashof's law on a live four-bar, every inversion of the slider-crank chain, quick return mechanisms with their time ratios, and Oldham's coupling turning in 3D.</p>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="On this page"><ol>
+  <li><a href="#s1"><span class="n">2.1</span>Links and constrained motion (3D)</a></li>
+  <li><a href="#s2"><span class="n">2.1.2</span>Kinematic pairs (3D)</a></li>
+  <li><a href="#s3"><span class="n">2.1.3</span>Kinematic chains</a></li>
+  <li><a href="#s4"><span class="n">2.2</span>Mechanisms and degrees of freedom</a></li>
+  <li><a href="#s5"><span class="n">2.2.3</span>Four-bar chain</a></li>
+  <li><a href="#s6"><span class="n">2.2.3</span>Single slider-crank chain</a></li>
+  <li><a href="#s7"><span class="n">2.2.3</span>Quick return mechanisms</a></li>
+  <li><a href="#s8"><span class="n">2.2.3</span>Double slider-crank chain (3D)</a></li>
+  <li><a href="#quiz"><span class="n">✓</span>Check yourself</a></li>
+  <li><a href="#refs"><span class="n"></span>References</a></li>
+</ol></nav>
+<main>
+
+<section class="sec prose" id="s1"><h2><span class="n">2.1</span>Links and constrained motion</h2>
+<p>A machine is not a structure: (1) its parts move relative to one another, (2) it turns the energy it receives into useful work, and (3) its links carry motion and power, whereas the members of a structure carry forces only. We study a machine by fixing one part and finding how the others move relative to it.</p>
+<p>Each part that moves relative to another is a <b>kinematic link</b> (or element). A link must have relative motion and must be a <b>resistant body</b>, able to carry the forces without noticeable deformation. Links are <b>rigid</b> (connecting rod, crankshaft), <b>flexible</b> (belts, ropes, chains: tension only) or <b>fluid</b> (hydraulic presses, jacks and brakes: pressure only).</p>
+<h3>Types of constrained motion</h3>
+<p><b>Completely constrained</b>: the motion is in one definite direction whatever the direction of the force, such as a square bar in a square hole, or a shaft with collars in a round hole. <b>Incompletely constrained</b>: more than one motion is possible, such as a plain round shaft in a round hole, which can turn or slide. <b>Successfully constrained</b>: the pair alone allows more than one motion, but something else completes the constraint, such as a load that stops a shaft lifting out of a foot-step bearing, the spring on an engine valve, or a piston in its cylinder.</p>
+<div class="panel"><div class="ph"><h4>Three kinds of constraint</h4><span class="sub" id="cm_sub"></span></div>
+  <canvas class="gl" id="cm3" aria-label="3D pairs showing completely, incompletely and successfully constrained motion"></canvas>
+  <div class="btnrow"><span class="seg" id="cm_seg" role="group" aria-label="Pair"><button type="button" data-v="square" aria-pressed="true">Square bar, square hole</button><button type="button" data-v="collar">Shaft with collars</button><button type="button" data-v="round">Round shaft, round hole</button><button type="button" data-v="foot">Foot-step bearing</button></span><label class="checks" id="cm_loadl"><input type="checkbox" id="cm_load" checked> Load on the shaft</label></div>
+  <div class="caption" id="cm_cap"></div><div class="k3d">Drag to turn the view.</div></div>
+</section>
+
+<section class="sec prose" id="s2"><h2><span class="n">2.1.2</span>Kinematic pairs</h2>
+<p>Two links in contact form a <b>kinematic pair</b>. Pairs are classified three ways.</p>
+<ul><li><b>By relative motion:</b> <b>sliding</b> (piston and cylinder, tailstock on a lathe bed), <b>turning</b> (shaft in a bearing, cycle wheel on its axle), <b>rolling</b> (ball and roller bearings), <b>screw</b> (lead screw and nut, bolt and nut), <b>spherical</b> (ball and socket, car mirror mount).</li>
+<li><b>By contact:</b> a <b>lower pair</b> has surface contact (sliding, turning and screw pairs); a <b>higher pair</b> has line or point contact, partly rolling and partly sliding (gear teeth, belts, ball bearings, cam and follower).</li>
+<li><b>By closure:</b> a <b>self-closed pair</b> is held together mechanically (all lower pairs); a <b>force-closed pair</b> is kept in contact by an outside force such as a spring or gravity (cam and follower).</li></ul>
+<div class="panel"><div class="ph"><h4>Pairs in 3D</h4><span class="sub" id="kp_sub"></span></div>
+  <canvas class="gl" id="kp3" aria-label="3D models of the kinds of kinematic pair"></canvas>
+  <div class="btnrow"><span class="seg" id="kp_seg" role="group" aria-label="Pair"><button type="button" data-v="slide" aria-pressed="true">Sliding</button><button type="button" data-v="turn">Turning</button><button type="button" data-v="roll">Rolling</button><button type="button" data-v="screw">Screw</button><button type="button" data-v="sphere">Spherical</button><button type="button" data-v="cam">Cam and follower</button></span></div>
+  <table class="t" id="kp_t" style="margin:0"></table><div class="k3d">Drag to turn the view.</div></div>
+</section>
+
+<section class="sec prose" id="s3"><h2><span class="n">2.1.3</span>Kinematic chains</h2>
+<p>A <b>kinematic chain</b> is a set of pairs joined so that each link is part of two pairs and the relative motion is completely or successfully constrained. The crankshaft in its bearings, the crank and connecting rod, the rod and piston, and the piston and cylinder form four pairs; together they make a chain. For lower pairs, with l links, p pairs and j joints:</p>
+<div class="eq"><div>l = 2p − 4 &nbsp;&nbsp;&nbsp; j = (3/2) l − 2</div><div>With h higher pairs: &nbsp; j + h/2 = (3/2) l − 2</div><div class="w">Left side greater than the right: a <b>locked chain</b> (a structure). Equal: a <b>kinematic chain</b>. Less: an <b>unconstrained chain</b>.</div></div>
+<div class="panel"><div class="ph"><h4>Arrangements of 3, 4, 5 and 6 links (Figure 2.3)</h4><span class="sub" id="ch_sub"></span></div>
+  <canvas class="cv" id="ch" aria-label="Chains of three to six links; the ones that can move are animated"></canvas>
+  <div class="btnrow"><span class="seg" id="ch_seg" role="group" aria-label="Links"><button type="button" data-v="3" aria-pressed="true">3 links</button><button type="button" data-v="4">4 links</button><button type="button" data-v="5">5 links</button><button type="button" data-v="6">6 links</button></span></div>
+  <div class="stats" id="ch_st"></div></div>
+<h3>Binary, ternary and quaternary joints</h3>
+<p>A <b>binary joint</b> joins two links. A <b>ternary joint</b> joins three and counts as two binary joints, since one link carries the pin for the other two. A <b>quaternary joint</b> joins four and counts as three. In general a joint of n links counts as n − 1 binary joints. Click the joints of the chain in Figure 2.4.</p>
+<div class="panel"><div class="ph"><h4>A chain with binary, ternary and quaternary joints (Figure 2.4)</h4><span class="sub" id="jt_sub"></span></div>
+  <canvas class="cv" id="jt" aria-label="An eleven-link chain; click a joint to see its type"></canvas>
+  <div class="stats" id="jt_st"></div></div>
+</section>
+
+<section class="sec prose" id="s4"><h2><span class="n">2.2</span>Mechanisms and degrees of freedom</h2>
+<p>Fixing one link of a kinematic chain makes a <b>mechanism</b>. With four links it is a <b>simple mechanism</b>; with more, a <b>compound mechanism</b>. When it transmits power or does work it becomes a <b>machine</b>. Fixing each link in turn gives as many mechanisms as there are links: these are <b>inversions</b>.</p>
+<p>The <b>degrees of freedom</b> (movability) are the number of inputs that must be controlled independently. A free link in a plane has three: x, y and θ. Pinning it to the fixed link leaves only θ, so a turning pair destroys two. Add the joints of a four-bar one at a time and watch the freedom fall from 9 to 1 (Figure 2.6).</p>
+<div class="panel"><div class="ph"><h4>Joining the links of a four-bar</h4><span class="sub" id="df_sub"></span></div>
+  <canvas class="cv" id="df" aria-label="Three moving links joined one pin at a time"></canvas>
+  <div class="btnrow"><span class="seg" id="df_seg" role="group" aria-label="Joints"><button type="button" data-v="0" aria-pressed="true">No joints</button><button type="button" data-v="1">1 joint</button><button type="button" data-v="2">2 joints</button><button type="button" data-v="3">3 joints</button><button type="button" data-v="4">4 joints</button></span><button type="button" id="df_play">Pause</button></div>
+  <div class="stats" id="df_st"></div></div>
+<h3>Kutzbach criterion</h3>
+<p>With l links, one fixed, the l − 1 moving links start with 3(l − 1) freedoms. Each lower pair (binary joint) j removes 2 and each higher pair h removes 1:</p>
+<div class="eq"><div>n = 3(l − 1) − 2j − h &nbsp;&nbsp; and with no higher pairs &nbsp; n = 3(l − 1) − 2j</div>
+<div><b>Grubler's criterion</b> (n = 1, h = 0): &nbsp; 3l − 2j − 4 = 0</div><div class="w">A mechanism of movability 1 with only single-freedom joints cannot have an odd number of links. The simplest are the four-bar and the slider-crank: l = 4, j = 4.</div></div>
+<div class="panel"><div class="ph"><h4>The five mechanisms of the Kutzbach example</h4><span class="sub" id="kz_sub"></span></div>
+  <canvas class="cv" id="kz" aria-label="Three-bar, four-bar, five-bar and six-bar mechanisms"></canvas>
+  <div class="btnrow"><span class="seg" id="kz_seg" role="group" aria-label="Mechanism"><button type="button" data-v="a" aria-pressed="true">(a) Three-bar</button><button type="button" data-v="b">(b) Four-bar</button><button type="button" data-v="c">(c) Five-bar</button><button type="button" data-v="d">(d) Five-bar, braced</button><button type="button" data-v="e">(e) Six-bar</button></span></div>
+  <div class="stats" id="kz_st"></div></div>
+<details class="ex" id="ex1"></details>
+</section>
+
+<section class="sec prose" id="s5"><h2><span class="n">2.2.3</span>The four-bar chain and Grashof's law</h2>
+<p>The most important chains have four lower pairs, each sliding or turning: the <b>four-bar chain</b>, the <b>single slider-crank chain</b> and the <b>double slider-crank chain</b>. The four-bar (quadric cycle) chain has four turning pairs. <b>Grashof's law</b>: for continuous relative rotation, the sum of the shortest and longest links must not exceed the sum of the other two, s + l ≤ p + q. The shortest link can then turn fully relative to the others; as the input it is the <b>crank</b> (driver). A link that only rocks is the <b>lever</b>, <b>rocker</b> or follower; the link joining crank and lever is the <b>connecting rod</b> or <b>coupler</b>; the fixed link is the <b>frame</b>.</p>
+<p>Fixing different links gives the inversions in Figure 2.8: the <b>beam engine</b> (crank and lever), the <b>locomotive coupling rod</b> (double crank) and <b>Watt's indicator</b> (double lever).</p>
+<div class="panel"><div class="ph"><h4>A four-bar chain: change the lengths or the fixed link</h4><span class="sub" id="fb_sub"></span></div>
+  <canvas class="cv" id="fb" aria-label="Animated four-bar chain with its coupler curve"></canvas>
+  <div class="btnrow"><span class="seg" id="fb_fix" role="group" aria-label="Fixed link"><button type="button" data-v="0" aria-pressed="true">Fix link 1 (AB)</button><button type="button" data-v="1">Fix link 2 (BC)</button><button type="button" data-v="2">Fix link 3 (CD)</button><button type="button" data-v="3">Fix link 4 (DA)</button></span>
+    <span class="seg" id="fb_pre" role="group" aria-label="Examples"><button type="button" data-v="beam">Beam engine</button><button type="button" data-v="loco">Locomotive coupling</button><button type="button" data-v="watt">Watt's indicator</button></span><button type="button" id="fb_play">Pause</button></div>
+  <div class="controls" id="fb_c"></div><div class="stats" id="fb_st"></div></div>
+</section>
+
+<section class="sec prose" id="s6"><h2><span class="n">2.2.3</span>The single slider-crank chain</h2>
+<p>Replace one turning pair of the four-bar with a sliding pair and you have the <b>single slider-crank chain</b>: one sliding pair and three turning pairs, as in the reciprocating engine (Figure 2.9). Link 1 is the frame, 2 the crank, 3 the connecting rod and 4 the cross-head; the crank turns and the cross-head slides in its guides. It turns rotation into reciprocation and back.</p>
+<p>Fixing each link in turn gives its inversions: the <b>pendulum pump</b> or bull engine (the cross-head, which carries the cylinder in that drawing, fixed), the <b>oscillating cylinder engine</b> and the <b>crank and slotted lever</b> quick return motion (the connecting rod fixed), and the <b>rotary (Gnome) engine</b> and the <b>Whitworth</b> quick return motion (the crank fixed). The figure below keeps one set of four links and only changes which one is held still.</p>
+<div class="panel"><div class="ph"><h4>One chain, four inversions</h4><span class="sub" id="sc_sub"></span></div>
+  <canvas class="cv tall" id="sc" aria-label="The same slider-crank chain drawn with a different link fixed"></canvas>
+  <div class="btnrow"><span class="seg" id="sc_seg" role="group" aria-label="Fixed link"><button type="button" data-v="frame" aria-pressed="true">Fix the frame: engine</button><button type="button" data-v="slider">Fix the slider: pendulum pump</button><button type="button" data-v="rod">Fix the rod: oscillating cylinder</button><button type="button" data-v="crank">Fix the crank: rotary engine</button></span><button type="button" id="sc_play">Pause</button></div>
+  <div class="caption" id="sc_cap"></div></div>
+</section>
+
+<section class="sec prose" id="s7"><h2><span class="n">2.2.3</span>Quick return mechanisms</h2>
+<p>In a shaping or slotting machine the tool should cut slowly and come back quickly. In the <b>crank and slotted lever</b> mechanism the crank CB turns at a steady speed about C; a block on the crank pin slides in the slotted lever AP, which rocks about A, and a short link PR drives the ram along the line of stroke R<sub>1</sub>R<sub>2</sub>, perpendicular to AC produced. At the ends of the stroke the lever is tangent to the crank circle. The cut takes the crank through β, the return through α:</p>
+<div class="eq"><div>Time of cutting stroke / time of return stroke = β/α = (360° − α)/α, &nbsp; with cos(α/2) = CB/AC</div><div>Length of stroke R<sub>1</sub>R<sub>2</sub> = 2 AP sin(90° − α/2) = 2 AP × CB/AC</div></div>
+<div class="panel"><div class="ph"><h4>Crank and slotted lever quick return</h4><span class="sub" id="qr_sub"></span></div>
+  <div class="figrow"><canvas class="cv tall" id="qr" aria-label="Crank and slotted lever mechanism driving a ram"></canvas><canvas class="cv tall" id="qr_g" aria-label="Ram position against crank angle"></canvas></div>
+  <div class="btnrow"><button type="button" id="qr_play">Pause</button></div>
+  <div class="controls" id="qr_c"></div><div class="stats" id="qr_st"></div></div>
+<details class="ex" id="ex2"></details>
+<details class="ex" id="ex3"></details>
+<p>In the <b>Whitworth</b> mechanism the crank CD is the fixed link. The driving crank CA turns about C; its block slides in the slotted lever, which turns completely about D. A rod PR drives the ram along a line through D perpendicular to CD. The cut happens while the crank turns through α and the return through β, so the time ratio is α/β = (360° − β)/β, and the stroke is 2 PD.</p>
+<div class="panel"><div class="ph"><h4>Whitworth quick return</h4><span class="sub" id="ww_sub"></span></div>
+  <div class="figrow"><canvas class="cv tall" id="ww" aria-label="Whitworth quick return mechanism"></canvas><canvas class="cv tall" id="ww_g" aria-label="Ram position against crank angle"></canvas></div>
+  <div class="btnrow"><button type="button" id="ww_play">Pause</button></div>
+  <div class="controls" id="ww_c"></div><div class="stats" id="ww_st"></div></div>
+</section>
+
+<section class="sec prose" id="s8"><h2><span class="n">2.2.3</span>The double slider-crank chain</h2>
+<p>Two turning pairs and two sliding pairs make the <b>double slider-crank chain</b>. Its inversions are the elliptical trammels, the Scotch yoke and Oldham's coupling.</p>
+<h3>Elliptical trammels</h3>
+<p>A plate with two grooves at right angles is fixed. Two sliders run in the grooves and are pinned to a bar AB. With the bar at θ to the horizontal, a point P on it is at x = AP cos θ, y = BP sin θ, so x²/AP² + y²/BP² = 1: P draws an <b>ellipse</b> with semi-axes AP and BP. If P is the midpoint, AP = BP and it draws a circle.</p>
+<div class="panel"><div class="ph"><h4>Elliptical trammels</h4><span class="sub" id="et_sub"></span></div>
+  <canvas class="cv" id="et" aria-label="Elliptical trammels tracing an ellipse"></canvas>
+  <div class="btnrow"><button type="button" id="et_play">Pause</button><button type="button" id="et_clear">Clear the trace</button></div>
+  <div class="controls" id="et_c"></div><div class="stats" id="et_st"></div></div>
+<h3>Scotch yoke</h3>
+<p>Fixing link 1 (or 3) gives the Scotch yoke, which turns rotation into reciprocation. The crank turns about B, its pin slides in the slotted yoke, and the yoke moves back and forth in its guides. Its displacement is exactly r cos θ: simple harmonic motion.</p>
+<div class="panel"><div class="ph"><h4>Scotch yoke</h4><span class="sub" id="sy_sub"></span></div>
+  <div class="figrow"><canvas class="cv" id="sy" aria-label="Scotch yoke mechanism"></canvas><canvas class="cv" id="sy_g" aria-label="Yoke displacement against crank angle"></canvas></div>
+  <div class="btnrow"><button type="button" id="sy_play">Pause</button></div></div>
+<h3>Oldham's coupling</h3>
+<p>Oldham's coupling joins two parallel shafts a small distance apart so that both turn at the same speed. Each shaft carries a flange with a slot; a middle disc has a tongue on each face, at right angles, that slides in the slots. The flanges and disc all turn at the same angular velocity, while each tongue slides in its slot. With ω the shaft speed and r the distance between the axes, the greatest sliding speed of each tongue is v = r ω.</p>
+<div class="panel"><div class="ph"><h4>Oldham's coupling in 3D</h4><span class="sub" id="ol_sub"></span></div>
+  <canvas class="gl" id="ol3" aria-label="3D Oldham's coupling with offset shafts"></canvas>
+  <div class="btnrow"><button type="button" id="ol_play">Pause</button><label class="checks"><input type="checkbox" id="ol_ex"> Pull the parts apart</label></div>
+  <div class="controls" id="ol_c"></div><div class="stats" id="ol_st"></div></div>
+</section>
+
+<section class="sec" id="quiz"><h2><span class="n">✓</span>Check yourself</h2><div id="qz"></div></section>
+
+<section class="sec refs" id="refs"><h2><span class="n"></span>References</h2>
+<p>Khurmi, R. S., &amp; Gupta, J. K. (2020). <i>Theory of machines</i> (14th ed.). S. Chand.</p>
+<p>Rattan, S. S. (2019). <i>Theory of machines</i> (5th ed.). McGraw Hill Education.</p>
+<p>Uganda Martyrs University, Department of Mechanical Engineering. (2026). <i>BME 2102 Mechanics of machines: Course notes</i> [Unpublished lecture notes].</p>
+<p>Uicker, J. J., Pennock, G. R., &amp; Shigley, J. E. (2017). <i>Theory of machines and mechanisms</i> (5th ed.). Oxford University Press.</p></section>
+</main></div>
+<footer class="foot">BME 2102 interactive notes · Uganda Martyrs University · text CC BY 4.0, code MIT · 3D by three.js (MIT)</footer>
+</div>
+<script src="../vendor/three.min.js"></script>
+<script src="../vendor/OrbitControls.js"></script>
+<script src="assets/notes.js"></script>
+<script src="assets/mechanisms.js"></script>
+<script src="assets/slides.js"></script>
+</body>
+</html>

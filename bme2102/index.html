@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive notes for all seven chapters of BME 2102 Mechanics of Machines: introduction, simple mechanisms, velocity and acceleration, belt drives, toothed gearing, cams and balancing, with animations, 3D models and the worked examples from the course notes.">
+<title>BME 2102 Interactive Notes</title>
+<link rel="stylesheet" href="assets/notes.css">
+<style>
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:18px;margin-top:8px}
+.card{display:grid;grid-template-rows:auto 1fr;background:var(--sheet);border:1px solid var(--rule);border-radius:6px;overflow:hidden;color:inherit;text-decoration:none}
+.card:hover{border-color:var(--muted)}
+.card img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;border-bottom:1px solid var(--rule);background:var(--grid)}
+.card .b{padding:14px 16px 16px;display:grid;gap:6px;align-content:start}
+.card .c{font-size:12.5px;color:var(--muted)}
+.card h2{margin:0;font-size:21px;color:var(--ink)}
+.card p{margin:0;color:var(--muted);font-size:14.5px}
+.card ul{margin:4px 0 0;padding-left:18px;font-size:13.5px;color:var(--text)}
+</style>
+</head>
+<body>
+<nav class="sitebar" aria-label="Site"><a href="../">← All labs</a><a href="./" aria-current="page">BME 2102 interactive notes</a><a href="intro.html">1 Introduction</a><a href="mechanisms.html">2 Mechanisms</a><a href="velocity.html">3 Velocity and acceleration</a><a href="belts.html">4 Belt drives</a><a href="gearing.html">5 Gearing</a><a href="cams.html">6 Cams</a><a href="balancing.html">7 Balancing</a></nav>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">BME 2102 Mechanics of Machines · Uganda Martyrs University · 2026/2027</div>
+  <h1>Interactive notes</h1>
+  <p>All seven chapters of the course notes turned into pages you can play with: 3D models to turn round, animations of the constructions in the notes, live versions of every worked example (change the numbers and the working follows), and a short self-check at the end of each. They follow the notes section by section, so use them alongside the printed notes. Each chapter opens as slides: click, press → or Space for the next slide, ← to go back, or choose “Page view” to read it as one scrolling page. Press F or the “Full screen” button to present; the top bar disappears at once and comes back only while the mouse is at the very top edge, moving the slide down so nothing is covered.</p>
+</header>
+<div class="cards">
+  <a class="card" href="intro.html"><img src="img/intro.jpg" alt="3D path of a particle with its rectangular coordinates" width="640" height="360"><div class="b"><span class="c">Chapter 1 · Introduction</span><h2>Introduction to Machines</h2>
+    <p>Branches of theory of machines, links, pairs and degrees of freedom, particle kinematics and kinetics.</p>
+    <ul><li>A particle in 3D in four coordinate systems</li><li>s–t, v–t and a–t graphs with areas that integrate live</li><li>Projectile launcher, moments, couples and a whirling mass</li><li>Grubler and Kutzbach calculator</li></ul></div></a>
+  <a class="card" href="mechanisms.html"><img src="img/mechanisms.jpg" alt="3D Oldham's coupling between two offset shafts" width="640" height="360"><div class="b"><span class="c">Chapter 2 · Kinematics</span><h2>Simple Mechanisms</h2>
+    <p>Links, constrained motion, pairs, chains, degrees of freedom, Grashof's law and the inversions of the three four-link chains.</p>
+    <ul><li>Pairs and kinds of constraint in 3D</li><li>Chains that lock, move or flop, and joint counting</li><li>Four-bar and slider-crank inversions, quick return mechanisms</li><li>Examples 5.2 and 5.3, Oldham's coupling in 3D</li></ul></div></a>
+  <a class="card" href="velocity.html"><img src="img/velocity.jpg" alt="Four-bar with its instantaneous centres and the Kennedy circle diagram" width="640" height="360"><div class="b"><span class="c">Chapter 3 · Velocity and acceleration</span><h2>Velocity and Acceleration</h2>
+    <p>Instantaneous centres and Kennedy's theorem, relative velocity, rubbing velocity, mechanical advantage and acceleration diagrams.</p>
+    <ul><li>The six centres of a four-bar, step by step</li><li>Velocity and acceleration polygons drawn live</li><li>A 3D steam engine with velocity arrows</li><li>Every worked example calculated exactly</li></ul></div></a>
+  <a class="card" href="belts.html"><img src="img/belts.jpg" alt="3D compound belt drive with three shafts" width="640" height="360"><div class="b"><span class="c">Chapter 4 · Transmission of power</span><h2>Belt Drives</h2>
+    <p>Types of belt drive, velocity ratio, slip and creep, length and angle of contact, tensions, power and V-belts.</p>
+    <ul><li>Eight kinds of belt drive running in 3D</li><li>Belt length and angle of contact drawn to scale</li><li>Tension growing round the arc; the speed for maximum power</li><li>Examples 11.1 to 11.18</li></ul></div></a>
+  <a class="card" href="gearing.html"><img src="img/gearing.jpg" alt="3D spur gears and the gear terms diagram" width="640" height="360"><div class="b"><span class="c">Chapter 5 · Transmission of power</span><h2>Toothed Gearing</h2>
+    <p>Gear types in 3D, gear terms, the law of gearing, involute and cycloidal teeth, contact ratio, interference and undercut, minimum number of teeth.</p>
+    <ul><li>7 gear types in 3D, with pitch surfaces</li><li>Involute and cycloid drawn as they are generated</li><li>A rack cutter undercutting a small pinion</li><li>Examples 1 to 6</li></ul></div></a>
+  <a class="card" href="cams.html"><img src="img/cams.jpg" alt="Cam profile being constructed by inversion" width="640" height="360"><div class="b"><span class="c">Chapter 6 · Cam mechanisms</span><h2>Cam Mechanisms</h2>
+    <p>Followers and cams in 3D, cam terms, the four follower motions and their diagrams, and drawing cam profiles by inversion.</p>
+    <ul><li>Engine valve train, followers and a cylindrical cam in 3D</li><li>Step-by-step construction of displacement diagrams</li><li>A profile tool that builds the cam like the notes, then runs it</li><li>Examples 1 to 4</li></ul></div></a>
+  <a class="card" href="balancing.html"><img src="img/balancing.jpg" alt="3D shaft carrying masses in several planes with balancing masses" width="640" height="360"><div class="b"><span class="c">Chapter 7 · Balancing rotating masses</span><h2>Balancing Rotating Masses</h2>
+    <p>Why balance, one mass in one or two planes, several masses in one plane, several masses in several planes.</p>
+    <ul><li>Spinning shafts in 3D that shake their bearings</li><li>Draggable space diagram with the force polygon</li><li>Couple and force polygons for several planes</li><li>Examples 1 and 2</li></ul></div></a>
+</div>
+<footer class="foot">BME 2102 interactive notes · Uganda Martyrs University · text CC BY 4.0, code MIT · 3D by three.js (MIT). Works offline once downloaded: open any page in a browser.</footer>
+</div>
+</body>
+</html>

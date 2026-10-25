@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive notes for BME 2102 Chapter 1, introduction: the branches of theory of machines, links, pairs and degrees of freedom, particle kinematics (rectilinear, curvilinear and projectile motion) and kinetics, with animations and a 3D model.">
+<title>Introduction to Machines</title>
+<link rel="stylesheet" href="assets/notes.css">
+</head>
+<body>
+<nav class="sitebar" aria-label="Site"><a href="../">← All labs</a><a href="./">BME 2102 interactive notes</a><a href="intro.html" aria-current="page">1 Introduction</a><a href="mechanisms.html">2 Mechanisms</a><a href="velocity.html">3 Velocity and acceleration</a><a href="belts.html">4 Belt drives</a><a href="gearing.html">5 Gearing</a><a href="cams.html">6 Cams</a><a href="balancing.html">7 Balancing</a></nav>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">BME 2102 Mechanics of Machines · Chapter 1 · Introduction</div>
+  <h1>Introduction to Machines</h1>
+  <p>The first chapter of the course notes, made to move. Name the parts of a mechanism and count its degrees of freedom, follow a particle along a straight line, a curve and a projectile path, and see Newton's laws, moments and centripetal force at work.</p>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="On this page"><ol>
+  <li><a href="#s1"><span class="n">1.1</span>Theory of machines</a></li>
+  <li><a href="#s2"><span class="n">1.2</span>Kinematics and coordinates (3D)</a></li>
+  <li><a href="#s3"><span class="n">1.2.1</span>Rectilinear motion</a></li>
+  <li><a href="#s4"><span class="n">1.2.2</span>Plane curvilinear motion</a></li>
+  <li><a href="#s5"><span class="n">1.2.3</span>Projectile motion</a></li>
+  <li><a href="#s6"><span class="n">1.3</span>Kinetics</a></li>
+  <li><a href="#quiz"><span class="n">✓</span>Check yourself</a></li>
+  <li><a href="#refs"><span class="n"></span>References</a></li>
+</ol></nav>
+<main>
+
+<section class="sec prose" id="s1"><h2><span class="n">1.1</span>Theory of machines</h2>
+<p><b>Theory of machines</b> studies the relative motion between the parts of a machine and the forces that act on them. It has four branches:</p>
+<ul><li><b>Kinematics</b>: the relative motion of the parts, without asking what causes it.</li>
+<li><b>Dynamics</b>: the forces on machine parts in motion and their effects.</li>
+<li><b>Kinetics</b>: the inertia forces that come from the mass and motion of the parts together.</li>
+<li><b>Statics</b>: the forces on the parts at rest, with their mass taken as negligible.</li></ul>
+<h3>Definitions</h3>
+<p>A <b>machine</b> transmits or modifies force to do useful work. A <b>mechanism</b> is an assembly of rigid bodies (<b>links</b>) that manages force and motion. A <b>structure</b> carries load without motion. Links meet at <b>kinematic pairs</b>; a series of links joined by pairs is a <b>kinematic chain</b>. A <b>binary link</b> joins two other links, a <b>ternary link</b> three. A <b>lower pair</b> has surface contact (a pin, a slider); a <b>higher pair</b> has point or line contact (a cam and follower, gear teeth).</p>
+<div class="panel"><div class="ph"><h4>The parts of a mechanism</h4><span class="sub" id="pm_sub"></span></div>
+  <canvas class="cv" id="pm" aria-label="A six-link mechanism: crank, ternary coupler plate, rocker, link and slider, coloured by what is selected"></canvas>
+  <div class="btnrow"><span class="seg" id="pm_seg" role="group" aria-label="Show"><button type="button" data-v="links" aria-pressed="true">Links</button><button type="button" data-v="pairs">Pairs</button><button type="button" data-v="kind">Binary and ternary links</button></span><button type="button" id="pm_play">Pause</button></div>
+  <div class="caption" id="pm_cap"></div></div>
+<h3>Degrees of freedom</h3>
+<p>The <b>degrees of freedom</b> (DoF) of a mechanism are the number of independent inputs needed to fix its position. In a plane every free link has 3 (two translations and one rotation). Fixing one link and joining the rest with pairs removes freedoms: a lower pair removes 2, a higher pair removes 1. With N links, J<sub>1</sub> lower pairs and J<sub>2</sub> higher pairs:</p>
+<div class="eq"><div><b>Grubler (planar):</b> &nbsp; DoF = 3(N − 1) − 2J<sub>1</sub> − J<sub>2</sub></div><div><b>Kutzbach (spatial):</b> &nbsp; DoF = 6(N − 1) − 5J<sub>1</sub> − 4J<sub>2</sub></div><div class="w">Both assume perfect joints and rigid links; real machines also have flexibility and friction.</div></div>
+<details class="ex" id="ex1"></details>
+</section>
+
+<section class="sec prose" id="s2"><h2><span class="n">1.2</span>Kinematics and the choice of coordinates</h2>
+<p><b>Kinematics</b> is the geometry of motion: it describes how bodies move without reference to the forces involved. It is used to design cams, gears and linkages, and to work out flight paths. A <b>particle</b> is a body so small compared with the curvature of its path that it can be treated as a point. If the particle is held to a path (a bead on a wire) its motion is <b>constrained</b>; with no guide it is <b>unconstrained</b>.</p>
+<p>The position of the particle P can be given in <b>rectangular</b> coordinates x, y, z, <b>cylindrical</b> coordinates r, θ, z, <b>spherical</b> coordinates R, θ, φ, or along the <b>tangent t and normal n</b> to its path. Coordinates measured from fixed axes give <b>absolute</b> motion; from moving axes, <b>relative</b> motion. Most machine motions happen in, or can be drawn in, a single plane, so the rest of the chapter uses <b>plane motion</b>: z = 0 and φ = 0.</p>
+<div class="panel"><div class="ph"><h4>A particle moving in space</h4><span class="sub" id="pc_sub"></span></div>
+  <canvas class="gl" id="pc3" aria-label="3D path of a particle with its coordinates drawn"></canvas>
+  <div class="btnrow"><span class="seg" id="pc_seg" role="group" aria-label="Coordinates"><button type="button" data-v="rect" aria-pressed="true">Rectangular x, y, z</button><button type="button" data-v="cyl">Cylindrical r, θ, z</button><button type="button" data-v="sph">Spherical R, θ, φ</button><button type="button" data-v="nt">Path t, n</button></span><button type="button" id="pc_play">Pause</button></div>
+  <div class="stats" id="pc_s"></div><div class="k3d">Drag to turn the view; scroll or pinch to zoom.</div></div>
+</section>
+
+<section class="sec prose" id="s3"><h2><span class="n">1.2.1</span>Rectilinear motion</h2>
+<p>A particle moves along a straight line; its position is the distance s from a fixed point O. In a time Δt it moves a <b>displacement</b> Δs (negative if it moves the other way). Taking the limit as Δt → 0:</p>
+<div class="eq"><div>v = ds/dt = ṡ &nbsp;&nbsp; a = dv/dt = d²s/dt² = s̈ &nbsp;&nbsp; and, eliminating dt, &nbsp; v dv = a ds</div><div class="w">s, v and a share one positive direction. A particle slowing down is decelerating; its a has the opposite sign to v.</div></div>
+<h3>Graphical integration</h3>
+<p>The slope of the s–t curve is v, and the slope of the v–t curve is a. Going the other way, the <b>area under the v–t curve</b> between t<sub>1</sub> and t<sub>2</sub> is the displacement s<sub>2</sub> − s<sub>1</sub>, and the <b>area under the a–t curve</b> is the change in velocity v<sub>2</sub> − v<sub>1</sub>. Choose a motion, play it, and drag the shaded window.</p>
+<div class="panel"><div class="ph"><h4>Position, velocity and acceleration against time</h4><span class="sub" id="rl_sub"></span></div>
+  <canvas class="cv strip" id="rl_track" aria-label="The particle on its straight line"></canvas>
+  <div class="figrow three"><canvas class="cv short" id="rl_s" aria-label="Position against time"></canvas><canvas class="cv short" id="rl_v" aria-label="Velocity against time with the area shaded"></canvas><canvas class="cv short" id="rl_a" aria-label="Acceleration against time with the area shaded"></canvas></div>
+  <div class="btnrow"><span class="seg" id="rl_seg" role="group" aria-label="Motion"><button type="button" data-v="const" aria-pressed="true">Constant acceleration</button><button type="button" data-v="trip">Start, cruise, brake</button><button type="button" data-v="osc">Oscillation</button></span><button type="button" id="rl_play">Pause</button></div>
+  <div class="controls" id="rl_c"></div><div class="stats" id="rl_st"></div></div>
+<p>Plotted against position instead, the <b>area under the a–s curve</b> is a ds = v dv, so it equals ½(v<sub>2</sub>² − v<sub>1</sub>²). On a v–s curve drawn to equal scales, the normal at a point A cuts the s axis a distance CB beyond the foot of A, and CB = v dv/ds = a.</p>
+<div class="panel"><div class="ph"><h4>Graphs against position</h4><span class="sub" id="as_sub"></span></div>
+  <div class="figrow even"><canvas class="cv short" id="as_a" aria-label="Acceleration against position with the area shaded"></canvas><canvas class="cv short" id="as_v" aria-label="Velocity against position with the normal construction"></canvas></div>
+  <div class="controls" id="as_c"></div><div class="stats" id="as_st"></div></div>
+</section>
+
+<section class="sec prose" id="s4"><h2><span class="n">1.2.2</span>Plane curvilinear motion</h2>
+<p>Now the particle moves along a curve in the x–y plane. Its position is the vector <b>r</b> from a fixed origin O. In Δt it moves from A to A′: the vector <b>displacement</b> Δ<b>r</b> (a chord, independent of where O is) differs from the scalar <b>distance</b> Δs along the path. As Δt → 0 they agree, and</p>
+<div class="eq"><div><b>v</b> = d<b>r</b>/dt = <b>ṙ</b>, tangent to the path, with magnitude v = ds/dt (the speed) &nbsp;&nbsp; <b>a</b> = d<b>v</b>/dt = <b>v̇</b></div>
+<div>Rectangular components: &nbsp; <b>r</b> = x<b>i</b> + y<b>j</b>, &nbsp; <b>v</b> = ẋ<b>i</b> + ẏ<b>j</b>, &nbsp; <b>a</b> = ẍ<b>i</b> + ÿ<b>j</b></div>
+<div class="w">The acceleration is in general neither tangent nor normal to the path. The unit vectors i and j do not change, so their derivatives are zero.</div></div>
+<div class="panel"><div class="ph"><h4>Displacement, distance, velocity and acceleration on a curve</h4><span class="sub" id="cv_sub"></span></div>
+  <canvas class="cv" id="cv" aria-label="A particle on a curved path with its position, velocity and acceleration vectors"></canvas>
+  <div class="btnrow"><span class="seg" id="cv_seg" role="group" aria-label="Path"><button type="button" data-v="ell" aria-pressed="true">Ellipse</button><button type="button" data-v="eight">Figure of eight</button><button type="button" data-v="wave">Wavy path</button></span><label class="checks"><input type="checkbox" id="cv_xy"> Show x and y components</label><button type="button" id="cv_play">Pause</button></div>
+  <div class="controls" id="cv_c"></div><div class="stats" id="cv_st"></div></div>
+</section>
+
+<section class="sec prose" id="s5"><h2><span class="n">1.2.3</span>Projectile motion</h2>
+<p>Ignore air drag and the curvature and rotation of the earth, and keep the height change small so that g is constant. With x horizontal and y up, the accelerations are a<sub>x</sub> = 0 and a<sub>y</sub> = −g, and integrating gives:</p>
+<div class="eq"><div>v<sub>x</sub> = (v<sub>x</sub>)<sub>0</sub> &nbsp;&nbsp; x = x<sub>0</sub> + (v<sub>x</sub>)<sub>0</sub> t</div><div>v<sub>y</sub> = (v<sub>y</sub>)<sub>0</sub> − g t &nbsp;&nbsp; y = y<sub>0</sub> + (v<sub>y</sub>)<sub>0</sub> t − ½ g t² &nbsp;&nbsp; v<sub>y</sub>² = (v<sub>y</sub>)<sub>0</sub>² − 2g(y − y<sub>0</sub>)</div><div class="w">g is taken as positive throughout. The horizontal and vertical motions are independent: one is uniform, the other uniformly accelerated.</div></div>
+<div class="panel"><div class="ph"><h4>Launch a projectile</h4><span class="sub" id="pj_sub"></span></div>
+  <canvas class="cv" id="pj" aria-label="Projectile path with its velocity components"></canvas>
+  <div class="btnrow"><button type="button" id="pj_go" class="primary">Launch</button><label class="checks"><input type="checkbox" id="pj_ghost" checked> Keep earlier paths</label></div>
+  <div class="controls" id="pj_c"></div><div class="stats" id="pj_st"></div></div>
+<details class="ex" id="ex2"></details>
+</section>
+
+<section class="sec prose" id="s6"><h2><span class="n">1.3</span>Kinetics</h2>
+<p><b>Kinetics</b> brings in the forces and the masses. It rests on Newton's three laws:</p>
+<ol><li><b>First law (inertia).</b> Every body stays at rest or in uniform motion in a straight line unless an external force acts on it.</li>
+<li><b>Second law.</b> The rate of change of momentum is proportional to the applied force and takes place in the direction of the force.</li>
+<li><b>Third law.</b> To every action there is an equal and opposite reaction.</li></ol>
+<h3>Momentum and force</h3>
+<p><b>Momentum</b> is mass × velocity. If a constant force changes the velocity of a mass m from u to v in a time t, the rate of change of momentum is (mv − mu)/t = m(v − u)/t = ma, so F = ma. A <b>force</b> is whatever produces, or tends to produce or destroy, motion.</p>
+<div class="panel"><div class="ph"><h4>A force changes momentum</h4><span class="sub" id="nm_sub"></span></div>
+  <div class="figrow even"><canvas class="cv short" id="nm" aria-label="A trolley pushed by a force for a set time"></canvas>
+  <canvas class="cv short" id="nm_g" aria-label="Momentum against time"></canvas></div>
+  <div class="btnrow"><button type="button" id="nm_go" class="primary">Push</button><button type="button" id="nm_reset">Reset</button></div>
+  <div class="controls" id="nm_c"></div><div class="stats" id="nm_st"></div></div>
+<h3>Moment of a force and couples</h3>
+<p>The <b>moment</b> of a force about a point is its turning effect: the force times the perpendicular distance from the point to its line of action, F × l. Two equal, opposite, parallel forces with different lines of action form a <b>couple</b>; its moment is F × x, where x (the arm) is the distance between the lines. A couple has the same moment about every point.</p>
+<div class="panel"><div class="ph"><h4>Moment and couple</h4><span class="sub" id="mo_sub"></span></div>
+  <canvas class="cv" id="mo" aria-label="A bar with forces; drag the point O and the force"></canvas>
+  <div class="btnrow"><span class="seg" id="mo_seg" role="group" aria-label="Load"><button type="button" data-v="one" aria-pressed="true">One force</button><button type="button" data-v="couple">A couple</button></span></div>
+  <div class="controls" id="mo_c"></div><div class="stats" id="mo_st"></div><div class="caption">Drag the point O, or the tail of a force, in the drawing.</div></div>
+<h3>Centripetal and centrifugal force</h3>
+<p>A mass m moving at speed v round a circle of radius r has an acceleration towards the centre, the <b>centripetal acceleration</b> a<sub>c</sub> = v²/r = ω²r. The force that produces it, the <b>centripetal force</b> F<sub>c</sub> = m v²/r = m ω² r, acts inwards. By the third law the mass pulls outwards on whatever holds it with an equal force, the <b>centrifugal force</b>.</p>
+<div class="panel"><div class="ph"><h4>A mass whirled on a string</h4><span class="sub" id="wh_sub"></span></div>
+  <canvas class="cv" id="wh" aria-label="A mass whirled on a string; cut the string and it flies off along the tangent"></canvas>
+  <div class="btnrow"><button type="button" id="wh_cut" class="primary">Cut the string</button><button type="button" id="wh_play">Pause</button></div>
+  <div class="controls" id="wh_c"></div><div class="stats" id="wh_st"></div></div>
+<p>Cutting the string turns constrained motion into unconstrained motion: with no force left, the first law sends the mass off in a straight line along the tangent, at the speed it had.</p>
+</section>
+
+<section class="sec" id="quiz"><h2><span class="n">✓</span>Check yourself</h2><div id="qz"></div></section>
+
+<section class="sec refs" id="refs"><h2><span class="n"></span>References</h2>
+<p>Khurmi, R. S., &amp; Gupta, J. K. (2020). <i>Theory of machines</i> (14th ed.). S. Chand.</p>
+<p>Meriam, J. L., Kraige, L. G., &amp; Bolton, J. N. (2020). <i>Engineering mechanics: Dynamics</i> (9th ed.). Wiley.</p>
+<p>Rattan, S. S. (2019). <i>Theory of machines</i> (5th ed.). McGraw Hill Education.</p>
+<p>Uganda Martyrs University, Department of Mechanical Engineering. (2026). <i>BME 2102 Mechanics of machines: Course notes</i> [Unpublished lecture notes].</p></section>
+</main></div>
+<footer class="foot">BME 2102 interactive notes · Uganda Martyrs University · text CC BY 4.0, code MIT · 3D by three.js (MIT)</footer>
+</div>
+<script src="../vendor/three.min.js"></script>
+<script src="../vendor/OrbitControls.js"></script>
+<script src="assets/notes.js"></script>
+<script src="assets/intro.js"></script>
+<script src="assets/slides.js"></script>
+</body>
+</html>

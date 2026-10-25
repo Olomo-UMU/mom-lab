@@ -6,9 +6,15 @@ Interactive, browser-based models for teaching theory of machines and mechanical
 |---|---|---|
 | Slider-Crank Lab | [`slider-crank/`](slider-crank/) | Position, velocity and acceleration analysis by loop closure; velocity and acceleration polygons |
 | Quick Return Lab | [`quick-return/`](quick-return/) | Crank and slotted lever; time ratio; Coriolis acceleration |
+| Spur Gear Mesh Lab | [`gears/`](gears/) | Involute spur gears and rack; contact ratio; interference; sliding; tooth load and contact stress |
 | Turning-Moment & Flywheel Lab | [`flywheel/`](flywheel/) | Gas and inertia forces; turning-moment diagrams; fluctuation of energy; flywheel design |
+| Friction Clutch Lab | [`clutch/`](clutch/) | Plate clutches; uniform pressure and uniform wear; engagement, slip, heat and stalling; parts and materials |
+| BME 2102 interactive notes | [`bme2102/`](bme2102/) | All seven chapters of the course notes (introduction, simple mechanisms, velocity and acceleration, belt drives, toothed gearing, cams, balancing) as slide decks with 3D models (three.js, in `vendor/`), animations, live worked examples and self-check questions. Roboto is bundled in `bme2102/assets/fonts/` |
+| Four-Cylinder Engine Lab | [`engine/`](engine/) | Mechanics of Machines II with the cut-out engines: slider-crank kinematics, cylinder pressure, turning moment and flywheel, primary and secondary balancing; printable lab sheet and degree wheel (`engine/sheet.html`) |
 | Spring–Mass–Damper Lab | [`vibration/`](vibration/) | Vertical SDOF system; free, forced and base-excited vibration |
 | Tacoma Narrows Flutter Lab | [`tacoma-narrows/`](tacoma-narrows/) | 1940 collapse; self-excited flutter versus vortex resonance |
+| Solar Installer Training | [separate repository](https://github.com/olomo-umu/solar-installer-training) | Course for solar PV installers: safety, design, installation, commissioning, maintenance; simulators, quizzes, certificate |
+| Uganda Electricity Atlas | [separate repository](https://github.com/olomo-umu/uganda-electricity-atlas) | Uganda’s power system: load flow, frequency, blackouts, scenarios, losses, access and open data |
 
 `python/slider_crank.py` is a NumPy and Matplotlib version of the slider-crank analysis.
 

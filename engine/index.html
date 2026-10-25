@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Inline four-cylinder engine: slider-crank kinematics, cylinder pressure, turning moment diagram, flywheel and balancing of the reciprocating masses, for use with cut-out engines.">
+<title>Four-Cylinder Engine Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+<style>
+:root{
+  --paper:#eceff3; --sheet:#fbfcfd; --ink:#15212c; --muted:#5b6977; --rule:#cdd5dd; --grid:#e3e8ed; --chip:#f2f5f8;
+  --crank:#1d5bbd; --rod:#b9600c; --mass:#4b4f86; --vel:#0b8466; --acc:#b8215f; --force:#7b36c4;
+  --warn-bg:#fff4e0; --warn-ink:#7a4300; --ok:#0b8466; --bad:#b8215f;
+  --f-head:"Roboto",Arial,Helvetica,sans-serif;
+  --f-body:"Roboto",Arial,Helvetica,sans-serif;
+  --f-mono:"Roboto",Arial,Helvetica,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0e141a; --sheet:#151d25; --ink:#e3e9ef; --muted:#93a1af; --rule:#2c3844; --grid:#1e2832; --chip:#1b252f;
+  --crank:#6ea2f2; --rod:#e89a4c; --mass:#a3a7e6; --vel:#3cc49e; --acc:#f06e9e; --force:#b88ff2;
+  --warn-bg:#3a2a10; --warn-ink:#ffcf8a; --ok:#3cc49e; --bad:#f06e9e; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --paper:#0e141a; --sheet:#151d25; --ink:#e3e9ef; --muted:#93a1af; --rule:#2c3844; --grid:#1e2832; --chip:#1b252f;
+  --crank:#6ea2f2; --rod:#e89a4c; --mass:#a3a7e6; --vel:#3cc49e; --acc:#f06e9e; --force:#b88ff2;
+  --warn-bg:#3a2a10; --warn-ink:#ffcf8a; --ok:#3cc49e; --bad:#f06e9e; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0}
+.sitebar{max-width:1480px;margin:0 auto;padding-inline:20px;padding-block:12px 0;font-size:13px}
+.sitebar a{color:var(--muted);text-decoration:none}
+.sitebar a:hover,.sitebar a:focus-visible{color:var(--ink);text-decoration:underline}
+@media (max-width:600px){.sitebar{padding-inline:16px}}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
+.wrap{max-width:1480px;margin:0 auto;padding-inline:20px;padding-block:20px 40px}
+@media (max-width:600px){.wrap{padding-inline:16px}}
+header.top{display:grid;gap:6px;margin-bottom:16px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.02em}
+h1{font-family:var(--f-head);font-weight:700;font-size:30px;line-height:1.1;margin:0;text-wrap:balance}
+header.top p{margin:0;color:var(--muted);font-size:15px;text-wrap:pretty}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1000px){.layout{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:4px;min-width:0}
+.ph{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--rule)}
+.ph h2,.ph h3{font-family:var(--f-head);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.ph .sub{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+aside.controls{position:sticky;top:env(safe-area-inset-top,0px);max-height:100vh;overflow:auto}
+@media (max-width:1000px){aside.controls{position:static;max-height:none}}
+.grp{padding:10px 12px;border-bottom:1px solid var(--rule);display:grid;gap:8px}
+.grp:last-child{border-bottom:0}
+.grp h4{margin:0;font-family:var(--f-head);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ctl{display:grid;grid-template-columns:1fr 78px;gap:2px 8px;align-items:center}
+.ctl label{font-size:12.5px;grid-column:1/-1;display:flex;justify-content:space-between;gap:6px}
+.ctl label .sym{font-family:var(--f-mono);font-size:12px;color:var(--ink)}
+.ctl label .hint{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.ctl input[type=range]{width:100%;accent-color:var(--crank)}
+.ctl input[type=number],select{width:100%;font-family:var(--f-mono);font-size:12.5px;padding:3px 5px;border:1px solid var(--rule);border-radius:3px;background:var(--chip);color:var(--ink);font-variant-numeric:tabular-nums}
+.sel{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sel label{font-size:12px;display:grid;gap:2px}
+.checks{display:grid;gap:4px;font-size:12.5px}
+.checks label{display:flex;gap:6px;align-items:center}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+button{font-family:var(--f-head);font-weight:600;font-size:12.5px;letter-spacing:.03em;padding:5px 10px;border-radius:3px;border:1px solid var(--rule);background:var(--chip);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--crank)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--crank);outline-offset:1px}
+button.primary{background:var(--crank);border-color:var(--crank);color:var(--sheet)}
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.presets button{text-align:left;font-size:12px;line-height:1.25;padding:6px 8px}
+.presets button small{display:block;font-family:var(--f-body);font-weight:400;letter-spacing:0;color:var(--muted);font-size:11px}
+main{display:grid;gap:16px;min-width:0}
+.row{display:grid;gap:16px;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)}
+@media (max-width:1250px){.row{grid-template-columns:minmax(0,1fr)}}
+.cv{display:block;width:100%}
+#eng{height:600px}
+.row.first{grid-template-columns:minmax(0,1fr)}
+@media (max-width:760px){#eng{height:980px}}
+#pv,#star{height:280px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--rule);background:var(--chip);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--vel);display:inline-block;flex:none}
+.warn{margin:8px 12px;padding:8px 10px;background:var(--warn-bg);color:var(--warn-ink);border-radius:3px;font-size:13px}
+.tablewrap{overflow-x:auto}
+table.res{width:100%;border-collapse:collapse;font-size:12.5px}
+table.res td{padding:3px 12px;border-bottom:1px solid var(--grid)}
+table.res td:nth-child(2){font-family:var(--f-mono);color:var(--muted);white-space:nowrap}
+table.res td.v{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.res td.u{font-family:var(--f-mono);color:var(--muted);white-space:nowrap;padding-left:2px}
+table.res tr.sec td{font-family:var(--f-head);font-weight:600;text-transform:uppercase;letter-spacing:.07em;font-size:11px;color:var(--muted);background:var(--chip);border-bottom:1px solid var(--rule)}
+table.res tr.key td{font-weight:600}
+table.res tr.key td.v{color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0}
+.stat{padding:8px 12px;border-right:1px solid var(--grid);border-bottom:1px solid var(--grid)}
+.stat .k{font-family:var(--f-head);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.stat .k .lc{text-transform:none;font-family:var(--f-mono);letter-spacing:0}
+.stat .n{font-family:var(--f-mono);font-size:16px;font-weight:500;font-variant-numeric:tabular-nums}
+.stat .n small{font-size:11px;color:var(--muted);font-weight:400}
+.charts{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));gap:16px}
+.charts canvas{height:220px;cursor:crosshair;touch-action:none}
+details.eq{padding:0}
+details.eq summary{cursor:pointer;padding:10px 12px;font-family:var(--f-head);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:13px}
+.eqbody{padding:4px 16px 16px;display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr))}
+.eqbody section{min-width:0}
+.eqbody h5{font-family:var(--f-head);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;margin:6px 0 4px;color:var(--muted)}
+.eqbody p,.eqbody li{margin:2px 0;max-width:70ch}
+.eqbody ul{padding-left:18px;margin:2px 0}
+.m{font-family:var(--f-mono);font-size:12.5px;background:var(--chip);padding:1px 4px;border-radius:2px}
+.eqblock{font-size:13px;background:var(--chip);border:1px solid var(--grid);padding:6px 8px;border-radius:3px;overflow-x:auto;line-height:1.6;display:grid;gap:1px}
+.er{display:flex;flex-wrap:wrap;gap:4px 18px;white-space:nowrap}
+.er .en{color:var(--muted)}
+.refs p{padding-left:2em;text-indent:-2em;max-width:none}
+.note{font-size:12px;color:var(--muted)}
+
+body{font-variant-numeric:tabular-nums}
+.chip.slip i{background:var(--acc)}
+.chip.lock i{background:var(--vel)}
+.chip.stall i{background:var(--bad)}
+.chip.idle i{background:var(--muted)}
+.ok{color:var(--ok)} .badv{color:var(--bad);font-weight:600}
+.partbtns{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;border-top:1px solid var(--grid)}
+.partbtns button{font-size:12px;padding:3px 9px;font-weight:500}
+.partbtns button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--sheet)}
+.partinfo{padding:10px 12px;border-top:1px solid var(--grid);min-height:44px}
+.partinfo .pi-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.partinfo .pi-head h4{margin:0;font-size:16px;font-family:var(--f-head)}
+.partinfo .pi-head .sub{font-size:12px;color:var(--muted)}
+.partinfo .pi-head button{margin-left:auto;font-size:12px;padding:2px 8px}
+dl.pi{display:grid;grid-template-columns:150px minmax(0,1fr);gap:6px 14px;margin:8px 0 0;font-size:13.5px}
+dl.pi dt{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+dl.pi dd{margin:0;max-width:85ch}
+@media (max-width:600px){dl.pi{grid-template-columns:minmax(0,1fr)}dl.pi dd{margin-bottom:6px}}
+.legend-sm{display:flex;flex-wrap:wrap;gap:4px 14px;padding:6px 12px;font-size:12px;color:var(--muted);border-top:1px solid var(--grid)}
+.legend-sm span{display:inline-flex;align-items:center;gap:5px}
+.legend-sm i{width:12px;height:12px;border-radius:2px;display:inline-block}
+
+.chip.drive i{background:var(--vel)} .chip.drag i{background:var(--acc)}
+.meas{overflow-x:auto;padding:8px 12px}
+.meas table{border-collapse:collapse;font-size:12.5px}
+.meas th,.meas td{border:1px solid var(--grid);padding:3px 5px;text-align:center;white-space:nowrap}
+.meas th:first-child{text-align:left;font-weight:600;color:var(--muted)}
+.meas input{width:48px;font-family:var(--f-mono);font-size:12.5px;padding:2px 4px;border:1px solid var(--rule);border-radius:3px;background:var(--chip);color:var(--ink)}
+.meas td.v{font-family:var(--f-mono);color:var(--muted)}
+.measfoot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:0 12px 10px;font-size:12.5px;color:var(--muted)}
+.steps{margin:0;padding:8px 12px 10px 30px;font-size:13.5px;max-width:110ch}
+.steps li{margin:3px 0}
+</style>
+</head>
+<body>
+<nav class="sitebar"><a href="../">← All labs</a></nav>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Mechanics of Machines II · Engine dynamics, turning moment and balancing · use with the cut-out engines</div>
+  <h1>Four-Cylinder Engine Lab</h1>
+  <p>An inline four-cylinder petrol engine, the kind cut open on the lab bench. Measure the bore, stroke, rod length and cylinder spacing on the real engine and type them in. The page works out where each piston is, how fast it moves and accelerates, the gas pressure in each cylinder, the torque on the crankshaft, how much the speed rises and falls with a given flywheel, and the shaking force and rocking couple that the engine mounts must carry. Drag the crank or click any graph to move the engine. The printable lab sheet goes with this page.</p>
+</header>
+<div class="layout">
+<aside class="controls panel" aria-label="Inputs">
+  <div class="ph"><h2>Inputs</h2><span class="sub"><a href="sheet.html">Lab sheet (print)</a></span></div>
+  <div class="grp"><h4>Measured on the engine</h4><div id="g-geo" style="display:grid;gap:8px"></div></div>
+  <div class="grp"><h4>Crankshaft</h4>
+    <div class="sel"><label>Crank layout<select id="layout"><option value="std">0°-180°-180°-0° (usual)</option><option value="alt">0°-180°-0°-180°</option><option value="one">Single cylinder</option></select></label>
+    <label>Firing order<select id="order"></select></label></div></div>
+  <div class="grp"><h4>Moving masses (typical values)</h4><div id="g-mass" style="display:grid;gap:8px"></div></div>
+  <div class="grp"><h4>Gas</h4><div id="g-gas" style="display:grid;gap:8px"></div>
+    <div class="checks"><label><input type="checkbox" id="fire" checked> Cylinders fire (untick for motoring)</label></div></div>
+  <div class="grp"><h4>Running</h4><div id="g-run" style="display:grid;gap:8px"></div></div>
+  <div class="grp"><h4>Crank angle</h4><div id="g-angle" style="display:grid;gap:8px"></div>
+    <div class="btnrow"><button id="play" class="primary" type="button">Play</button>
+      <select id="speed" aria-label="Animation speed" style="width:auto"><option value="45">slow (45°/s)</option><option value="120" selected>medium (120°/s)</option><option value="360">fast (360°/s)</option></select></div>
+    <div class="checks"><label><input type="checkbox" id="showVec" checked> Piston velocity and acceleration</label>
+      <label><input type="checkbox" id="showForce" checked> Forces</label><label><input type="checkbox" id="showStroke" checked> Stroke of each cylinder</label></div></div>
+  <div class="grp"><h4>Presets</h4><div class="presets" id="presets"></div></div>
+</aside>
+<main>
+  <div class="row first">
+    <section class="panel">
+      <div class="ph"><h3>Engine: section through cylinder 1 and side view of the block</h3><span class="chip" id="status"><i></i><span></span></span></div>
+      <div id="warnbox"></div>
+      <canvas id="eng" class="cv" aria-label="Animated section of cylinder 1 and side view of the four cylinders"></canvas>
+      <div class="legend-sm"><span><i style="background:var(--crank)"></i>crankshaft</span><span><i style="background:var(--rod)"></i>connecting rod; compression stroke</span><span><i style="background:var(--mass)"></i>piston</span><span><i style="background:var(--acc)"></i>power stroke; acceleration; shaking force</span><span><i style="background:var(--muted)"></i>exhaust stroke</span><span><i style="background:var(--force)"></i>gas force; inertia forces</span><span><i style="background:var(--vel)"></i>velocity</span></div>
+    </section>
+  </div>
+  <div class="row">
+    <section class="panel"><div class="ph"><h3>At this crank angle</h3><span class="sub" id="instSub"></span></div><div class="tablewrap"><table class="res" id="res"></table></div></section>
+    <div style="display:grid;gap:16px;align-content:start">
+      <section class="panel"><div class="ph"><h3>Pressure–volume diagram, cylinder 1</h3><label class="sub"><input type="checkbox" id="pvlog"> log scale</label></div><canvas id="pv" class="cv" aria-label="Pressure against volume for one cycle"></canvas><div class="legend-sm"><span id="pvSub"></span></div></section>
+      <section class="panel"><div class="ph"><h3>Balancing: crank diagrams</h3><span class="sub">primary turns at ω, secondary at 2ω</span></div><canvas id="star" class="cv" aria-label="Primary and secondary crank direction diagrams"></canvas></section>
+    </div>
+  </div>
+  <section class="panel">
+    <div class="ph"><h3>Your measurements: piston distance from TDC</h3><span class="sub">use the paper degree wheel from the lab sheet</span></div>
+    <div class="meas"><table id="meas"></table></div>
+    <div class="measfoot"><span id="measOut"></span><button id="measClear" type="button">Clear readings</button></div>
+  </section>
+  <section class="panel"><div class="ph"><h3>Results</h3><span class="sub" id="statSub"></span></div><div class="stats" id="stats"></div></section>
+  <div class="charts">
+    <section class="panel"><div class="ph"><h3>Piston displacement</h3><span class="sub">cylinder 1; your readings as dots</span></div><canvas class="cv" id="c1"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Piston velocity</h3><span class="sub">cylinder 1</span></div><canvas class="cv" id="c2"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Piston acceleration</h3><span class="sub">exact and approximate</span></div><canvas class="cv" id="c3"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Cylinder pressure</h3><span class="sub">four strokes, 720°</span></div><canvas class="cv" id="c4"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Turning moment diagram</h3><span class="sub">each cylinder and the crankshaft</span></div><canvas class="cv" id="c5"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Crankshaft speed</h3><span class="sub">with the flywheel, load = mean torque</span></div><canvas class="cv" id="c6"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Unbalanced vertical force</h3><span class="sub">reciprocating masses, all cylinders</span></div><canvas class="cv" id="c7"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Rocking couple</h3><span class="sub">about the middle of the block</span></div><canvas class="cv" id="c8"></canvas></section>
+  </div>
+<details class="panel eq"><summary>Equations, sign conventions, assumptions and references</summary><div class="eqbody">
+<section><h5>Conventions</h5><ul>
+<li>θ is the crank angle of cylinder 1, measured from its firing TDC in the direction of rotation; one cycle is 720°. Cylinder <i>i</i> has crank angle θ − δ<sub>i</sub>, where δ<sub>i</sub> is its throw position (0° or 180°).</li>
+<li><span class="m">x</span> is the distance from the crank centre to the piston pin, positive towards the head. In the tables, piston speed, acceleration and forces are given as positive <b>downwards</b> (towards the crank), as in most textbooks.</li>
+<li>r = S/2, n = l/r, ω = 2πN/60 (constant for the kinematics and forces; the speed graph then shows the small change the flywheel allows).</li></ul></section>
+<section><h5>Slider-crank kinematics (exact)</h5><div class="eqblock">
+<div class="er"><span>sinφ = (r/l) sinθ</span><span>x = r cosθ + l cosφ</span><span>s = r + l − x</span></div>
+<div class="er"><span>φ̇ = ω r cosθ / (l cosφ)</span><span>ẋ = −rω sinθ − l φ̇ sinφ</span></div>
+<div class="er"><span>φ̈ = [r(α cosθ − ω² sinθ) + l φ̇² sinφ] / (l cosφ)</span></div>
+<div class="er"><span>ẍ = −rα sinθ − rω² cosθ − l φ̈ sinφ − l φ̇² cosφ</span></div></div>
+<p>Two-term approximations: <span class="m">s ≈ r[(1 − cosθ) + (1 − cos2θ)/(4n)]</span>, <span class="m">a ≈ rω²(cosθ + cos2θ/n)</span>.</p></section>
+<section><h5>Cylinder pressure</h5><div class="eqblock">
+<div class="er"><span>V = V<sub>c</sub> + A s</span><span>V<sub>c</sub> = V<sub>s</sub>/(r<sub>c</sub> − 1)</span><span>A = πB²/4</span></div>
+<div class="er"><span>dp/dθ = −γ (p/V) dV/dθ + (γ − 1)/V · dQ/dθ</span><span>γ = 1.32</span></div>
+<div class="er"><span>Q(θ) = Q<sub>tot</sub>[1 − exp(−5((θ − θ<sub>0</sub>)/55°)³)]</span><span>(Wiebe)</span></div></div>
+<p>Inlet valve closes 30° after BDC at manifold pressure p<sub>in</sub>; burning starts θ<sub>s</sub> before TDC and lasts about 55°; exhaust opens 135° after TDC (blow-down), exhaust stroke at 1.08 bar. Q<sub>tot</sub> = 0.72 × (air trapped ÷ 14.7) × 44 MJ/kg, with 90% volumetric efficiency at 320 K. The 0.72 lumps wall heat loss and incomplete burning so that the peak pressure (about 50 bar) and IMEP (about 10 bar) match a typical naturally aspirated engine at full throttle (Heywood, 2018). The pressure curve is taken as independent of speed.</p></section>
+<section><h5>Forces and torque on one cylinder</h5><div class="eqblock">
+<div class="er"><span>m<sub>rec</sub> = m<sub>p</sub> + k m<sub>c</sub></span><span>(rod as two masses: k m<sub>c</sub> at the pin, the rest rotating with the crankpin)</span></div>
+<div class="er"><span>F<sub>g</sub> = (p − p<sub>atm</sub>) A</span><span>F<sub>i</sub> = −m<sub>rec</sub> a</span><span>F = F<sub>g</sub> + F<sub>i</sub></span></div>
+<div class="er"><span>T = F r sin(θ + φ) / cosφ</span><span>(equal to F·v/ω, by virtual work)</span></div>
+<div class="er"><span>rod force F/cosφ</span><span>side thrust F tanφ</span></div></div>
+<p>Rotating masses (crankpin and big end) are taken as balanced by the crank counterweights. The rod's correction couple (the two-mass model does not keep its moment of inertia exactly) is neglected.</p></section>
+<section><h5>Turning moment and flywheel</h5><div class="eqblock">
+<div class="er"><span>T(θ) = Σ T<sub>i</sub></span><span>T<sub>m</sub> = (1/720°) ∫ T dθ</span><span>P = T<sub>m</sub> ω</span></div>
+<div class="er"><span>E(θ) = ∫(T − T<sub>m</sub>) dθ</span><span>ΔE = E<sub>max</sub> − E<sub>min</sub></span></div>
+<div class="er"><span>½ I (ω² − ω<sub>0</sub>²) = E(θ)</span><span>C<sub>s</sub> = (ω<sub>max</sub> − ω<sub>min</sub>)/ω ≈ ΔE/(Iω²)</span><span>I<sub>needed</sub> = ΔE/(C<sub>s</sub> ω²)</span></div></div>
+<p>The load torque is taken as steady and equal to T<sub>m</sub>.</p></section>
+<section><h5>Balancing the reciprocating masses</h5><div class="eqblock">
+<div class="er"><span>Force on the frame from cylinder i: F<sub>i</sub> = −m<sub>rec</sub> a<sub>i</sub> (exact)</span></div>
+<div class="er"><span>primary: m<sub>rec</sub> r ω² cosθ<sub>i</sub></span><span>secondary: (m<sub>rec</sub> r ω²/n) cos2θ<sub>i</sub></span></div>
+<div class="er"><span>couple about the middle: M = Σ F<sub>i</sub> z<sub>i</sub></span><span>z<sub>i</sub> = (i − (N<sub>c</sub>+1)/2) a</span></div></div>
+<p>With throws at 0°, 180°, 180°, 0° the primary forces and both couples cancel (the crankshaft is mirror-symmetric), but the secondary cranks at 2θ<sub>i</sub> = 0°, 360°, 360°, 0° all point the same way: an unbalanced force of 4 m<sub>rec</sub> r ω²/n at twice engine speed, which balance shafts turning at 2ω can cancel. With throws at 0°, 180°, 0°, 180° the forces still cancel but the primary couple does not. Gas forces are internal to the engine; they do not shake it up and down but give a rolling reaction −T on the mounts.</p></section>
+<section class="refs"><h5>References</h5>
+<p>Ghojel, J. I. (2010). Review of the development and applications of the Wiebe function: A tribute to the contribution of Ivan Wiebe to engine research. <i>International Journal of Engine Research, 11</i>(4), 297–312. https://doi.org/10.1243/14680874JER06510</p>
+<p>Heywood, J. B. (2018). <i>Internal combustion engine fundamentals</i> (2nd ed.). McGraw-Hill Education.</p>
+<p>Norton, R. L. (2020). <i>Design of machinery: An introduction to the synthesis and analysis of mechanisms and machines</i> (6th ed.). McGraw-Hill Education.</p>
+<p>Rattan, S. S. (2019). <i>Theory of machines</i> (5th ed.). McGraw Hill Education.</p>
+<p>Uicker, J. J., Pennock, G. R., &amp; Shigley, J. E. (2017). <i>Theory of machines and mechanisms</i> (5th ed.). Oxford University Press.</p></section>
+</div></details>
+</main>
+</div>
+</div>
+<script>
+(() => {
+// MODEL START
+/* Inline four-stroke engine: slider-crank kinematics, a single-zone cylinder pressure model,
+   turning moment, flywheel speed fluctuation and the shaking forces and couples of the reciprocating masses.
+   Angles in degrees on input; SI inside. Crank angle θ is measured from TDC of cylinder 1, in the direction of rotation.
+   x = distance from crank centre to piston pin, positive towards the cylinder head ("up"). */
+const DEG = Math.PI/180;
+function slider(r, l, th, w, al){            // exact kinematics, th in rad
+  const st = Math.sin(th), ct = Math.cos(th), sp = r*st/l, cp = Math.sqrt(1 - sp*sp);
+  const x = r*ct + l*cp, phd = w*r*ct/(l*cp), xd = -r*w*st - l*phd*sp;
+  const phdd = (r*(al*ct - w*w*st) + l*phd*phd*sp)/(l*cp), xdd = -r*al*st - r*w*w*ct - l*phdd*sp - l*phd*phd*cp;
+  return { x, s:r + l - x, xd, xdd, phi:Math.asin(sp), phd, phdd }; }
+const LAYOUTS = {
+  std:{ name:'Flat crank 0°-180°-180°-0°', crank:[0,180,180,0], orders:{ '1342':[1,3,4,2], '1243':[1,2,4,3] } },
+  alt:{ name:'Cranks 0°-180°-0°-180°', crank:[0,180,0,180], orders:{ '1234':[1,2,3,4], '1432':[1,4,3,2] } },
+  one:{ name:'Single cylinder', crank:[0], orders:{ '1':[1] } } };
+function pressureCycle(P){                    // cylinder pressure [Pa] against cycle angle ψ (0 = firing TDC), 0.5° steps over 720°
+  const r = P.S/2000, l = P.L/1000, A = Math.PI*(P.B/1000)**2/4, Vd = A*2*r, Vc = Vd/(P.CR - 1), g = 1.32;
+  const V = psi => Vc + A*slider(r, l, psi*DEG, 0, 0).s, dV = psi => (V(psi + 0.01) - V(psi - 0.01))/0.02;
+  const pin = P.pin*1e5, pex = 1.08e5, adv = P.adv, dur = 55, ivc = 570, evo = 135;
+  // heat released per cycle: trapped air → fuel at stoichiometric 14.7, LHV 44 MJ/kg, 72% of it raising pressure (rest: wall heat, incomplete burning)
+  const Tin = 320, ma = 0.9*pin*Vd/(287*Tin), Q = P.fire ? 0.72*ma/14.7*44e6 : 0, ps = 720 - adv;
+  const dQ = psi => { if (!P.fire) return 0; let u = (psi - ps)/dur; if (u <= 0 || u >= 1.6) return 0; return Q*5*3*u*u*Math.exp(-5*u*u*u)/dur; };
+  const f = (psi, p) => { const v = V(psi), q = psi > 720 ? dQ(psi) : dQ(psi); let d = -g*p/v*dV(psi) + (g - 1)/v*dQ(psi);
+    if (psi > 720 + evo) d -= (p - pex)*0.09;   // blowdown through the open exhaust valve
+    return d; };
+  const N = 1440, out = new Float64Array(N + 1);   // index k ↔ ψ = k/2
+  // intake (360–540) and early compression until IVC at manifold pressure; exhaust stroke at pex
+  let p = pin, h = 0.5; const seg = new Map();
+  for (let psi = ivc; psi < 900 - 1e-9; psi += h){ seg.set(Math.round(psi*2), p);
+    const k1 = f(psi, p), k2 = f(psi + h/2, p + h/2*k1), k3 = f(psi + h/2, p + h/2*k2), k4 = f(psi + h, p + h*k3); p += h/6*(k1 + 2*k2 + 2*k3 + k4); }
+  seg.set(1800, p);
+  for (let k = 0; k <= N; k++){ const psi = k/2; let pp;
+    if (psi < 180) pp = seg.get(Math.round((psi + 720)*2));
+    else if (psi < 360) pp = Math.max(pex, seg.get(1800)*Math.exp(-(psi - 180)*0.09) + pex*(1 - Math.exp(-(psi - 180)*0.09)));
+    else if (psi < ivc) pp = psi < 380 ? pex + (pin - pex)*(psi - 360)/20 : pin;
+    else pp = seg.get(Math.round(psi*2));
+    out[k] = pp; }
+  out[N] = out[0]; return { p:out, V, Vd, Vc, A, Q }; }
+function buildModel(P){
+  const r = P.S/2000, l = P.L/1000, n = l/r, w = P.N*Math.PI/30, al = P.al || 0;
+  const warn = [];
+  if (!(l > r*1.2)) warn.push('The connecting rod must be longer than about 1.2 × the crank radius. Increase the rod length or reduce the stroke.');
+  if (warn.length) return { ok:false, warn };
+  const lay = LAYOUTS[P.layout], order = lay.orders[P.order] || Object.values(lay.orders)[0], nc = lay.crank.length;
+  // firing offsets: the k-th cylinder in the firing order fires 720k/nc° after cylinder 1, and only at its own TDC
+  const fire = new Array(nc).fill(0); order.forEach((c, k) => { fire[c - 1] = k*720/nc; });
+  for (let i = 0; i < nc; i++){ const d = ((fire[i] - lay.crank[i]) % 360 + 360) % 360; if (d > 1e-6) return { ok:false, warn:['That firing order does not suit this crank layout.'] }; }
+  const PC = pressureCycle(P), A = PC.A, p0 = 1.013e5, mrec = P.mp + P.mr*P.kcg, zc = i => (i - (nc - 1)/2)*P.pitch/1000;
+  const pAt = psi => { psi = ((psi % 720) + 720) % 720; const k = psi*2, k0 = Math.floor(k), f = k - k0; return PC.p[k0]*(1 - f) + PC.p[Math.min(k0 + 1, 1440)]*f; };
+  const cyl = (i, thdeg) => { const th = (thdeg - lay.crank[i])*DEG, K = slider(r, l, th, w, al), p = pAt(thdeg - fire[i]);
+    const Fg = -(p - p0)*A, Fi = -mrec*K.xdd, F = Fg + Fi;                  // forces on the piston along +x
+    const T = w > 0 ? F*K.xd/w : F*(-r*Math.sin(th + K.phi)/Math.cos(K.phi));   // virtual work: T·ω = F·ẋ
+    return { ...K, p, Fg, Fi, F, T, Trod:F/Math.cos(K.phi), side:F*Math.tan(K.phi), psi:(((thdeg - fire[i]) % 720) + 720) % 720 }; };
+  const NP = 721, th = new Float64Array(NP), T = new Float64Array(NP), Tc = Array.from({ length:nc }, () => new Float64Array(NP));
+  const Fs = new Float64Array(NP), F1 = new Float64Array(NP), F2 = new Float64Array(NP), Ms = new Float64Array(NP), M1 = new Float64Array(NP), M2 = new Float64Array(NP);
+  const s1 = new Float64Array(NP), v1 = new Float64Array(NP), a1 = new Float64Array(NP), aap = new Float64Array(NP), p1 = new Float64Array(NP), V1 = new Float64Array(NP);
+  for (let j = 0; j < NP; j++){ const t = j; th[j] = t; let tt = 0, fs = 0, f1 = 0, f2 = 0, ms = 0, m1 = 0, m2 = 0;
+    for (let i = 0; i < nc; i++){ const c = cyl(i, t), q = (t - lay.crank[i])*DEG; Tc[i][j] = c.T; tt += c.T;
+      const fi = -mrec*c.xdd, fp = mrec*r*w*w*Math.cos(q), fq = mrec*r*w*w*Math.cos(2*q)/n;   // inertia force on the frame, first and second harmonics
+      fs += fi; f1 += fp; f2 += fq; ms += fi*zc(i); m1 += fp*zc(i); m2 += fq*zc(i);
+      if (i === 0){ s1[j] = c.s; v1[j] = -c.xd; a1[j] = -c.xdd; const q0 = t*DEG; aap[j] = r*w*w*(Math.cos(q0) + Math.cos(2*q0)/n) - 0; p1[j] = c.p; V1[j] = PC.Vc + A*c.s; } }
+    T[j] = tt; Fs[j] = fs; F1[j] = f1; F2[j] = f2; Ms[j] = ms; M1[j] = m1; M2[j] = m2; }
+  // mean torque, energy fluctuation and speed with the flywheel (load torque = mean torque)
+  let sum = 0; for (let j = 0; j < NP - 1; j++) sum += (T[j] + T[j + 1])/2; const Tm = sum/(NP - 1);
+  const E = new Float64Array(NP); for (let j = 1; j < NP; j++) E[j] = E[j - 1] + ((T[j - 1] + T[j])/2 - Tm)*DEG;
+  let emax = -Infinity, emin = Infinity, jmax = 0, jmin = 0; for (let j = 0; j < NP; j++){ if (E[j] > emax){ emax = E[j]; jmax = j; } if (E[j] < emin){ emin = E[j]; jmin = j; } }
+  const dE = emax - emin, wm = w, Ifw = P.I;
+  // ω² = ω_ref² + 2E/I, with ω_ref chosen so the mean over the cycle is ω
+  let wref2 = w*w; const om = new Float64Array(NP);
+  for (let it = 0; it < 6; it++){ let m = 0; for (let j = 0; j < NP; j++){ om[j] = Math.sqrt(Math.max(1e-6, wref2 + 2*E[j]/Ifw)); if (j < NP - 1) m += om[j]; } m /= (NP - 1); wref2 *= (w/m)**2; }
+  let omx = -Infinity, omn = Infinity; for (let j = 0; j < NP; j++){ omx = Math.max(omx, om[j]); omn = Math.min(omn, om[j]); }
+  const Cs = (omx - omn)/w, Ineed = w > 0 ? dE/(P.cs/100*w*w) : NaN;
+  // indicated work per cylinder from the p–V loop (pumping included)
+  let Wi = 0; for (let k = 0; k < 1440; k++){ const a = k/2, b = a + 0.5, Va = PC.Vc + A*slider(r, l, a*DEG, 0, 0).s, Vb = PC.Vc + A*slider(r, l, b*DEG, 0, 0).s; Wi += (PC.p[k] + PC.p[k + 1])/2*(Vb - Va); }
+  const imep = Wi/PC.Vd, peak = (() => { let m = 0, at = 0; for (let k = 0; k <= 1440; k++) if (PC.p[k] > m){ m = PC.p[k]; at = k/2; } return { p:m, at:at > 360 ? at - 720 : at }; })();
+  const tidy = (a, sc) => { for (let j = 0; j < a.length; j++) if (Math.abs(a[j]) < 1e-9*sc) a[j] = 0; }; const sc = mrec*r*w*w + 1e-12; [Fs, F1, F2].forEach(a => tidy(a, sc)); [Ms, M1, M2].forEach(a => tidy(a, sc*P.pitch/1000));
+  const absmax = a => a.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
+  return { ok:true, warn:[], r, l, n, w, mrec, nc, lay, order, fire, PC, pAt, cyl, th, T, Tc, Tm, E, dE, jmax, jmin, om, Cs, Ineed, Fs, F1, F2, Ms, M1, M2, s1, v1, a1, aap, p1, V1,
+    Wi, imep, peak, power:Tm*w, Fmax:absmax(Fs), F1max:absmax(F1), F2max:absmax(F2), Mmax:absmax(Ms), Tmax:Math.max(...T), Tmin:Math.min(...T), Vd:PC.Vd*nc }; }
+// MODEL END
+
+/* ---------- inputs ---------- */
+const $ = id => document.getElementById(id);
+const specs = {
+  'g-geo':[['B','Bore','B','mm',50,110,0.1,79,null],
+           ['S','Stroke','S','mm',40,120,0.1,81.5,v=>`crank radius r = ${(v/2).toFixed(2)} mm`],
+           ['L','Connecting rod, centre to centre','l','mm',70,260,0.5,129,v=>`n = l/r = ${(v/(P.S/2)).toFixed(2)}`],
+           ['pitch','Cylinder spacing (bore centres)','a','mm',60,140,0.5,86,null]],
+  'g-mass':[['mp','Piston, rings and pin','m_p','kg',0.1,2,0.01,0.38,null],
+            ['mr','Connecting rod','m_c','kg',0.1,2,0.01,0.52,null],
+            ['kcg','Rod centre of mass from big end, ÷ l','k','',0.15,0.5,0.01,0.3,v=>`m_rec = ${(P.mp + P.mr*v).toFixed(3)} kg`]],
+  'g-gas':[['CR','Compression ratio','r_c','',6,14,0.1,10,null],
+           ['pin','Inlet manifold pressure','p_in','bar',0.25,1,0.01,1,v=>v>=0.97?'full throttle':v>0.6?'part throttle':'light load']],
+  'g-run':[['N','Engine speed','N','rpm',60,7000,10,3000,v=>`ω = ${(v*Math.PI/30).toFixed(1)} rad/s`],
+           ['adv','Spark advance (before TDC)','θ_s','°',0,45,1,20,null],
+           ['I','Flywheel and crankshaft inertia','I','kg·m²',0.02,1.5,0.005,0.12,null],
+           ['cs','Allowed speed fluctuation','C_s','%',0.5,5,0.1,2,null]],
+  'g-angle':[['th','Crank angle of cylinder 1 after its firing TDC','θ','°',0,720,1,45,null]]
+};
+const P = { layout:'std', order:'1342', fire:true, al:0 };
+const hints = {};
+for (const g in specs) for (const s of specs[g]){
+  const [k,lab,sym,unit,mn,mx,st,val,hint] = s; P[k] = val;
+  const box = document.createElement('div'); box.className = 'ctl';
+  box.innerHTML = `<label for="${k}_n"><span>${lab} <span class="sym">${sym.replace(/_(\w+)/,'<sub>$1</sub>')}${unit?` [${unit}]`:''}</span></span><span class="hint" id="${k}_h"></span></label>
+    <input type="range" id="${k}_r" min="${mn}" max="${mx}" step="${st}" value="${val}" aria-label="${lab}">
+    <input type="number" id="${k}_n" min="${mn}" max="${mx}" step="${st}" value="${val}" aria-label="${lab} value">`;
+  $(g).appendChild(box); hints[k] = hint;
+  const rr = box.querySelector('input[type=range]'), nn = box.querySelector('input[type=number]');
+  rr.addEventListener('input', () => { nn.value = rr.value; setP(k, +rr.value); });
+  nn.addEventListener('change', () => { let v = +nn.value; if (!isFinite(v)) v = P[k]; v = Math.min(+nn.max, Math.max(+nn.min, v)); nn.value = v; rr.value = v; setP(k, v); });
+}
+function setInput(k, v){ P[k] = v; const rr = $(k+'_r'), nn = $(k+'_n'); if (rr){ rr.value = v; nn.value = v; } }
+function setP(k, v){ P[k] = v; if (k === 'th') refreshInstant(); else refreshAll(); }
+function fillOrders(){ const o = LAYOUTS[P.layout].orders; $('order').innerHTML = Object.keys(o).map(k => `<option value="${k}">${o[k].join('-')}</option>`).join(''); if (!o[P.order]) P.order = Object.keys(o)[0]; $('order').value = P.order; }
+$('layout').addEventListener('change', e => { P.layout = e.target.value; fillOrders(); refreshAll(); });
+$('order').addEventListener('change', e => { P.order = e.target.value; refreshAll(); });
+$('fire').addEventListener('change', e => { P.fire = e.target.checked; refreshAll(); });
+['showVec','showForce','showStroke'].forEach(id => $(id).addEventListener('change', () => refreshInstant()));
+function updHints(){ for (const k in hints){ const h = $(k+'_h'); if (h) h.textContent = hints[k] ? hints[k](P[k]) : ''; } }
+
+/* ---------- presets ---------- */
+const BASE = { B:79, S:81.5, L:129, pitch:86, mp:0.38, mr:0.52, kcg:0.3, CR:10, pin:1, N:3000, adv:20, I:0.12, cs:2, layout:'std', order:'1342', fire:true };
+const PRESETS = [
+  ['Full throttle', '1.6 L car engine, 3000 rpm', {}, 45],
+  ['Town driving', 'part throttle, 2000 rpm', { pin:0.45, N:2000, adv:30 }, 45],
+  ['High revs', '6500 rpm: inertia takes over', { N:6500, adv:30 }, 90],
+  ['Turning it by hand', 'no firing, 60 rpm', { N:60, fire:false, I:0.12 }, 700],
+  ['Single cylinder', 'why it needs a big flywheel', { layout:'one', order:'1', I:0.12 }, 20],
+  ['Cranks 0-180-0-180', 'a rocking couple appears', { layout:'alt', order:'1234' }, 30],
+  ['Short rod', 'n = 2.6: more second order', { L:106 }, 45],
+  ['Diesel-like', 'r_c = 17, no throttle, 2000 rpm', { CR:17, adv:10, N:2000 }, 20]
+];
+PRESETS.forEach(([name, sub, over, t0], i) => { const b = document.createElement('button'); b.type = 'button';
+  b.innerHTML = `${name}<small>${sub}</small>`; b.addEventListener('click', () => loadPreset(i)); $('presets').appendChild(b); });
+function loadPreset(i){ const [,, over, t0] = PRESETS[i]; const v = Object.assign({}, BASE, over);
+  for (const k in v){ if (k === 'layout'){ P.layout = v[k]; $('layout').value = v[k]; fillOrders(); } else if (k === 'order'){ P.order = v[k]; $('order').value = v[k]; } else if (k === 'fire'){ P.fire = v[k]; $('fire').checked = v[k]; } else setInput(k, v[k]); }
+  P.order = v.order; $('order').value = v.order; refreshAll(); setInput('th', t0); refreshInstant(); }
+
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let C = {};
+function readColors(){ for (const k of ['paper','sheet','ink','muted','rule','grid','chip','crank','rod','mass','vel','acc','force','ok','bad']) C[k] = css('--'+k); C.mono = css('--f-mono'); C.head = css('--f-head'); }
+function prep(cv){
+  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== Math.round(W*dpr) || cv.height !== Math.round(H*dpr)){ cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr); }
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+  return { ctx, W, H };
+}
+function alpha(col, a){
+  if (col.startsWith('#')){ let h = col.slice(1); if (h.length === 3) h = h.split('').map(c=>c+c).join('');
+    const n = parseInt(h,16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; }
+  return col;
+}
+function arrow(ctx, x0, y0, x1, y1, col, w=2){
+  const dx = x1-x0, dy = y1-y0, L = Math.hypot(dx,dy); if (L < 2) return;
+  const ux = dx/L, uy = dy/L, hl = Math.min(10, L*0.45);
+  ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = w;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1-ux*hl*0.8, y1-uy*hl*0.8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1-ux*hl-uy*hl*0.45, y1-uy*hl+ux*hl*0.45); ctx.lineTo(x1-ux*hl+uy*hl*0.45, y1-uy*hl-ux*hl*0.45); ctx.closePath(); ctx.fill();
+}
+function richParts(txt){ const out = []; const re = /_([A-Za-z0-9]+)/g; let i = 0, m;
+  while ((m = re.exec(txt))){ if (m.index > i) out.push([txt.slice(i, m.index), false]); out.push([m[1], true]); i = re.lastIndex; }
+  if (i < txt.length) out.push([txt.slice(i), false]); return out; }
+function richWidth(ctx, txt){ const f = ctx.font, sz = parseFloat((f.match(/(\d+(?:\.\d+)?)px/)||[0,12])[1]); let w = 0;
+  for (const [t, sub] of richParts(txt)){ if (sub){ ctx.font = f.replace(/\d+(?:\.\d+)?px/, (sz*0.78).toFixed(1)+'px'); w += ctx.measureText(t).width; ctx.font = f; } else w += ctx.measureText(t).width; }
+  return w; }
+function rich(ctx, txt, x, y){ const f = ctx.font, sz = parseFloat((f.match(/(\d+(?:\.\d+)?)px/)||[0,12])[1]), al = ctx.textAlign, w = richWidth(ctx, txt);
+  let cx = al === 'right' ? x - w : al === 'center' ? x - w/2 : x; ctx.textAlign = 'left';
+  for (const [t, sub] of richParts(txt)){ if (sub){ ctx.font = f.replace(/\d+(?:\.\d+)?px/, (sz*0.78).toFixed(1)+'px'); ctx.fillText(t, cx, y + sz*0.28); cx += ctx.measureText(t).width; ctx.font = f; } else { ctx.fillText(t, cx, y); cx += ctx.measureText(t).width; } }
+  ctx.textAlign = al; return w; }
+function label(ctx, txt, x, y, col, align='left', size=11.5, bg=true){
+  ctx.font = `500 ${size}px ${C.mono}`; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  if (bg){ const w = richWidth(ctx, txt), x0 = align==='left'?x:align==='right'?x-w:x-w/2;
+    ctx.fillStyle = alpha(C.sheet.startsWith('#')?C.sheet:'#ffffff', 0.86); ctx.fillRect(x0-2, y-8, w+4, 16); }
+  ctx.fillStyle = col; rich(ctx, txt, x, y);
+}
+function niceStep(span, target){ const raw = span/Math.max(target,1), p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw/p;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10)*p; }
+function fmt(v, d=2){ if (!isFinite(v)) return 'n/a'; const a = Math.abs(v);
+  if (a !== 0 && (a >= 1e6 || a < 1e-3)) return v.toExponential(2);
+  return v.toLocaleString('en-US', { minimumFractionDigits:d, maximumFractionDigits:d }); }
+function fmtTick(v, step){ const d = Math.max(0, -Math.floor(Math.log10(step) + 1e-9)); return Math.abs(v) >= 1e5 ? v.toExponential(1) : v.toFixed(Math.min(d,4)); }
+
+/* reusable chart: o = {x, series:[{y,color,w,dash,label}], hlines, vlines, cursor, value, ylab, xlab, markers, fill} */
+function chart(cv, o){
+  const { ctx, W, H } = prep(cv);
+  const pl = 56, pr = 12, pt = 26, pb = 30, w = W-pl-pr, h = H-pt-pb;
+  const x = o.x, xmin = o.xmin != null ? o.xmin : x[0], xmax = o.xmax != null ? o.xmax : x[x.length-1];
+  let ymin = Infinity, ymax = -Infinity;
+  for (const s of o.series) for (let j = 0; j < s.y.length; j++){ const v = s.y[j]; if (isFinite(v)){ if (v < ymin) ymin = v; if (v > ymax) ymax = v; } }
+  for (const hl of (o.hlines||[])){ ymin = Math.min(ymin, hl.v); ymax = Math.max(ymax, hl.v); }
+  if (o.zero !== false){ ymin = Math.min(ymin, 0); ymax = Math.max(ymax, 0); }
+  if (!(ymax > ymin)){ ymax = ymin + 1; }
+  const padv = (ymax-ymin)*0.08; ymax += padv; if (ymin < 0) ymin -= padv;
+  const X = v => pl + (v-xmin)/(xmax-xmin)*w, Y = v => pt + (ymax-v)/(ymax-ymin)*h;
+  cv._map = { pl, w, xmin, xmax };
+  ctx.font = `11px ${C.mono}`; ctx.textBaseline = 'middle'; ctx.lineWidth = 1;
+  const ys = niceStep(ymax-ymin, 5);
+  for (let v = Math.ceil(ymin/ys)*ys; v <= ymax; v += ys){
+    ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(pl, Y(v)); ctx.lineTo(pl+w, Y(v)); ctx.stroke();
+    ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.fillText(fmtTick(v, ys), pl-6, Y(v)); }
+  const xs = niceStep(xmax-xmin, Math.max(3, Math.floor(w/70)));
+  for (let v = Math.ceil(xmin/xs)*xs; v <= xmax+1e-9; v += xs){
+    ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(X(v), pt); ctx.lineTo(X(v), pt+h); ctx.stroke();
+    ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.fillText(fmtTick(v, xs), X(v), pt+h+11); }
+  ctx.textAlign = 'right'; ctx.fillText(o.xlab || '', pl+w, pt+h+24);
+  ctx.save(); ctx.translate(12, pt+h/2); ctx.rotate(-Math.PI/2); ctx.textAlign = 'center'; rich(ctx, o.ylab||'', 0, 0); ctx.restore();
+  for (const sh of (o.shade||[])){ ctx.fillStyle = alpha(sh.color, 0.08); ctx.fillRect(X(sh.a), pt, Math.max(0, X(sh.b)-X(sh.a)), h);
+    if (sh.label){ ctx.fillStyle = C.muted; ctx.textAlign='center'; ctx.font = `10px ${C.mono}`; ctx.fillText(sh.label, (X(sh.a)+X(Math.min(sh.b,xmax)))/2, pt+h-8); ctx.font = `11px ${C.mono}`; } }
+  if (ymin < 0 && ymax > 0){ ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(pl, Y(0)); ctx.lineTo(pl+w, Y(0)); ctx.stroke(); }
+  if (o.fill){ const f = o.fill; ctx.fillStyle = alpha(f.color, 0.2); ctx.beginPath(); ctx.moveTo(X(x[0]), Y(0)); for (let j = 0; j < x.length; j++) ctx.lineTo(X(x[j]), Y(f.y[j])); ctx.lineTo(X(x[x.length-1]), Y(0)); ctx.closePath(); ctx.fill(); }
+  for (const hl of (o.hlines||[])){ ctx.strokeStyle = hl.color; ctx.lineWidth = 1.2; ctx.setLineDash(hl.dash||[5,4]); ctx.beginPath(); ctx.moveTo(pl, Y(hl.v)); ctx.lineTo(pl+w, Y(hl.v)); ctx.stroke(); ctx.setLineDash([]);
+    if (hl.label){ ctx.textAlign = hl.right ? 'right' : 'left'; ctx.fillStyle = hl.color; rich(ctx, hl.label, hl.right ? pl+w-4 : pl+4, Y(hl.v) - 8); } }
+  for (const vl of (o.vlines||[])){ if (vl.v < xmin || vl.v > xmax) continue; ctx.strokeStyle = vl.color; ctx.lineWidth = 1.2; ctx.setLineDash(vl.dash||[4,3]); ctx.beginPath(); ctx.moveTo(X(vl.v), pt); ctx.lineTo(X(vl.v), pt+h); ctx.stroke(); ctx.setLineDash([]);
+    if (vl.label){ ctx.fillStyle = vl.color; ctx.textAlign = X(vl.v) > pl + w*0.7 ? 'right' : 'left'; rich(ctx, vl.label, X(vl.v) + (ctx.textAlign === 'left' ? 4 : -4), pt + 10 + (vl.dy||0)); } }
+  ctx.save(); ctx.beginPath(); ctx.rect(pl, pt, w, h); ctx.clip();
+  for (const s of o.series){
+    ctx.strokeStyle = s.color; ctx.lineWidth = s.w || 1.8; ctx.setLineDash(s.dash || []);
+    ctx.beginPath(); let on = false;
+    for (let j = 0; j < x.length; j++){ const v = s.y[j]; if (!isFinite(v)){ on = false; continue; } const xx = X(x[j]), yy = Y(v); if (on) ctx.lineTo(xx, yy); else { ctx.moveTo(xx, yy); on = true; } }
+    ctx.stroke(); ctx.setLineDash([]); }
+  for (const mk of (o.markers||[])){ ctx.fillStyle = mk.color; ctx.beginPath(); ctx.arc(X(mk.x), Y(mk.y), 4, 0, 7); ctx.fill();
+    if (mk.label){ ctx.textAlign = X(mk.x) > pl + w*0.6 ? 'right' : 'left'; rich(ctx, mk.label, X(mk.x) + (ctx.textAlign==='left'?7:-7), Y(mk.y) + (mk.dy||-10)); } }
+  ctx.restore();
+  if (o.cursor != null){
+    const cx = X(o.cursor); ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(cx, pt); ctx.lineTo(cx, pt+h); ctx.stroke(); ctx.setLineDash([]);
+    const s0 = o.series[o.cursorSeries||0], j = o.cursorIndex;
+    if (s0 && j != null && isFinite(s0.y[j])){ ctx.fillStyle = s0.color; ctx.beginPath(); ctx.arc(cx, Y(s0.y[j]), 4, 0, 7); ctx.fill(); } }
+  ctx.font = `11px ${C.mono}`; ctx.textBaseline = 'middle'; let lx = pl;
+  for (const s of o.series){ if (!s.label) continue; ctx.strokeStyle = s.color; ctx.lineWidth = 2; ctx.setLineDash(s.dash||[]); ctx.beginPath(); ctx.moveTo(lx, 12); ctx.lineTo(lx+14, 12); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = C.muted; ctx.textAlign = 'left'; lx += 26 + rich(ctx, s.label, lx+18, 12); if (lx > W - 150) break; }
+  if (o.value){ ctx.font = `600 12px ${C.mono}`; ctx.fillStyle = C.ink; ctx.textAlign = 'right'; rich(ctx, o.value, W-pr, 12); }
+}
+
+/* ---------- state ---------- */
+
+
+/* ---------- state ---------- */
+let M = null;
+const STROKES = [['Power', 0, 180], ['Exhaust', 180, 360], ['Intake', 360, 540], ['Compression', 540, 720]];
+const strokeOf = psi => STROKES.find(s => psi >= s[1] && psi < s[2]) || STROKES[0];
+const strokeCol = name => ({ Power:C.acc, Exhaust:C.muted, Intake:C.crank, Compression:C.rod })[name];
+const thIdx = () => Math.round(((P.th % 720) + 720) % 720);
+function refreshAll(){
+  M = buildModel(P); updHints();
+  $('warnbox').innerHTML = M.ok ? '' : `<div class="warn">${M.warn.join(' ')}</div>`;
+  if (M.ok){ drawStats(); }
+  refreshInstant(); saveMeas(); }
+function refreshInstant(){
+  readColors();
+  if (!M || !M.ok){ const { ctx, W, H } = prep($('eng')); ctx.fillStyle = C.muted; ctx.font = `14px ${C.head}`; ctx.fillText('Change the inputs named above to draw the engine.', 20, 40); return; }
+  drawEngine(); drawPV(); drawStar(); drawTable(); drawStatus(); drawCharts(); }
+
+/* ---------- status, table, stats ---------- */
+function drawStatus(){ const j = thIdx(), firing = [];
+  for (let i = 0; i < M.nc; i++){ const c = M.cyl(i, j); if (strokeOf(c.psi)[0] === 'Power') firing.push(i + 1); }
+  const T = M.T[j], el = $('status'), sp = el.querySelector('span');
+  el.className = 'chip ' + (T >= 0 ? 'drive' : 'drag');
+  sp.textContent = `${firing.length ? 'Cylinder ' + firing.join(', ') + ' on power stroke' : 'No cylinder on power'} · crankshaft torque ${fmt(T, 0)} N·m${T < 0 ? ' (flywheel drives the engine)' : ''}`; }
+function drawTable(){ const j = thIdx(), c = M.cyl(0, j), t1 = ((j % 360) + 360) % 360, q = t1*DEG, rw2 = M.r*M.w*M.w;
+  const aapx = rw2*(Math.cos(q) + Math.cos(2*q)/M.n);
+  const rows = [['sec','Cylinder 1: motion'],
+    ['Piston distance from TDC','s', fmt(c.s*1000, 2), 'mm', true],
+    ['Piston speed (down = +)','v', fmt(-c.xd, 3), 'm/s'],
+    ['Piston acceleration, exact (down = +)','a', fmt(-c.xdd, 0), 'm/s²', true],
+    ['Acceleration, two-term formula','a ≈ rω²(cosθ + cos2θ/n)', fmt(aapx, 0), 'm/s²'],
+    ['Rod angle','φ', fmt(c.phi/DEG, 2), '°'],
+    ['Rod angular velocity','ω_c', fmt(c.phd, 2), 'rad/s'],
+    ['sec','Cylinder 1: forces'],
+    ['Stroke','', strokeOf(c.psi)[0], ''],
+    ['Gas pressure (absolute)','p', fmt(c.p/1e5, 2), 'bar'],
+    ['Gas force on piston (down = +)','F_g', fmt(-c.Fg, 0), 'N'],
+    ['Inertia force of reciprocating mass (down = +)','F_i = −m_rec a', fmt(-c.Fi, 0), 'N'],
+    ['Net piston force (down = +)','F = F_g + F_i', fmt(-c.F, 0), 'N', true],
+    ['Force along the rod (compression = +)','F/cosφ', fmt(-c.Trod, 0), 'N'],
+    ['Side thrust on cylinder wall','F tanφ', fmt(Math.abs(c.side), 0), 'N'],
+    ['Torque from cylinder 1','T_1', fmt(c.T, 1), 'N·m'],
+    ['sec','Whole engine'],
+    ['Crankshaft torque','T', fmt(M.T[j], 1), 'N·m', true],
+    ['Mean torque (= load)','T_m', fmt(M.Tm, 1), 'N·m'],
+    ['Speed now, with this flywheel','N', fmt(M.om[j]*30/Math.PI, 1), 'rpm'],
+    ['Unbalanced vertical force, exact','F_s', fmt(M.Fs[j], 0), 'N', true],
+    ['  primary part','m rω² Σcosθ_i', fmt(M.F1[j], 0), 'N'],
+    ['  secondary part','(m rω²/n) Σcos2θ_i', fmt(M.F2[j], 0), 'N'],
+    ['Rocking couple about the middle','M_s', fmt(M.Ms[j], 1), 'N·m']];
+  $('res').innerHTML = rows.map(r => r[0] === 'sec' ? `<tr class="sec"><td colspan="4">${r[1]}</td></tr>` :
+    `<tr${r[4] ? ' class="key"' : ''}><td>${r[0]}</td><td>${r[1].replace(/_(\w+)/g,'<sub>$1</sub>')}</td><td class="v">${r[2]}</td><td class="u">${r[3]}</td></tr>`).join('');
+  $('instSub').textContent = `θ = ${j}° (${t1}° of the crank turn)`; }
+function drawStats(){ const w2 = M.mrec*M.r*M.w*M.w;
+  const st = [['Swept volume', fmt(M.Vd*1000, 3), 'L'], ['Rod ratio n = l/r', fmt(M.n, 2), ''], ['Reciprocating mass', fmt(M.mrec, 3), 'kg/cyl'],
+    ['Peak pressure', fmt(M.peak.p/1e5, 1), `bar at ${M.peak.at.toFixed(0)}° ATDC`], ['IMEP', fmt(M.imep/1e5, 2), 'bar'],
+    ['Mean torque', fmt(M.Tm, 1), 'N·m'], ['Indicated power', fmt(M.power/1000, 1), 'kW'], ['Torque range', `${fmt(M.Tmin, 0)} to ${fmt(M.Tmax, 0)}`, 'N·m'],
+    ['Fluctuation of energy ΔE', fmt(M.dE, 1), 'J'], ['Speed fluctuation C_s', fmt(M.Cs*100, 2), '% with I given'], [`Flywheel for C_s = ${P.cs}%`, fmt(M.Ineed, 3), 'kg·m²'],
+    ['Primary force, one cylinder', fmt(w2, 0), 'N peak'], ['Primary force, engine', fmt(M.F1max, 0), 'N peak'], ['Secondary force, engine', fmt(M.F2max, 0), 'N peak'],
+    ['Largest unbalanced force', fmt(M.Fmax, 0), 'N'], ['Largest rocking couple', fmt(M.Mmax, 1), 'N·m']];
+  $('stats').innerHTML = st.map(([k, n, u]) => `<div class="stat"><div class="k">${k.replace(/C_s/g, 'C<sub>s</sub>')}</div><div class="n">${n} <small>${u}</small></div></div>`).join('');
+  $('statSub').textContent = `${LAYOUTS[P.layout].name}, firing order ${M.order.join('-')}`; }
+
+/* ---------- the engine drawing: front section of cylinder 1 and side view of the block ---------- */
+function hatch(ctx, x0, y0, w, h, col){ ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip(); ctx.strokeStyle = col; ctx.lineWidth = 1;
+  for (let k = -h; k < w + h; k += 7){ ctx.beginPath(); ctx.moveTo(x0 + k, y0 + h); ctx.lineTo(x0 + k + h, y0); ctx.stroke(); } ctx.restore(); }
+function gasCol(psi, p){ const s = strokeOf(psi)[0], pm = Math.max(M.peak.p, 2e5);
+  if (s === 'Intake') return alpha(C.crank, 0.18); if (s === 'Exhaust') return alpha(C.muted, 0.28);
+  const f = Math.min(1, Math.max(0, (p - 1e5)/(pm - 1e5))); return s === 'Power' ? alpha(C.acc, 0.12 + 0.6*f) : alpha(C.rod, 0.10 + 0.5*f); }
+const HIT = { cx:0, cy:0, R:0 };
+function drawEngine(){
+  const cv = $('eng'), { ctx, W, H } = prep(cv), j = thIdx(), narrow = W < 760;
+  const fw = narrow ? W : W*0.42, fh = narrow ? H*0.56 : H;
+  /* front section */
+  const r = M.r, l = M.l, B = P.B/1000, hc = 2*r/(P.CR - 1), ch = 0.42*B, skirt = 0.55*B;
+  const need = l + r + ch + hc + 0.10 + 1.55*r + 0.04, k = Math.min((fh - 40)/need, (fw - 60)/(B + 0.06));
+  const cx = fw/2, cy = 20 + (l + r + ch + hc + 0.08)*k; HIT.cx = cx; HIT.cy = cy; HIT.R = r*k;
+  const c = M.cyl(0, j), th = j*DEG, pin = { x:cx, y:cy - c.x*k }, cp = { x:cx + r*k*Math.sin(th), y:cy - r*k*Math.cos(th) };
+  const deckY = cy - (r + l + ch + hc)*k, crownY = pin.y - ch*k, bw = B*k, wall = 0.012*k;
+  // gas
+  ctx.fillStyle = gasCol(c.psi, c.p); ctx.fillRect(cx - bw/2, deckY, bw, crownY - deckY);
+  // cylinder walls and head
+  const cylBot = cy - (l - r + ch - skirt)*k + 0.01*k;
+  hatch(ctx, cx - bw/2 - wall, deckY - 0.03*k, wall, cylBot - deckY + 0.03*k, C.rule); hatch(ctx, cx + bw/2, deckY - 0.03*k, wall, cylBot - deckY + 0.03*k, C.rule);
+  ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.strokeRect(cx - bw/2 - wall, deckY - 0.03*k, bw + 2*wall, cylBot - deckY + 0.03*k);
+  ctx.beginPath(); ctx.moveTo(cx - bw/2, deckY); ctx.lineTo(cx + bw/2, deckY); ctx.stroke();
+  hatch(ctx, cx - bw/2 - wall, deckY - 0.03*k, bw + 2*wall, 0.03*k, C.rule);
+  // valves: intake left, exhaust right; lift from a simple timing
+  const lift = (a, o, cl) => { let x = ((a - o) % 720 + 720) % 720, d = ((cl - o) % 720 + 720) % 720; return x < d ? Math.sin(Math.PI*x/d) : 0; };
+  const vl = [lift(c.psi, 350, 590), lift(c.psi, 130, 380)], vmax = 0.009*k;
+  [[-0.24, vl[0], C.crank, 'inlet'], [0.24, vl[1], C.muted, 'exhaust']].forEach(([dx, f, col, nm]) => { const x = cx + dx*bw, y = deckY + f*vmax, hw = 0.15*bw;
+    ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, deckY - 0.05*k); ctx.stroke();
+    ctx.fillStyle = col; ctx.fillRect(x - hw, y - 2, 2*hw, 4); label(ctx, nm + (f > 0.02 ? ' open' : ''), x, deckY - 0.05*k - 8, col, 'center', 10.5); });
+  if (P.fire && ((c.psi >= 720 - P.adv && c.psi < 720 - P.adv + 12))){ ctx.fillStyle = '#f5b400'; ctx.beginPath(); for (let a = 0; a < 10; a++){ const R = a % 2 ? 4 : 10, an = a*Math.PI/5; ctx[a ? 'lineTo' : 'moveTo'](cx + R*Math.cos(an), deckY + 10 + R*Math.sin(an)); } ctx.closePath(); ctx.fill(); }
+  // piston
+  ctx.fillStyle = C.sheet; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.fillRect(cx - bw/2 + 1, crownY, bw - 2, (ch + skirt)*k); ctx.strokeRect(cx - bw/2 + 1, crownY, bw - 2, (ch + skirt)*k);
+  ctx.fillStyle = alpha(C.mass, 0.25); ctx.fillRect(cx - bw/2 + 1, crownY, bw - 2, (ch + skirt)*k);
+  for (let g = 0; g < 3; g++){ ctx.strokeStyle = C.mass; ctx.beginPath(); ctx.moveTo(cx - bw/2 + 1, crownY + (0.06 + g*0.05)*B*k); ctx.lineTo(cx + bw/2 - 1, crownY + (0.06 + g*0.05)*B*k); ctx.stroke(); }
+  // crank web and counterweight
+  ctx.fillStyle = alpha(C.crank, 0.18); ctx.strokeStyle = C.crank; ctx.lineWidth = 1.5; ctx.beginPath();
+  ctx.arc(cx, cy, 1.45*r*k, th + Math.PI/2 - 0.8, th + Math.PI/2 + 0.8, false); ctx.lineTo(cx, cy); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.lineWidth = 0.32*r*k; ctx.strokeStyle = alpha(C.crank, 0.55); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cp.x, cp.y); ctx.stroke();
+  ctx.lineWidth = 1; ctx.setLineDash([3,4]); ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.arc(cx, cy, r*k, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+  // rod
+  ctx.strokeStyle = C.rod; ctx.lineWidth = Math.max(5, 0.16*r*k); ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(cp.x, cp.y); ctx.lineTo(pin.x, pin.y); ctx.stroke(); ctx.lineCap = 'butt';
+  for (const [p, R] of [[cp, 0.22*r*k], [pin, 0.13*r*k]]){ ctx.fillStyle = C.sheet; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(4, R), 0, 7); ctx.fill(); ctx.stroke(); }
+  ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(cx, cy, 5, 0, 7); ctx.fill();
+  // TDC/BDC marks and angle
+  ctx.strokeStyle = C.muted; ctx.lineWidth = 1; ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(cx, cy + 1.6*r*k); ctx.lineTo(cx, deckY); ctx.stroke(); ctx.setLineDash([]);
+  for (const [yy, t] of [[cy - (l + r - 0)*k - ch*k, 'TDC'], [cy - (l - r)*k - ch*k, 'BDC']]){ ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(cx + bw/2 + wall + 4, yy); ctx.lineTo(cx + bw/2 + wall + 18, yy); ctx.stroke(); label(ctx, t, cx + bw/2 + wall + 22, yy, C.muted, 'left', 10.5, false); }
+  ctx.strokeStyle = C.crank; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, 0.55*r*k, -Math.PI/2, -Math.PI/2 + (th % (2*Math.PI)), false); ctx.stroke();
+  label(ctx, `θ = ${j % 360}°`, cx - 0.7*r*k, cy + 1.75*r*k, C.crank, 'center', 11);
+  // vectors
+  const vs = 26/Math.max(1e-6, r*M.w), as = 40/Math.max(1e-6, r*M.w*M.w*(1 + 1/M.n));
+  if ($('showVec').checked && M.w > 0.5){ arrow(ctx, pin.x - bw*0.32, pin.y, pin.x - bw*0.32, pin.y - c.xd*vs, C.vel, 2.5); label(ctx, 'v', pin.x - bw*0.32 - 10, pin.y - c.xd*vs, C.vel, 'right', 11);
+    arrow(ctx, pin.x + bw*0.32, pin.y, pin.x + bw*0.32, pin.y - c.xdd*as, C.acc, 2.5); label(ctx, 'a', pin.x + bw*0.32 + 8, pin.y - c.xdd*as, C.acc, 'left', 11); }
+  if ($('showForce').checked){ const fmax = Math.max(1, ...Array.from({ length:73 }, (_, q) => Math.abs(M.cyl(0, q*10).F))), fsS = 70/fmax;
+    if (Math.abs(c.Fg*fsS) > 3) arrow(ctx, cx, crownY + c.Fg*fsS, cx, crownY, C.force, 3);
+    if (Math.abs(c.Fg*fsS) > 3) label(ctx, `gas ${fmt(Math.abs(c.Fg)/1000, 1)} kN`, cx + 6, crownY + c.Fg*fsS/2 - 6, C.force, 'left', 10.5);
+    const ux = (pin.x - cp.x)/Math.hypot(pin.x - cp.x, pin.y - cp.y), uy = (pin.y - cp.y)/Math.hypot(pin.x - cp.x, pin.y - cp.y), Fr = -c.Trod*fsS*0.8;
+    if (Math.abs(Fr) > 3){ arrow(ctx, cp.x - ux*Fr, cp.y - uy*Fr, cp.x, cp.y, C.rod, 2.5); label(ctx, `rod ${fmt(Math.abs(c.Trod)/1000, 1)} kN`, cp.x - ux*Fr + 6, cp.y - uy*Fr, C.rod, 'left', 10.5); }
+    const sd = c.side*fsS*0.8; if (Math.abs(sd) > 2){ const sx = Math.sign(-c.F*Math.sin(c.phi)) || 1; arrow(ctx, pin.x, pin.y + 0.2*B*k, pin.x + sx*Math.abs(sd) , pin.y + 0.2*B*k, C.muted, 2); label(ctx, 'side thrust', pin.x + sx*(Math.abs(sd) + 6), pin.y + 0.2*B*k, C.muted, sx > 0 ? 'left' : 'right', 10); } }
+  label(ctx, `Cylinder 1 · ${strokeOf(c.psi)[0]} · ${fmt(c.p/1e5, 1)} bar`, 10, 12, strokeCol(strokeOf(c.psi)[0]), 'left', 12, false);
+  /* side view of the block */
+  const ox = narrow ? 0 : fw, oy = narrow ? fh : 0, sw = narrow ? W : W - fw, sh = narrow ? H - fh : H, n = M.nc;
+  const span = (n - 1)*P.pitch/1000 + B + 0.06, ks = Math.min((sw - 50)/span, (sh - 90)/(l + 2.5*r + ch + 0.05));
+  const scx = ox + sw/2, scy = oy + sh - 30 - 1.2*r*ks, x0 = scx - (n - 1)/2*P.pitch/1000*ks;
+  ctx.strokeStyle = C.rule; ctx.lineWidth = 1; ctx.beginPath(); if (!narrow){ ctx.moveTo(ox + 4, 10); ctx.lineTo(ox + 4, H - 10); } else { ctx.moveTo(10, oy + 2); ctx.lineTo(W - 10, oy + 2); } ctx.stroke();
+  // crankshaft: main journals and throws (side projection)
+  ctx.strokeStyle = C.crank; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(x0 - P.pitch/1000*ks*0.7, scy); ctx.lineTo(x0 + (n - 1 + 0.7)*P.pitch/1000*ks, scy); ctx.stroke();
+  const deck2 = scy - (r + l + ch + hc)*ks, bwS = B*ks*0.92, maxIF = M.mrec*M.r*M.w*M.w*(1 + 1/M.n) || 1;
+  for (let i = 0; i < n; i++){ const ci = M.cyl(i, j), xi = x0 + i*P.pitch/1000*ks, q = (j - M.lay.crank[i])*DEG, pinY = scy - ci.x*ks, cpy = scy - r*ks*Math.cos(q), stk = strokeOf(ci.psi)[0], col = strokeCol(stk);
+    // throw (two webs and the pin)
+    ctx.strokeStyle = C.crank; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xi - bwS*0.28, scy); ctx.lineTo(xi - bwS*0.28, cpy); ctx.lineTo(xi + bwS*0.28, cpy); ctx.lineTo(xi + bwS*0.28, scy); ctx.stroke();
+    // cylinder and gas
+    ctx.fillStyle = gasCol(ci.psi, ci.p); ctx.fillRect(xi - bwS/2, deck2, bwS, pinY - ch*ks - deck2);
+    ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2; ctx.strokeRect(xi - bwS/2 - 3, deck2 - 0.02*ks, bwS + 6, (l + r + ch + hc - (l - r) + ch*0.4)*ks + 0.02*ks);
+    ctx.fillStyle = C.sheet; ctx.fillRect(xi - bwS/2, pinY - ch*ks, bwS, (ch + 0.25*B)*ks); ctx.fillStyle = alpha(C.mass, 0.3); ctx.fillRect(xi - bwS/2, pinY - ch*ks, bwS, (ch + 0.25*B)*ks); ctx.strokeStyle = C.ink; ctx.strokeRect(xi - bwS/2, pinY - ch*ks, bwS, (ch + 0.25*B)*ks);
+    ctx.strokeStyle = C.rod; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(xi, cpy); ctx.lineTo(xi, pinY); ctx.stroke();
+    ctx.font = `600 13px ${C.head}`; ctx.fillStyle = C.ink; ctx.textAlign = 'center'; ctx.fillText(String(i + 1), xi, deck2 - 0.02*ks - 30);
+    if ($('showStroke').checked){ ctx.fillStyle = col; ctx.font = `600 11px ${C.mono}`; ctx.fillText(stk, xi, deck2 - 0.02*ks - 14); }
+    if (P.fire && ci.psi >= 720 - P.adv && ci.psi < 720 - P.adv + 12){ ctx.fillStyle = '#f5b400'; ctx.beginPath(); ctx.arc(xi, deck2 + 7, 6, 0, 7); ctx.fill(); }
+    if ($('showForce').checked && M.w > 0.5){ const fi = -M.mrec*ci.xdd, L = fi/maxIF*0.6*r*ks*2; if (Math.abs(L) > 3) arrow(ctx, xi + bwS*0.62, pinY, xi + bwS*0.62, pinY - L, C.force, 2); } }
+  if ($('showForce').checked && M.w > 0.5){ const Fs = M.Fs[j], L = Fs/maxIF*0.6*r*ks*2, bx = x0 + (n - 1)*P.pitch/1000*ks + P.pitch/1000*ks*0.75 + 10, by = scy;
+    if (Math.abs(L) > 2) arrow(ctx, bx, by, bx, by - L, C.acc, 3); label(ctx, `F_s ${fmt(Fs, 0)} N`, bx - 8, by - L/2 - 2, C.acc, 'right', 11);
+    if (Math.abs(M.Ms[j]) > 1){ label(ctx, `couple ${fmt(M.Ms[j], 0)} N·m`, scx, scy + 1.2*r*ks + 14, C.acc, 'center', 11); } }
+  label(ctx, `Side view of the block · firing order ${M.order.join('-')}`, ox + 14, oy + 14, C.muted, 'left', 11.5, false);
+  if (P.N <= 120) label(ctx, 'Speed so low that inertia forces are negligible', ox + 14, oy + 32, C.muted, 'left', 11, false);
+}
+/* drag the crank in the front view */
+(() => { const cv = $('eng'); let drag = false;
+  const set = e => { const b = cv.getBoundingClientRect(), x = e.clientX - b.left - HIT.cx, y = e.clientY - b.top - HIT.cy; let a = Math.atan2(x, -y)/DEG; if (a < 0) a += 360;
+    const cur = ((P.th % 720) + 720) % 720, base = cur >= 360 ? 360 : 0; let v = base + a; if (Math.abs(v - cur) > 180) v += v > cur ? -360 : 360; v = ((Math.round(v) % 720) + 720) % 720; setInput('th', v); refreshInstant(); };
+  cv.addEventListener('pointerdown', e => { const b = cv.getBoundingClientRect(); if (Math.hypot(e.clientX - b.left - HIT.cx, e.clientY - b.top - HIT.cy) < HIT.R*1.8 + 20){ drag = true; cv.setPointerCapture(e.pointerId); set(e); } });
+  cv.addEventListener('pointermove', e => { if (drag) set(e); }); cv.addEventListener('pointerup', () => drag = false); })();
+
+/* ---------- p–V diagram and crank-star diagrams ---------- */
+function drawPV(){ const cv = $('pv'), j = thIdx(), K = 360, xs = [], ys = [], c = M.cyl(0, j);
+  for (let k = 0; k <= 1440; k++){ const psi = k/2, s = slider(M.r, M.l, psi*DEG, 0, 0).s; xs.push((M.PC.Vc + M.PC.A*s)*1e6); ys.push(M.PC.p[k]/1e5); }
+  const log = $('pvlog').checked;
+  // chart() needs a monotonic x for its axes only; draw the loop ourselves on top of the axes
+  const { ctx, W, H } = prep(cv), pl = 56, pr = 12, pt = 26, pb = 30, w = W - pl - pr, h = H - pt - pb;
+  const xmin = 0, xmax = Math.max(...xs)*1.05, ymax = Math.max(...ys)*1.08, ymin = log ? 0.2 : 0;
+  const X = v => pl + (v - xmin)/(xmax - xmin)*w, Y = v => log ? pt + (Math.log10(ymax) - Math.log10(Math.max(v, ymin)))/(Math.log10(ymax) - Math.log10(ymin))*h : pt + (ymax - v)/(ymax - ymin)*h;
+  ctx.font = `11px ${C.mono}`; ctx.textBaseline = 'middle'; ctx.lineWidth = 1;
+  const yt = log ? [0.2, 0.5, 1, 2, 5, 10, 20, 50, 100].filter(v => v <= ymax) : (() => { const s = niceStep(ymax, 5), a = []; for (let v = 0; v <= ymax; v += s) a.push(v); return a; })();
+  for (const v of yt){ ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(pl, Y(v)); ctx.lineTo(pl + w, Y(v)); ctx.stroke(); ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.fillText(String(v), pl - 6, Y(v)); }
+  const xsT = niceStep(xmax, 5); for (let v = 0; v <= xmax; v += xsT){ ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(X(v), pt); ctx.lineTo(X(v), pt + h); ctx.stroke(); ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.fillText(fmtTick(v, xsT), X(v), pt + h + 11); }
+  ctx.textAlign = 'right'; ctx.fillText('cylinder volume V [cm³]', pl + w, pt + h + 24); ctx.save(); ctx.translate(12, pt + h/2); ctx.rotate(-Math.PI/2); ctx.textAlign = 'center'; ctx.fillText('pressure p [bar]' + (log ? ', log scale' : ''), 0, 0); ctx.restore();
+  for (const [nm, a, b] of STROKES){ ctx.strokeStyle = strokeCol(nm); ctx.lineWidth = 2; ctx.beginPath(); for (let k = a*2; k <= b*2; k++){ const xx = X(xs[k]), yy = Y(ys[k]); k === a*2 ? ctx.moveTo(xx, yy) : ctx.lineTo(xx, yy); } ctx.stroke(); }
+  ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(X((M.PC.Vc + M.PC.A*c.s)*1e6), Y(c.p/1e5), 5, 0, 7); ctx.fill();
+  let lx = pl; ctx.font = `11px ${C.mono}`; for (const [nm] of STROKES){ ctx.strokeStyle = strokeCol(nm); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(lx, 12); ctx.lineTo(lx + 14, 12); ctx.stroke(); ctx.fillStyle = C.muted; ctx.textAlign = 'left'; ctx.fillText(nm.toLowerCase(), lx + 18, 12); lx += 30 + ctx.measureText(nm).width; }
+  $('pvSub').textContent = `W = ${fmt(M.Wi, 0)} J per cylinder per cycle · IMEP ${fmt(M.imep/1e5, 2)} bar`; }
+function drawStar(){ const cv = $('star'), { ctx, W, H } = prep(cv), j = thIdx(), n = M.nc;
+  const R = Math.min(W/4 - 34, H/2 - 50);
+  [[1, 'Primary cranks at θ_i', W/4], [2, 'Secondary cranks at 2θ_i', 3*W/4]].forEach(([ord, title, ccx]) => { const ccy = H/2 + 8, f = 1;
+    ctx.strokeStyle = C.grid; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(ccx, ccy, R*f, 0, 7); ctx.stroke(); ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(ccx, ccy - R - 6); ctx.lineTo(ccx, ccy + R + 6); ctx.stroke(); ctx.setLineDash([]);
+    let sx = 0, sy = 0; const L = R*f*0.95;
+    const groups = {};
+    for (let i = 0; i < n; i++){ const a = ord*(j - M.lay.crank[i])*DEG, key = (((Math.round(a/DEG) % 360) + 360) % 360); (groups[key] = groups[key] || []).push(i + 1); sx += Math.sin(a); sy += Math.cos(a); }
+    for (const key in groups){ const a = +key*DEG, ex = ccx + L*Math.sin(a), ey = ccy - L*Math.cos(a); arrow(ctx, ccx, ccy, ex, ey, ord === 1 ? C.crank : C.rod, 2); label(ctx, groups[key].join(', '), ex + 14*Math.sin(a), ey - 14*Math.cos(a), C.ink, 'center', 11, false); }
+    const res = Math.hypot(sx, sy); if (res > 0.05) arrow(ctx, ccx, ccy, ccx + sx*L/n*1.0, ccy - sy*L/n*1.0, C.acc, 3.5);
+    label(ctx, title, ccx, 14, C.ink, 'center', 11.5, false);
+    label(ctx, res < 0.05 ? 'forces cancel' : `sum = ${res.toFixed(1)} × one ${ord === 1 ? 'crank' : 'secondary crank'}`, ccx, H - 22, res < 0.05 ? C.ok : C.acc, 'center', 11, false);
+    if (res >= 0.05) label(ctx, `vertical part shakes the engine at ${ord === 1 ? '' : '2'}ω`, ccx, H - 8, C.acc, 'center', 10.5, false); }); }
+
+/* ---------- charts ---------- */
+const CH = [];
+function drawCharts(){ const j = thIdx(), x = Array.from(M.th), x3 = x.slice(0, 361), j3 = j % 360, w = M.w;
+  const shade = STROKES.map(([nm, a, b]) => ({ a, b, color:strokeCol(nm), label:nm.toLowerCase() }));
+  const meas = readMeas();
+  chart($('c1'), { x:x3, xlab:'crank angle θ [°]', ylab:'s [mm]', series:[{ y:Array.from(M.s1).slice(0, 361).map(v => v*1000), color:C.crank, label:'exact' }, { y:x3.map(t => 1000*M.r*((1 - Math.cos(t*DEG)) + (1 - Math.cos(2*t*DEG))/(4*M.n))), color:C.muted, dash:[5,4], label:'approx. r[(1−cosθ) + (1−cos2θ)/4n]' }],
+    markers:meas.map(([a, s]) => ({ x:a, y:s, color:C.acc })), cursor:j3, cursorIndex:j3, value:`${fmt(M.s1[j3]*1000, 1)} mm`, zero:true });
+  chart($('c2'), { x:x3, xlab:'crank angle θ [°]', ylab:'v [m/s]', series:[{ y:Array.from(M.v1).slice(0, 361), color:C.vel, label:'piston speed (down +)' }], hlines:[{ v:2*P.S/1000*P.N/60, color:C.muted, label:'mean piston speed 2SN/60', right:true }], cursor:j3, cursorIndex:j3, value:`${fmt(M.v1[j3], 2)} m/s` });
+  chart($('c3'), { x:x3, xlab:'crank angle θ [°]', ylab:'a [m/s²]', series:[{ y:Array.from(M.a1).slice(0, 361), color:C.acc, label:'exact' }, { y:Array.from(M.aap).slice(0, 361), color:C.muted, dash:[5,4], label:'rω²(cosθ + cos2θ/n)' }, { y:x3.map(t => M.r*w*w*Math.cos(t*DEG)), color:C.crank, dash:[2,3], w:1.2, label:'primary only' }], cursor:j3, cursorIndex:j3, value:`${fmt(M.a1[j3], 0)} m/s²` });
+  chart($('c4'), { x, xlab:'crank angle θ, cylinder 1 [°]', ylab:'p [bar]', series:[{ y:Array.from(M.p1).map(v => v/1e5), color:C.force, label:'cylinder 1' }], shade, vlines:P.fire ? [{ v:720 - P.adv, color:C.rod, label:'spark' }] : [], cursor:j, cursorIndex:j, value:`${fmt(M.p1[j]/1e5, 2)} bar` });
+  chart($('c5'), { x, xlab:'crank angle θ [°]', ylab:'T [N·m]', series:[{ y:Array.from(M.T), color:C.ink, w:2.2, label:'crankshaft' }, ...M.Tc.map((t, i) => ({ y:Array.from(t), color:[C.crank, C.rod, C.mass, C.vel][i], w:1, dash:[4,3], label:M.nc > 1 ? 'cyl ' + (i + 1) : '' }))],
+    fill:{ y:Array.from(M.T).map(v => v - 0 ), color:C.ink }, hlines:[{ v:M.Tm, color:C.acc, label:`mean ${fmt(M.Tm, 0)} N·m`, right:true }], cursor:j, cursorIndex:j, value:`${fmt(M.T[j], 0)} N·m` });
+  chart($('c6'), { x, xlab:'crank angle θ [°]', ylab:'N [rpm]', series:[{ y:Array.from(M.om).map(v => v*30/Math.PI), color:C.crank, label:`with I = ${P.I} kg·m²` }], zero:false, hlines:[{ v:P.N, color:C.muted, label:'mean', right:true }],
+    markers:[{ x:M.jmax, y:M.om[M.jmax]*30/Math.PI, color:C.acc, label:'fastest' }, { x:M.jmin, y:M.om[M.jmin]*30/Math.PI, color:C.vel, label:'slowest', dy:12 }], cursor:j, cursorIndex:j, value:`${fmt(M.om[j]*30/Math.PI, 1)} rpm` });
+  chart($('c7'), { x, xlab:'crank angle θ [°]', ylab:'F [N]', series:[{ y:Array.from(M.Fs), color:C.acc, label:'exact' }, { y:Array.from(M.F1), color:C.crank, dash:[5,4], label:'primary' }, { y:Array.from(M.F2), color:C.rod, dash:[2,3], label:'secondary' }], cursor:j, cursorIndex:j, value:`${fmt(M.Fs[j], 0)} N` });
+  chart($('c8'), { x, xlab:'crank angle θ [°]', ylab:'M [N·m]', series:[{ y:Array.from(M.Ms), color:C.acc, label:'exact' }, { y:Array.from(M.M1), color:C.crank, dash:[5,4], label:'primary' }, { y:Array.from(M.M2), color:C.rod, dash:[2,3], label:'secondary' }], cursor:j, cursorIndex:j, value:`${fmt(M.Ms[j], 1)} N·m` });
+}
+['c1','c2','c3','c4','c5','c6','c7','c8'].forEach(id => { const cv = $(id); let down = false;
+  const set = e => { const m = cv._map; if (!m) return; const b = cv.getBoundingClientRect(); let v = m.xmin + (e.clientX - b.left - m.pl)/m.w*(m.xmax - m.xmin); v = Math.round(Math.min(m.xmax, Math.max(m.xmin, v)));
+    if (m.xmax <= 360){ const cur = ((P.th % 720) + 720) % 720; v += cur >= 360 ? 360 : 0; } setInput('th', v % 720 === 0 && v > 0 ? 0 : v); refreshInstant(); };
+  cv.addEventListener('pointerdown', e => { down = true; cv.setPointerCapture(e.pointerId); set(e); }); cv.addEventListener('pointermove', e => { if (down) set(e); }); cv.addEventListener('pointerup', () => down = false); });
+
+/* ---------- your measurements ---------- */
+const MANG = [0,30,60,90,120,150,180,210,240,270,300,330,360];
+$('meas').innerHTML = `<tr><th>θ [°]</th>${MANG.map(a => `<th>${a}</th>`).join('')}</tr><tr><th>s measured [mm]</th>${MANG.map(a => `<td><input type="number" step="0.5" min="0" id="m_${a}" aria-label="Piston distance at ${a} degrees"></td>`).join('')}</tr><tr><th>s theory [mm]</th>${MANG.map(a => `<td class="v" id="t_${a}"></td>`).join('')}</tr>`;
+function readMeas(){ return MANG.map(a => [a, $('m_' + a).value]).filter(([, v]) => v !== '' && isFinite(+v)).map(([a, v]) => [a, +v]); }
+function saveMeas(){ if (!M || !M.ok) return; MANG.forEach(a => $('t_' + a).textContent = (M.s1[a]*1000).toFixed(1));
+  const m = readMeas(); if (m.length){ const e = m.map(([a, v]) => v - M.s1[a]*1000), rms = Math.sqrt(e.reduce((s, x) => s + x*x, 0)/e.length); $('measOut').textContent = `${m.length} readings · RMS difference from theory ${rms.toFixed(2)} mm (${(100*rms/P.S).toFixed(1)}% of the stroke)`; } else $('measOut').textContent = 'Type your readings to plot them on the displacement chart.';
+  try { localStorage.setItem('engine-lab-meas', JSON.stringify(Object.fromEntries(MANG.map(a => [a, $('m_' + a).value])))); } catch (e) {} }
+try { const s = JSON.parse(localStorage.getItem('engine-lab-meas') || '{}'); MANG.forEach(a => { if (s[a] != null) $('m_' + a).value = s[a]; }); } catch (e) {}
+MANG.forEach(a => $('m_' + a).addEventListener('input', () => { saveMeas(); refreshInstant(); }));
+$('measClear').addEventListener('click', () => { MANG.forEach(a => $('m_' + a).value = ''); saveMeas(); refreshInstant(); });
+$('pvlog').addEventListener('change', () => refreshInstant());
+
+/* ---------- animation ---------- */
+let playing = false, last = 0;
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+$('play').addEventListener('click', () => { playing = !playing; $('play').textContent = playing ? 'Pause' : 'Play'; last = 0; if (playing) requestAnimationFrame(tick); });
+function tick(ts){ if (!playing) return;
+  if (last){ const dt = Math.min(0.05, (ts - last)/1000); let rate = +$('speed').value; if (reduce.matches) rate = Math.min(rate, 30);
+    setInput('th', Math.round((P.th + rate*dt) % 720)); P.th = (P.th + rate*dt) % 720; refreshInstant(); }
+  last = ts; requestAnimationFrame(tick); }
+
+/* ---------- redraw triggers ---------- */
+const ro = new ResizeObserver(() => refreshInstant()); ['eng','pv','star','c1','c2','c3','c4','c5','c6','c7','c8'].forEach(id => ro.observe($(id)));
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => refreshInstant());
+new MutationObserver(() => refreshInstant()).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => refreshInstant());
+fillOrders(); refreshAll();
+
+})();
+</script>
+</body>
+</html>

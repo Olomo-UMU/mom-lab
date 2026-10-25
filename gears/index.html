@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive involute spur gear mesh: path and arc of contact, contact ratio, interference, sliding, tooth load and contact stress.">
+<title>Spur Gear Mesh Lab</title>
+<style>
+:root{
+  --paper:#eceff3; --sheet:#fbfcfd; --ink:#15212c; --muted:#5b6977; --rule:#cdd5dd; --grid:#e3e8ed; --chip:#f2f5f8;
+  --crank:#1d5bbd; --rod:#b9600c; --mass:#4b4f86; --vel:#0b8466; --acc:#b8215f; --force:#7b36c4;
+  --warn-bg:#fff4e0; --warn-ink:#7a4300; --ok:#0b8466; --bad:#b8215f;
+  --f-head:Arial,Helvetica,sans-serif;
+  --f-body:Arial,Helvetica,sans-serif;
+  --f-mono:Arial,Helvetica,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0e141a; --sheet:#151d25; --ink:#e3e9ef; --muted:#93a1af; --rule:#2c3844; --grid:#1e2832; --chip:#1b252f;
+  --crank:#6ea2f2; --rod:#e89a4c; --mass:#a3a7e6; --vel:#3cc49e; --acc:#f06e9e; --force:#b88ff2;
+  --warn-bg:#3a2a10; --warn-ink:#ffcf8a; --ok:#3cc49e; --bad:#f06e9e; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --paper:#0e141a; --sheet:#151d25; --ink:#e3e9ef; --muted:#93a1af; --rule:#2c3844; --grid:#1e2832; --chip:#1b252f;
+  --crank:#6ea2f2; --rod:#e89a4c; --mass:#a3a7e6; --vel:#3cc49e; --acc:#f06e9e; --force:#b88ff2;
+  --warn-bg:#3a2a10; --warn-ink:#ffcf8a; --ok:#3cc49e; --bad:#f06e9e; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0}
+.sitebar{max-width:1480px;margin:0 auto;padding-inline:20px;padding-block:12px 0;font-size:13px}
+.sitebar a{color:var(--muted);text-decoration:none}
+.sitebar a:hover,.sitebar a:focus-visible{color:var(--ink);text-decoration:underline}
+@media (max-width:600px){.sitebar{padding-inline:16px}}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
+.wrap{max-width:1480px;margin:0 auto;padding-inline:20px;padding-block:20px 40px}
+@media (max-width:600px){.wrap{padding-inline:16px}}
+header.top{display:grid;gap:6px;margin-bottom:16px;max-width:980px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.02em}
+h1{font-family:var(--f-head);font-weight:700;font-size:30px;line-height:1.1;margin:0;text-wrap:balance}
+header.top p{margin:0;color:var(--muted);max-width:75ch}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1000px){.layout{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:4px;min-width:0}
+.ph{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--rule)}
+.ph h2,.ph h3{font-family:var(--f-head);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.ph .sub{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+aside.controls{position:sticky;top:env(safe-area-inset-top,0px);max-height:100vh;overflow:auto}
+@media (max-width:1000px){aside.controls{position:static;max-height:none}}
+.grp{padding:10px 12px;border-bottom:1px solid var(--rule);display:grid;gap:8px}
+.grp:last-child{border-bottom:0}
+.grp h4{margin:0;font-family:var(--f-head);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ctl{display:grid;grid-template-columns:1fr 78px;gap:2px 8px;align-items:center}
+.ctl label{font-size:12.5px;grid-column:1/-1;display:flex;justify-content:space-between;gap:6px}
+.ctl label .sym{font-family:var(--f-mono);font-size:12px;color:var(--ink)}
+.ctl label .hint{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.ctl input[type=range]{width:100%;accent-color:var(--crank)}
+.ctl input[type=number],select{width:100%;font-family:var(--f-mono);font-size:12.5px;padding:3px 5px;border:1px solid var(--rule);border-radius:3px;background:var(--chip);color:var(--ink);font-variant-numeric:tabular-nums}
+.sel{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sel label{font-size:12px;display:grid;gap:2px}
+.checks{display:grid;gap:4px;font-size:12.5px}
+.checks label{display:flex;gap:6px;align-items:center}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+button{font-family:var(--f-head);font-weight:600;font-size:12.5px;letter-spacing:.03em;padding:5px 10px;border-radius:3px;border:1px solid var(--rule);background:var(--chip);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--crank)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--crank);outline-offset:1px}
+button.primary{background:var(--crank);border-color:var(--crank);color:var(--sheet)}
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.presets button{text-align:left;font-size:12px;line-height:1.25;padding:6px 8px}
+.presets button small{display:block;font-family:var(--f-body);font-weight:400;letter-spacing:0;color:var(--muted);font-size:11px}
+main{display:grid;gap:16px;min-width:0}
+.row{display:grid;gap:16px;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)}
+@media (max-width:1250px){.row{grid-template-columns:minmax(0,1fr)}}
+.cv{display:block;width:100%}
+#mesh{height:460px;touch-action:none;cursor:grab}
+#zoom{height:330px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--rule);background:var(--chip);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--vel);display:inline-block;flex:none}
+.warn{margin:8px 12px;padding:8px 10px;background:var(--warn-bg);color:var(--warn-ink);border-radius:3px;font-size:13px}
+.tablewrap{overflow-x:auto}
+table.res{width:100%;border-collapse:collapse;font-size:12.5px}
+table.res td{padding:3px 12px;border-bottom:1px solid var(--grid)}
+table.res td:nth-child(2){font-family:var(--f-mono);color:var(--muted);white-space:nowrap}
+table.res td.v{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.res td.u{font-family:var(--f-mono);color:var(--muted);white-space:nowrap;padding-left:2px}
+table.res tr.sec td{font-family:var(--f-head);font-weight:600;text-transform:uppercase;letter-spacing:.07em;font-size:11px;color:var(--muted);background:var(--chip);border-bottom:1px solid var(--rule)}
+table.res tr.key td{font-weight:600}
+table.res tr.key td.v{color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0}
+.stat{padding:8px 12px;border-right:1px solid var(--grid);border-bottom:1px solid var(--grid)}
+.stat .k{font-family:var(--f-head);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.stat .k .lc{text-transform:none;font-family:var(--f-mono);letter-spacing:0}
+.stat .n{font-family:var(--f-mono);font-size:16px;font-weight:500;font-variant-numeric:tabular-nums}
+.stat .n small{font-size:11px;color:var(--muted);font-weight:400}
+.charts{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));gap:16px}
+.charts canvas{height:220px;cursor:crosshair;touch-action:none}
+details.eq{padding:0}
+details.eq summary{cursor:pointer;padding:10px 12px;font-family:var(--f-head);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:13px}
+.eqbody{padding:4px 16px 16px;display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr))}
+.eqbody section{min-width:0}
+.eqbody h5{font-family:var(--f-head);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;margin:6px 0 4px;color:var(--muted)}
+.eqbody p,.eqbody li{margin:2px 0;max-width:70ch}
+.eqbody ul{padding-left:18px;margin:2px 0}
+.m{font-family:var(--f-mono);font-size:12.5px;background:var(--chip);padding:1px 4px;border-radius:2px}
+.eqblock{font-size:13px;background:var(--chip);border:1px solid var(--grid);padding:6px 8px;border-radius:3px;overflow-x:auto;line-height:1.6;display:grid;gap:1px}
+.er{display:flex;flex-wrap:wrap;gap:4px 18px;white-space:nowrap}
+.er .en{color:var(--muted)}
+.refs p{padding-left:2em;text-indent:-2em;max-width:none}
+.note{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<nav class="sitebar"><a href="../">← All labs</a></nav>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Theory of machines: toothed gearing</div>
+  <h1>Spur Gear Mesh Lab</h1>
+  <p>An involute pinion driving a gear or a rack. Change the teeth, module, pressure angle, addendum and centre distance to see the path and arc of contact, the contact ratio, interference, sliding between the teeth, tooth loads and contact stress. Drag either gear or click a graph to turn the mesh.</p>
+</header>
+
+<div class="layout">
+<aside class="controls panel" id="controls" aria-label="Inputs">
+  <div class="ph"><h2>Inputs</h2><span class="sub">SI units, lengths in mm</span></div>
+  <div class="grp"><h4>Gears</h4>
+    <div class="sel">
+      <label>Driven member<select id="mate"><option value="gear">External gear</option><option value="rack">Rack</option></select></label>
+      <label>Pressure angle<select id="phisel"><option value="14.5">14.5°</option><option value="20" selected>20°</option><option value="25">25°</option><option value="custom">Other</option></select></label>
+    </div>
+    <div id="g-gear" style="display:grid;gap:8px"></div>
+  </div>
+  <div class="grp"><h4>Tooth proportions</h4><div id="g-tooth" style="display:grid;gap:8px"></div></div>
+  <div class="grp"><h4>Load</h4><div id="g-load" style="display:grid;gap:8px"></div></div>
+  <div class="grp"><h4>Pinion position</h4><div id="g-time" style="display:grid;gap:8px"></div>
+    <div class="btnrow">
+      <button id="play" class="primary" type="button">Play</button>
+      <select id="speed" aria-label="Animation speed" style="width:auto"><option value="6">6°/s</option><option value="20" selected>20°/s</option><option value="60">60°/s</option></select>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="showLoA" checked> Line of action and path of contact</label>
+      <label><input type="checkbox" id="showForce" checked> Tooth forces at contact</label>
+      <label><input type="checkbox" id="showCircles" checked> Base, pitch and addendum circles</label>
+    </div>
+  </div>
+  <div class="grp"><h4>Presets</h4><div class="presets" id="presets"></div></div>
+</aside>
+
+<main>
+  <div class="row">
+    <section class="panel">
+      <div class="ph"><h3>Mesh</h3><span class="chip" id="status"><i></i><span></span></span></div>
+      <div id="warnbox"></div>
+      <canvas id="mesh" class="cv" aria-label="Animated pinion and gear in mesh"></canvas>
+    </section>
+    <section class="panel">
+      <div class="ph"><h3>At this instant</h3><span class="sub" id="instSub"></span></div>
+      <div class="tablewrap"><table class="res" id="res"></table></div>
+    </section>
+  </div>
+  <section class="panel">
+    <div class="ph"><h3>Zone of action (enlarged)</h3><span class="sub" id="zoomSub"></span></div>
+    <canvas id="zoom" class="cv" aria-label="Enlarged view of the contact zone with path of approach and recess"></canvas>
+  </section>
+  <section class="panel">
+    <div class="ph"><h3>Mesh results</h3><span class="sub" id="statSub"></span></div>
+    <div class="stats" id="stats"></div>
+  </section>
+  <div class="charts">
+    <section class="panel"><div class="ph"><h3>Tooth pairs in contact</h3><span class="sub">whole mesh</span></div><canvas class="cv" id="c1"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Load on one tooth</h3><span class="sub">marked pair, equal sharing</span></div><canvas class="cv" id="c2"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Sliding velocity</h3><span class="sub">marked pair</span></div><canvas class="cv" id="c3"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Contact stress</h3><span class="sub">Hertz, marked pair</span></div><canvas class="cv" id="c4"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Specific sliding</h3><span class="sub">marked pair</span></div><canvas class="cv" id="c5"></canvas></section>
+    <section class="panel"><div class="ph"><h3>Friction power loss</h3><span class="sub">whole mesh</span></div><canvas class="cv" id="c6"></canvas></section>
+  </div>
+
+  <details class="panel eq" id="eqpanel">
+    <summary>Equations, sign conventions and references</summary>
+    <div class="eqbody">
+      <section>
+        <h5>Layout and sign conventions</h5>
+        <ul>
+          <li>The pinion (gear 1) is on the left and drives anticlockwise. The gear (2) is on the right and turns clockwise; a rack is vertical and moves upwards.</li>
+          <li>P is the pitch point on the line of centres. The line of action passes through P at the operating pressure angle α′ and touches the base circles at the interference points M (pinion) and N (gear).</li>
+          <li>Distance along the line of action is u, measured from P, positive in the direction the contact point travels. Contact starts at K (u = −path of approach), where the gear tip meets the pinion flank, and ends at L (u = +path of recess), where the pinion tip leaves the gear flank.</li>
+          <li>The graphs follow one marked pair of teeth through the mesh. Pinion angle 0° is when that pair touches at P.</li>
+        </ul>
+        <h5>Tooth geometry (standard teeth, no profile shift)</h5>
+        <div class="eqblock">
+<div class="er"><span>r = mz/2, r<sub>b</sub> = r cos φ</span><span class="en">pitch and base radii</span></div>
+<div class="er"><span>r<sub>a</sub> = r + h<sub>a</sub>*m, r<sub>f</sub> = r − h<sub>f</sub>*m</span><span class="en">addendum and root radii</span></div>
+<div class="er"><span>p = πm, p<sub>b</sub> = πm cos φ</span><span class="en">circular and base pitch</span></div>
+<div class="er"><span>inv α = tan α − α</span><span class="en">involute function</span></div>
+<div class="er"><span>ψ(ρ) = π/2z + inv φ − inv α<sub>ρ</sub>, cos α<sub>ρ</sub> = r<sub>b</sub>/ρ</span><span class="en">half tooth angle at radius ρ</span></div>
+        </div>
+        <h5>Centre distance</h5>
+        <div class="eqblock">
+<div class="er"><span>a = r<sub>1</sub> + r<sub>2</sub>, a′ = a + Δa</span></div>
+<div class="er"><span>cos α′ = a cos φ / a′</span><span class="en">operating pressure angle</span></div>
+<div class="er"><span>r′ = r<sub>b</sub>/cos α′</span><span class="en">operating pitch radii</span></div>
+<div class="er"><span>j = 2πr′<sub>1</sub>/z<sub>1</sub> − s′<sub>1</sub> − s′<sub>2</sub>, s′ = 2r′ψ(r′)</span><span class="en">circular backlash</span></div>
+<div class="er"><span>rack: α′ = φ, j = 2Δa tan φ</span></div>
+        </div>
+      </section>
+      <section>
+        <h5>Path and arc of contact</h5>
+        <div class="eqblock">
+<div class="er"><span>KP = √(R<sub>a</sub>² − R<sub>b</sub>²) − R′ sin α′</span><span class="en">path of approach</span></div>
+<div class="er"><span>PL = √(r<sub>a</sub>² − r<sub>b</sub>²) − r′ sin α′</span><span class="en">path of recess</span></div>
+<div class="er"><span>rack: KP = (h<sub>a</sub>*m − Δa)/sin φ</span></div>
+<div class="er"><span>arc of contact = (KP + PL)/cos α′</span></div>
+<div class="er"><span>ε = (KP + PL)/p<sub>b</sub></span><span class="en">contact ratio</span></div>
+        </div>
+        <h5>Interference</h5>
+        <div class="eqblock">
+<div class="er"><span>KP ≤ MP = r′ sin α′,  PL ≤ PN = R′ sin α′</span><span class="en">no interference</span></div>
+<div class="er"><span>R<sub>a,max</sub> = √(R<sub>b</sub>² + (a′ sin α′)²)</span><span class="en">largest gear tip radius</span></div>
+<div class="er"><span>z<sub>1,min</sub> = 2h<sub>a</sub>*[G + √(G² + (1 + 2G) sin²φ)] / [(1 + 2G) sin²φ]</span><span class="en">G = z<sub>2</sub>/z<sub>1</sub></span></div>
+<div class="er"><span>rack (G → ∞): z<sub>1,min</sub> = 2h<sub>a</sub>*/sin²φ</span></div>
+        </div>
+        <h5>Kinematics at contact point u</h5>
+        <div class="eqblock">
+<div class="er"><span>ω<sub>2</sub>/ω<sub>1</sub> = z<sub>1</sub>/z<sub>2</sub></span><span class="en">law of gearing</span></div>
+<div class="er"><span>ρ<sub>1</sub> = r′<sub>1</sub> sin α′ + u, ρ<sub>2</sub> = R′ sin α′ − u</span><span class="en">radii of curvature (MX, XN)</span></div>
+<div class="er"><span>v<sub>s</sub> = (ω<sub>1</sub> + ω<sub>2</sub>)|u|</span><span class="en">sliding velocity</span></div>
+<div class="er"><span>ζ<sub>1</sub> = 1 − ω<sub>2</sub>ρ<sub>2</sub>/ω<sub>1</sub>ρ<sub>1</sub>, ζ<sub>2</sub> = 1 − ω<sub>1</sub>ρ<sub>1</sub>/ω<sub>2</sub>ρ<sub>2</sub></span><span class="en">specific sliding</span></div>
+        </div>
+      </section>
+      <section>
+        <h5>Forces, stress and efficiency</h5>
+        <div class="eqblock">
+<div class="er"><span>T<sub>1</sub> = P/ω<sub>1</sub>, F<sub>n</sub> = T<sub>1</sub>/r<sub>b1</sub></span><span class="en">normal tooth force</span></div>
+<div class="er"><span>F<sub>t</sub> = F<sub>n</sub> cos α′, F<sub>r</sub> = F<sub>n</sub> sin α′</span><span class="en">tangential and radial</span></div>
+<div class="er"><span>T<sub>2</sub> = F<sub>t</sub>R′ = T<sub>1</sub>z<sub>2</sub>/z<sub>1</sub></span></div>
+<div class="er"><span>W = F<sub>n</sub>/n</span><span class="en">load per pair, n pairs in contact</span></div>
+<div class="er"><span>σ<sub>H</sub> = √[(W/b)(1/ρ<sub>1</sub> + 1/ρ<sub>2</sub>)E*/π]</span><span class="en">Hertz line contact</span></div>
+<div class="er"><span>1/E* = (1 − ν²)/E<sub>1</sub> + (1 − ν²)/E<sub>2</sub>, ν = 0.3</span></div>
+<div class="er"><span>P<sub>loss</sub> = μ Σ W<sub>i</sub>v<sub>s,i</sub>, η = 1 − mean(P<sub>loss</sub>)/P</span></div>
+        </div>
+        <h5>Assumptions</h5>
+        <ul>
+          <li>Rigid, accurate involute teeth with no profile shift. Load is shared equally between the pairs in contact; real teeth share it according to their stiffness, and tip relief changes the ends of contact.</li>
+          <li>When there is interference the drawing still shows the full involute. A real pinion cut by a rack or hob would be undercut below the base circle, which shortens the useful path of contact.</li>
+          <li>Coulomb friction with a constant coefficient μ. Rolling and windage losses are ignored.</li>
+        </ul>
+        <h5>References (APA)</h5>
+        <div class="refs">
+          <p>Budynas, R. G., &amp; Nisbett, J. K. (2020). <i>Shigley's mechanical engineering design</i> (11th ed.). McGraw-Hill Education.</p>
+          <p>Johnson, K. L. (1985). <i>Contact mechanics</i>. Cambridge University Press.</p>
+          <p>Khurmi, R. S., &amp; Gupta, J. K. (2005). <i>Theory of machines</i> (14th ed.). S. Chand.</p>
+          <p>Litvin, F. L., &amp; Fuentes, A. (2004). <i>Gear geometry and applied theory</i> (2nd ed.). Cambridge University Press.</p>
+          <p>Norton, R. L. (2020). <i>Design of machinery: An introduction to the synthesis and analysis of mechanisms and machines</i> (6th ed.). McGraw-Hill Education.</p>
+          <p>Rattan, S. S. (2009). <i>Theory of machines</i> (3rd ed.). Tata McGraw-Hill.</p>
+          <p>Uicker, J. J., Pennock, G. R., &amp; Shigley, J. E. (2017). <i>Theory of machines and mechanisms</i> (5th ed.). Oxford University Press.</p>
+        </div>
+      </section>
+    </div>
+  </details>
+</main>
+</div>
+</div>
+
+<script>
+(function(){
+"use strict";
+// MODEL START
+const DEG = Math.PI/180;
+function inv(a){ return Math.tan(a) - a; }
+function buildModel(P){
+  const out = { ok:false, warn:[] };
+  const m = P.m/1000, z1 = Math.round(P.z1), rack = P.mate === 'rack', z2 = rack ? Infinity : Math.round(P.z2);
+  const phi = P.phi*DEG, ha = P.ha*m, hf = P.hf*m, da = P.da/1000;
+  if (z1 < 6 || (!rack && z2 < 6)){ out.warn.push('Each gear needs at least 6 teeth.'); return out; }
+  if (P.hf <= P.ha){ out.warn.push('The dedendum must be larger than the addendum, or the tips of one gear hit the roots of the other. Increase h_f* or reduce h_a*.'); return out; }
+  const r1 = m*z1/2, rb1 = r1*Math.cos(phi), ra1 = r1 + ha, rf1 = r1 - hf;
+  let r2 = Infinity, rb2 = Infinity, ra2 = Infinity, rf2 = Infinity, a = Infinity, aw = Infinity, alpha = phi, r1w = r1, r2w = Infinity;
+  if (!rack){
+    r2 = m*z2/2; rb2 = r2*Math.cos(phi); ra2 = r2 + ha; rf2 = r2 - hf;
+    a = r1 + r2; aw = a + da; alpha = Math.acos(a*Math.cos(phi)/aw);
+    r1w = rb1/Math.cos(alpha); r2w = rb2/Math.cos(alpha);
+  }
+  const pb = Math.PI*m*Math.cos(phi);
+  const psi1 = rho => Math.PI/(2*z1) + inv(phi) - inv(Math.acos(Math.min(1, rb1/Math.max(rho, rb1))));
+  const psi2 = rack ? null : rho => Math.PI/(2*z2) + inv(phi) - inv(Math.acos(Math.min(1, rb2/Math.max(rho, rb2))));
+  const MP = r1w*Math.sin(alpha), PN = rack ? Infinity : r2w*Math.sin(alpha);
+  const recess = Math.sqrt(ra1*ra1 - rb1*rb1) - MP;
+  const approach = rack ? (ha - da)/Math.sin(alpha) : Math.sqrt(ra2*ra2 - rb2*rb2) - PN;
+  if (!(approach + recess > 0)){ out.warn.push('The teeth do not reach each other at this centre distance. Reduce Δa.'); return out; }
+  const path = approach + recess, eps = path/pb, arc = path/Math.cos(alpha);
+  const tidy = v => Math.abs(v) < 1e-12 ? 0 : v;
+  // backlash on operating pitch circle
+  let j;
+  if (rack) j = 2*da*Math.tan(phi);
+  else j = tidy(2*Math.PI*r1w/z1 - 2*r1w*psi1(r1w) - 2*r2w*psi2(r2w));
+  // tip thickness
+  const sa1 = 2*ra1*psi1(ra1), sa2 = rack ? NaN : 2*ra2*psi2(ra2);
+  // interference
+  const intPinion = approach > MP + 1e-12, intGear = recess > PN + 1e-12;
+  const ra2max = rack ? NaN : Math.sqrt(rb2*rb2 + Math.pow(aw*Math.sin(alpha), 2));
+  const ra1max = rack ? Math.sqrt(rb1*rb1 + MP*MP) : Math.sqrt(rb1*rb1 + Math.pow(aw*Math.sin(alpha), 2));
+  const rackHaMax = rack ? MP*Math.sin(alpha) + da : NaN;
+  const s2 = Math.pow(Math.sin(phi), 2), G = rack ? Infinity : z2/z1;
+  const z1min = rack ? 2*P.ha/s2 : 2*P.ha*(G + Math.sqrt(G*G + (1 + 2*G)*s2))/((1 + 2*G)*s2);
+  // kinematics and forces
+  const w1 = 2*Math.PI*P.N1/60, ratio = rack ? 0 : z1/z2, w2 = w1*ratio;
+  const Pw = P.power*1000, T1 = Pw/w1, Fn = T1/rb1, Ft = Fn*Math.cos(alpha), Fr = Fn*Math.sin(alpha);
+  const T2 = rack ? NaN : Ft*r2w, Frack = Ft;
+  const vpitch = w1*r1w, vrack = w1*r1w;
+  const b = P.b/1000, E = P.E*1e9, nu = 0.3, Estar = 1/(2*(1 - nu*nu)/E);
+  const mu = P.mu;
+  function pairState(u){ // one pair touching at u
+    const rho1 = MP + u, rho2 = PN - u;
+    const vs = w1*Math.abs(u)*(1 + ratio);
+    const vt1 = w1*rho1, vt2 = w1*(MP - u*ratio);
+    return { u, rho1, rho2, vs, z1s: 1 - vt2/vt1, z2s: 1 - vt1/vt2 };
+  }
+  function contacts(u0){ // all pairs in contact when marked pair is at u0
+    const k0 = Math.ceil((-approach - u0)/pb - 1e-12), list = [];
+    for (let k = k0; u0 + k*pb <= recess + 1e-12; k++) list.push(u0 + k*pb);
+    return list;
+  }
+  function inst(u0){
+    const us = contacts(u0), n = us.length, W = n ? Fn/n : 0;
+    const pairs = us.map(u => {
+      const s = pairState(u);
+      const curv = (s.rho1 > 0 ? 1/s.rho1 : Infinity) + (rack ? 0 : (s.rho2 > 0 ? 1/s.rho2 : Infinity));
+      s.W = W; s.sigma = Math.sqrt(W/b*curv*Estar/Math.PI);
+      return s; });
+    let loss = 0; for (const s of pairs) loss += mu*s.W*s.vs;
+    const inMesh = u0 >= -approach - 1e-12 && u0 <= recess + 1e-12;
+    const me = pairState(u0);
+    if (inMesh){ const curv = (me.rho1 > 0 ? 1/me.rho1 : Infinity) + (rack ? 0 : (me.rho2 > 0 ? 1/me.rho2 : Infinity)); me.W = W; me.sigma = Math.sqrt(W/b*curv*Estar/Math.PI); }
+    else { me.W = 0; me.sigma = 0; }
+    return { u0, n, pairs, loss, inMesh, me };
+  }
+  // curves for the marked pair, pinion angle relative to pitch point
+  const uLo = -approach - 0.3*pb, uHi = recess + 0.3*pb, NP = 801;
+  const X = new Float64Array(NP), cn = new Float64Array(NP), cW = new Float64Array(NP), cvs = new Float64Array(NP), csig = new Float64Array(NP),
+        cz1 = new Float64Array(NP), cz2 = new Float64Array(NP), closs = new Float64Array(NP);
+  let vsMax = 0, sigMax = 0, sigPitch = NaN;
+  for (let i = 0; i < NP; i++){
+    const u = uLo + (uHi - uLo)*i/(NP - 1), q = inst(u);
+    X[i] = u/rb1/DEG; cn[i] = q.n; closs[i] = q.loss;
+    if (q.inMesh){ cW[i] = q.me.W; cvs[i] = q.me.vs; csig[i] = q.me.sigma; cz1[i] = q.me.z1s; cz2[i] = q.me.z2s;
+      vsMax = Math.max(vsMax, q.me.vs); if (isFinite(q.me.sigma)) sigMax = Math.max(sigMax, q.me.sigma); }
+    else { cW[i] = NaN; cvs[i] = NaN; csig[i] = NaN; cz1[i] = NaN; cz2[i] = NaN; }
+  }
+  // mean friction loss over one base pitch (fine sampling)
+  let Lsum = 0; const NL = 2000;
+  for (let i = 0; i < NL; i++){ Lsum += inst(-approach + (i + 0.5)*pb/NL).loss; }
+  const lossMean = Lsum/NL, eta = 1 - lossMean/Pw;
+  { const q = inst(0); sigPitch = q.me.sigma; }
+  vsMax = w1*Math.max(approach, recess)*(1 + ratio);
+  for (const ue of [-approach, recess]){ const q = inst(ue); if (isFinite(q.me.sigma)) sigMax = Math.max(sigMax, q.me.sigma); else sigMax = Infinity; }
+  if (intPinion) out.warn.push(`Interference: the ${rack ? 'rack' : 'gear'} tips reach past the pinion base circle (path of approach ${fmtN(approach*1000)} mm, limit MP = ${fmtN(MP*1000)} mm). A pinion cut by a rack or hob would be undercut here. Use at least ${Math.ceil(z1min - 1e-9)} pinion teeth, a larger pressure angle or shorter (stub) teeth.`);
+  if (intGear) out.warn.push(`Interference at the gear: the pinion tips reach past the gear base circle (path of recess ${fmtN(recess*1000)} mm, limit PN = ${fmtN(PN*1000)} mm).`);
+  if (sa1 <= 0) out.warn.push('The pinion teeth come to a point before the addendum circle. Reduce the addendum or use more teeth.');
+  if (eps < 1) out.warn.push(`Contact ratio ${eps.toFixed(2)} is below 1, so there are moments when no pair of teeth is in contact. Reduce the centre distance, or use more teeth or a smaller pressure angle.`);
+  Object.assign(out, { ok:true, rack, m, z1, z2, phi, ha, hf, da, r1, rb1, ra1, rf1, r2, rb2, ra2, rf2, a, aw, alpha, r1w, r2w, pb, psi1, psi2,
+    MP, PN, approach, recess, path, eps, arc, j, jn: j*Math.cos(alpha), sa1, sa2, intPinion, intGear, ra1max, ra2max, rackHaMax, z1min, G,
+    w1, w2, ratio, T1, T2, Fn, Ft, Fr, Frack, vpitch, vrack, Estar, b, mu, Pw,
+    X, cn, cW, cvs, csig, cz1, cz2, closs, lossMean, eta, vsMax, sigMax, sigPitch, inst, pairState, contacts, uLo, uHi });
+  return out;
+}
+function fmtN(v){ return (Math.round(v*100)/100).toFixed(2); }
+// MODEL END
+if (typeof window === 'undefined') return;
+
+const $ = id => document.getElementById(id);
+const subHTML = t => String(t).replace(/([A-Za-z\u0370-\u03FF])_([A-Za-z0-9,]+)/g, '$1<sub>$2</sub>');
+
+/* ---------- inputs ---------- */
+const specs = {
+  'g-gear':[['z1','Pinion teeth','z_1','',6,80,1,18,()=>M&&M.ok?`z_1,min = ${M.z1min.toFixed(1)}`:''],
+            ['z2','Gear teeth','z_2','',6,200,1,45,()=>P.mate==='rack'?'rack':`G = ${(P.z2/P.z1).toFixed(3)}`],
+            ['m','Module','m','mm',1,20,0.25,4,v=>`p = ${(Math.PI*v).toFixed(2)} mm`],
+            ['phi','Pressure angle','φ','°',12,32,0.5,20,null]],
+  'g-tooth':[['ha','Addendum coefficient','h_a*','',0.5,1.4,0.05,1,v=>`h_a = ${(v*P.m).toFixed(2)} mm`],
+             ['hf','Dedendum coefficient','h_f*','',0.9,1.6,0.05,1.25,v=>`h_f = ${(v*P.m).toFixed(2)} mm`],
+             ['da','Centre distance increase','Δa','mm',0,10,0.05,0,()=>M&&M.ok?(M.rack?'rack moved away':`a′ = ${(M.aw*1000).toFixed(2)} mm`):'']],
+  'g-load':[['N1','Pinion speed','N_1','rpm',10,6000,10,1440,v=>`ω_1 = ${(2*Math.PI*v/60).toFixed(1)} rad/s`],
+            ['power','Power','P','kW',0.1,200,0.1,10,null],
+            ['b','Face width','b','mm',5,200,1,40,null],
+            ['mu','Friction coefficient','μ','',0,0.2,0.005,0.06,null],
+            ['E','Elastic modulus (both)','E','GPa',50,220,1,206,null]],
+  'g-time':[['th','Pinion angle','θ_1','°',0,360,0.1,3,null]]
+};
+const P = { mate:'gear' };
+const hints = {};
+for (const g in specs) for (const s of specs[g]){
+  const [k,label,sym,unit,mn,mx,st,val,hint] = s; P[k] = val;
+  const box = document.createElement('div'); box.className = 'ctl';
+  box.innerHTML = `<label for="${k}_n"><span>${label} <span class="sym">${subHTML(sym)}${unit?` [${unit}]`:''}</span></span><span class="hint" id="${k}_h"></span></label>
+    <input type="range" id="${k}_r" min="${mn}" max="${mx}" step="${st}" value="${val}" aria-label="${label}">
+    <input type="number" id="${k}_n" min="${mn}" max="${mx}" step="${st}" value="${val}">`;
+  $(g).appendChild(box);
+  hints[k] = hint;
+  const rr = box.querySelector('input[type=range]'), nn = box.querySelector('input[type=number]');
+  rr.addEventListener('input', () => { nn.value = rr.value; setP(k, +rr.value); });
+  nn.addEventListener('change', () => { let v = +nn.value; if (!isFinite(v)) v = P[k]; v = Math.min(mx, Math.max(mn, v)); nn.value = v; rr.value = v; setP(k, v); });
+}
+function setInput(k, v){ P[k] = v; const rr = $(k+'_r'), nn = $(k+'_n'); if (rr){ rr.value = v; nn.value = v; } }
+function setP(k, v){ if (k === 'phi') syncPhiSel(); if (k === 'th') refreshInstant(); else refreshAll(); }
+function syncPhiSel(){ const v = String(P.phi); $('phisel').value = ['14.5','20','25'].includes(v) ? v : 'custom'; }
+$('phisel').addEventListener('change', e => { if (e.target.value !== 'custom'){ setInput('phi', +e.target.value); refreshAll(); } });
+$('mate').addEventListener('change', e => { P.mate = e.target.value; applyMate(); refreshAll(); });
+function applyMate(){ const r = P.mate === 'rack'; $('z2_r').disabled = r; $('z2_n').disabled = r; }
+for (const k of ['showLoA','showForce','showCircles']) $(k).addEventListener('change', () => refreshInstant());
+
+/* ---------- presets ---------- */
+const base = { mate:'gear', z1:18, z2:45, m:4, phi:20, ha:1, hf:1.25, da:0, N1:1440, power:10, b:40, mu:0.06, E:206, th:3 };
+const presets = [
+  ['Standard 20° pair','18 and 45 teeth, ε about 1.6', base],
+  ['14.5° pinion, 12 teeth','Interference: tips dig into the flank', Object.assign({}, base, { phi:14.5, z1:12, z2:40 })],
+  ['Rack and 12-tooth pinion','Below 17 teeth at 20°: undercut', Object.assign({}, base, { mate:'rack', z1:12, th:350 })],
+  ['Stub teeth','h_a* = 0.8: 12 teeth without interference', Object.assign({}, base, { z1:12, z2:30, ha:0.8, hf:1.0 })],
+  ['Centre distance opened','Δa = 2 mm: α′ rises, ε falls, backlash', Object.assign({}, base, { da:2 })],
+  ['Large gears, 14.5°','Two pairs share the load most of the time', Object.assign({}, base, { phi:14.5, z1:40, z2:80, m:2.5 })]
+];
+for (const [t, sub, cfg] of presets){
+  const bt = document.createElement('button'); bt.type = 'button';
+  bt.innerHTML = `${t}<small>${subHTML(sub)}</small>`;
+  bt.addEventListener('click', () => loadPreset(cfg));
+  $('presets').appendChild(bt);
+}
+function loadPreset(cfg){
+  for (const k in cfg){ if (k === 'mate'){ P.mate = cfg.mate; $('mate').value = cfg.mate; } else setInput(k, cfg[k]); }
+  syncPhiSel(); applyMate(); refreshAll();
+}
+
+/* ---------- drawing helpers ---------- */
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let C = {};
+function readColors(){ for (const k of ['paper','sheet','ink','muted','rule','grid','chip','crank','rod','mass','vel','acc','force','ok','bad']) C[k] = css('--'+k); C.mono = css('--f-mono'); C.head = css('--f-head'); }
+function prep(cv){
+  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== Math.round(W*dpr) || cv.height !== Math.round(H*dpr)){ cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr); }
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+  return { ctx, W, H };
+}
+function alpha(col, a){
+  if (col.startsWith('#')){ let h = col.slice(1); if (h.length === 3) h = h.split('').map(c=>c+c).join('');
+    const n = parseInt(h,16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; }
+  return col;
+}
+function arrow(ctx, x0, y0, x1, y1, col, w=2){
+  const dx = x1-x0, dy = y1-y0, L = Math.hypot(dx,dy); if (L < 2) return;
+  const ux = dx/L, uy = dy/L, hl = Math.min(10, L*0.45);
+  ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = w;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1-ux*hl*0.8, y1-uy*hl*0.8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1-ux*hl-uy*hl*0.45, y1-uy*hl+ux*hl*0.45); ctx.lineTo(x1-ux*hl+uy*hl*0.45, y1-uy*hl-ux*hl*0.45); ctx.closePath(); ctx.fill();
+}
+function label(ctx, txt, x, y, col, align='left', size=11.5, bg=true){
+  ctx.font = `500 ${size}px ${C.mono}`; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  if (bg){ const w = richWidth(ctx, txt), x0 = align==='left'?x:align==='right'?x-w:x-w/2;
+    ctx.fillStyle = alpha(C.sheet.startsWith('#')?C.sheet:'#ffffff', 0.85); ctx.fillRect(x0-2, y-8, w+4, 16); }
+  ctx.fillStyle = col; rich(ctx, txt, x, y);
+}
+function richParts(txt){ const out = []; const re = /_([A-Za-z0-9]+)/g; let i = 0, m;
+  while ((m = re.exec(txt))){ if (m.index > i) out.push([txt.slice(i, m.index), false]); out.push([m[1], true]); i = re.lastIndex; }
+  if (i < txt.length) out.push([txt.slice(i), false]); return out; }
+function richWidth(ctx, txt){ const f = ctx.font, sz = parseFloat((f.match(/(\d+(?:\.\d+)?)px/)||[0,12])[1]); let w = 0;
+  for (const [t, sub] of richParts(txt)){ if (sub){ ctx.font = f.replace(/\d+(?:\.\d+)?px/, (sz*0.78).toFixed(1)+'px'); w += ctx.measureText(t).width; ctx.font = f; } else w += ctx.measureText(t).width; }
+  return w; }
+function rich(ctx, txt, x, y){ const f = ctx.font, sz = parseFloat((f.match(/(\d+(?:\.\d+)?)px/)||[0,12])[1]), al = ctx.textAlign, w = richWidth(ctx, txt);
+  let cx = al === 'right' ? x - w : al === 'center' ? x - w/2 : x; ctx.textAlign = 'left';
+  for (const [t, sub] of richParts(txt)){ if (sub){ ctx.font = f.replace(/\d+(?:\.\d+)?px/, (sz*0.78).toFixed(1)+'px'); ctx.fillText(t, cx, y + sz*0.28); cx += ctx.measureText(t).width; ctx.font = f; } else { ctx.fillText(t, cx, y); cx += ctx.measureText(t).width; } }
+  ctx.textAlign = al; return w; }
+function niceStep(span, target){ const raw = span/Math.max(target,1), p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw/p;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10)*p; }
+function fmt(v, d=2){ if (!isFinite(v)) return 'n/a'; const a = Math.abs(v);
+  if (a !== 0 && (a >= 1e5 || a < 1e-3)) return v.toExponential(2);
+  return v.toLocaleString('en-US', { minimumFractionDigits:d, maximumFractionDigits:d }); }
+function fmtTick(v, step){ const d = Math.max(0, -Math.floor(Math.log10(step) + 1e-9)); return Math.abs(v) >= 1e5 ? v.toExponential(1) : v.toFixed(Math.min(d,4)); }
+
+/* reusable chart: o = {x, series:[{y,color,w,dash,label,scale}], fills, hlines, cursor, value, ylab, markers, xlab} */
+function chart(cv, o){
+  const { ctx, W, H } = prep(cv);
+  const pl = 56, pr = 12, pt = 26, pb = 30, w = W-pl-pr, h = H-pt-pb;
+  const x = o.x, xmin = x[0], xmax = x[x.length-1];
+  let ymin = Infinity, ymax = -Infinity;
+  for (const s of o.series) for (let j = 0; j < s.y.length; j += 2){ const v = s.y[j]*(s.scale||1); if (isFinite(v)){ if (v < ymin) ymin = v; if (v > ymax) ymax = v; } }
+  for (const hl of (o.hlines||[])){ ymin = Math.min(ymin, hl.v); ymax = Math.max(ymax, hl.v); }
+  if (o.zero !== false){ ymin = Math.min(ymin, 0); ymax = Math.max(ymax, 0); }
+  if (!(ymax > ymin)){ ymax = ymin + 1; }
+  if (o.clip){ ymin = Math.max(ymin, o.clip[0]); ymax = Math.min(ymax, o.clip[1]); if (!(ymax > ymin)) ymax = ymin + 1; }
+  const padv = (ymax-ymin)*0.08; ymin -= padv; ymax += padv;
+  const X = v => pl + (v-xmin)/(xmax-xmin)*w, Y = v => pt + (ymax-v)/(ymax-ymin)*h;
+  cv._map = { pl, w, xmin, xmax };
+  ctx.font = `11px ${C.mono}`; ctx.textBaseline = 'middle';
+  const ys = niceStep(ymax-ymin, 5);
+  ctx.lineWidth = 1;
+  for (let v = Math.ceil(ymin/ys)*ys; v <= ymax; v += ys){
+    ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(pl, Y(v)); ctx.lineTo(pl+w, Y(v)); ctx.stroke();
+    ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.fillText(fmtTick(v, ys), pl-6, Y(v));
+  }
+  const xs = o.xstep || niceStep(xmax-xmin, Math.max(3, Math.floor(w/70)));
+  for (let v = Math.ceil(xmin/xs)*xs; v <= xmax+1e-9; v += xs){
+    ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(X(v), pt); ctx.lineTo(X(v), pt+h); ctx.stroke();
+    ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.fillText(fmtTick(v, xs), X(v), pt+h+11);
+  }
+  ctx.textAlign = 'right'; ctx.fillText(o.xlab || 'crank angle ψ [°]', pl+w, pt+h+24);
+  ctx.save(); ctx.translate(12, pt+h/2); ctx.rotate(-Math.PI/2); ctx.textAlign = 'center'; rich(ctx, o.ylab||'', 0, 0); ctx.restore();
+  for (const sh of (o.shade||[])){ ctx.fillStyle = alpha(sh.color, 0.07); ctx.fillRect(X(sh.a), pt, X(sh.b)-X(sh.a), h); if (sh.label){ ctx.fillStyle = C.muted; ctx.textAlign='center'; ctx.font = `10px ${C.mono}`; ctx.fillText(sh.label, (X(sh.a)+X(sh.b))/2, pt+h-8); ctx.font = `11px ${C.mono}`; } }
+  if (ymin < 0 && ymax > 0){ ctx.strokeStyle = C.muted; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pl, Y(0)); ctx.lineTo(pl+w, Y(0)); ctx.stroke(); }
+  for (const f of (o.fills||[])){
+    for (const sign of [1,-1]){
+      ctx.fillStyle = alpha(sign > 0 ? f.pos : f.neg, 0.22); ctx.beginPath();
+      ctx.moveTo(X(x[0]), Y(f.base));
+      for (let j = 0; j < x.length; j++){ const v = f.y[j]; const vv = sign > 0 ? Math.max(v, f.base) : Math.min(v, f.base); ctx.lineTo(X(x[j]), Y(vv)); }
+      ctx.lineTo(X(x[x.length-1]), Y(f.base)); ctx.closePath(); ctx.fill();
+    }
+  }
+  for (const hl of (o.hlines||[])){ ctx.strokeStyle = hl.color; ctx.lineWidth = 1.2; ctx.setLineDash(hl.dash||[5,4]); ctx.beginPath(); ctx.moveTo(pl, Y(hl.v)); ctx.lineTo(pl+w, Y(hl.v)); ctx.stroke(); ctx.setLineDash([]);
+    if (hl.label){ ctx.textAlign = 'left'; ctx.fillStyle = hl.color; rich(ctx, hl.label, pl+4, Y(hl.v) - 8); } }
+  ctx.save(); ctx.beginPath(); ctx.rect(pl, pt, w, h); ctx.clip();
+  for (const s of o.series){
+    ctx.strokeStyle = s.color; ctx.lineWidth = s.w || 1.6; ctx.setLineDash(s.dash || []); ctx.globalAlpha = s.alpha || 1;
+    ctx.beginPath(); const sc = s.scale || 1;
+    let pen = false;
+    for (let j = 0; j < x.length; j++){ const v = s.y[j]*sc; if (!isFinite(v)){ pen = false; continue; } const xx = X(x[j]), yy = Y(Math.max(ymin - (ymax-ymin), Math.min(ymax + (ymax-ymin), v))); if (pen) ctx.lineTo(xx, yy); else { ctx.moveTo(xx, yy); pen = true; } }
+    ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+  }
+  for (const mk of (o.markers||[])){ ctx.fillStyle = mk.color; ctx.beginPath(); ctx.arc(X(mk.x), Y(mk.y), 3.5, 0, 7); ctx.fill();
+    ctx.textAlign = mk.x > (xmin+xmax)/2 ? 'right' : 'left'; rich(ctx, mk.label, X(mk.x) + (ctx.textAlign==='left'?6:-6), Y(mk.y) + (mk.dy||-9)); }
+  ctx.restore();
+  if (o.cursor != null){
+    const cx = X(o.cursor); ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(cx, pt); ctx.lineTo(cx, pt+h); ctx.stroke(); ctx.setLineDash([]);
+    const s0 = o.series[o.cursorSeries||0]; const j = Math.round((o.cursor - xmin)/(xmax-xmin)*(x.length-1));
+    if (s0 && j >= 0 && j < x.length && isFinite(s0.y[j]) && s0.y[j]*(s0.scale||1) <= ymax && s0.y[j]*(s0.scale||1) >= ymin){ ctx.fillStyle = s0.color; ctx.beginPath(); ctx.arc(cx, Y(s0.y[j]*(s0.scale||1)), 4, 0, 7); ctx.fill(); }
+  }
+  // legend & value
+  ctx.font = `11px ${C.mono}`; ctx.textBaseline = 'middle'; let lx = pl;
+  for (const s of o.series){ if (!s.label) continue; ctx.strokeStyle = s.color; ctx.lineWidth = 2; ctx.setLineDash(s.dash||[]); ctx.beginPath(); ctx.moveTo(lx, 12); ctx.lineTo(lx+14, 12); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = C.muted; ctx.textAlign = 'left'; lx += 26 + rich(ctx, s.label, lx+18, 12);
+    if (lx > W - 170) break; }
+  if (o.value){ ctx.font = `600 12px ${C.mono}`; ctx.fillStyle = C.ink; ctx.textAlign = 'right'; rich(ctx, o.value, W-pr, 12); }
+}
+
+
+
+/* ---------- state ---------- */
+let M = null;
+const charts = ['c1','c2','c3','c4','c5','c6'].map($);
+function markedU(){ // u of marked pair from pinion angle
+  let t = ((P.th % 360) + 360) % 360; if (t > 180) t -= 360;
+  return t*DEG*M.rb1;
+}
+function refreshAll(){
+  readColors();
+  M = buildModel(P);
+  for (const k in hints){ const h = hints[k], el = $(k+'_h'); if (el) el.innerHTML = h ? subHTML(h(P[k])) : ''; }
+  $('warnbox').innerHTML = M.warn.map(t => `<div class="warn" role="status">${subHTML(t)}</div>`).join('');
+  buildOutlines(); drawStats(); refreshInstant();
+}
+function refreshInstant(){
+  readColors();
+  drawMesh(); drawZoom(); drawTable(); drawCharts();
+}
+
+/* ---------- tooth outlines ---------- */
+let OUT = null;
+function flankRadii(rb, ra, rf, psi){
+  const rs = Math.max(rb, rf); let rt = ra;
+  if (psi(ra) <= 0){ let lo = rs, hi = ra; for (let i = 0; i < 50; i++){ const md = (lo + hi)/2; if (psi(md) > 0) lo = md; else hi = md; } rt = lo; }
+  const n = 14, list = []; for (let i = 0; i <= n; i++) list.push(rs + (rt - rs)*i/n);
+  return { rs, rt, list };
+}
+function buildOutlines(){
+  if (!M.ok){ OUT = null; return; }
+  OUT = { p: flankRadii(M.rb1, M.ra1, M.rf1, M.psi1) };
+  if (!M.rack) OUT.g = flankRadii(M.rb2, M.ra2, M.rf2, M.psi2);
+}
+function gearPath(z, rb, rf, psi, fr, c0){ // polar points relative to centre
+  const pts = [], step = 2*Math.PI/z;
+  for (let k = 0; k < z; k++){
+    const c = c0 + k*step;
+    if (rf < rb) pts.push([rf, c - psi(rb)]);
+    for (const r of fr.list) pts.push([r, c - psi(r)]);
+    const tp = psi(fr.rt); for (let i = 1; i < 4; i++) pts.push([fr.rt, c - tp + 2*tp*i/4]);
+    for (let i = fr.list.length - 1; i >= 0; i--){ const r = fr.list[i]; pts.push([r, c + psi(r)]); }
+    if (rf < rb) pts.push([rf, c + psi(rb)]);
+    const a0 = c + psi(fr.rs), a1 = c + step - psi(fr.rs);
+    for (let i = 1; i < 6; i++) pts.push([rf, a0 + (a1 - a0)*i/6]);
+  }
+  return pts;
+}
+function pinionC0(){ return P.th*DEG - M.psi1(M.r1w); }
+function gearC0(){ return Math.PI - M.psi2(M.r2w) - P.th*DEG*M.ratio; }
+function rackY0(){ return Math.PI*M.m/4 - M.da*Math.tan(M.phi) + M.r1w*P.th*DEG; } // centre of the rack tooth in contact at θ=0
+
+/* ---------- drawing the mesh ---------- */
+function drawGearSet(ctx, PX, PY, sc, opts){
+  const O1x = -M.r1w, O2x = M.rack ? 0 : M.r2w;
+  const fillPath = (pts, ox, col, a) => { ctx.beginPath(); pts.forEach(([r, t], i) => { const x = PX(ox + r*Math.cos(t)), y = PY(r*Math.sin(t)); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.closePath();
+    ctx.fillStyle = alpha(col, a); ctx.fill(); ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.stroke(); };
+  // pinion
+  const c1 = pinionC0();
+  fillPath(gearPath(M.z1, M.rb1, M.rf1, M.psi1, OUT.p, c1), O1x, C.crank, 0.22);
+  // marked tooth on pinion
+  { const pts = [], c = c1, fr = OUT.p;
+    if (M.rf1 < M.rb1) pts.push([M.rf1, c - M.psi1(M.rb1)]);
+    for (const r of fr.list) pts.push([r, c - M.psi1(r)]);
+    for (let i = fr.list.length - 1; i >= 0; i--){ const r = fr.list[i]; pts.push([r, c + M.psi1(r)]); }
+    if (M.rf1 < M.rb1) pts.push([M.rf1, c + M.psi1(M.rb1)]);
+    fillPath(pts, O1x, C.crank, 0.75); }
+  // gear or rack
+  if (!M.rack){
+    const c2 = gearC0();
+    fillPath(gearPath(M.z2, M.rb2, M.rf2, M.psi2, OUT.g, c2), O2x, C.rod, 0.2);
+    const pts = [], fr = OUT.g;
+    if (M.rf2 < M.rb2) pts.push([M.rf2, c2 - M.psi2(M.rb2)]);
+    for (const r of fr.list) pts.push([r, c2 - M.psi2(r)]);
+    for (let i = fr.list.length - 1; i >= 0; i--){ const r = fr.list[i]; pts.push([r, c2 + M.psi2(r)]); }
+    if (M.rf2 < M.rb2) pts.push([M.rf2, c2 + M.psi2(M.rb2)]);
+    fillPath(pts, O2x, C.rod, 0.7);
+  } else {
+    const p = Math.PI*M.m, xt = M.da - M.ha, xr = M.da + M.hf, tn = Math.tan(M.phi);
+    const half = x => Math.PI*M.m/4 - (M.da - x)*tn;
+    const yc0 = rackY0(), ymin = opts.ymin, ymax = opts.ymax, k0 = Math.floor((ymin - yc0)/p) - 1, k1 = Math.ceil((ymax - yc0)/p) + 1;
+    const xback = xr + 1.2*M.m;
+    ctx.beginPath();
+    ctx.moveTo(PX(xback), PY(yc0 + k0*p - p/2));
+    for (let k = k0; k <= k1; k++){
+      const yc = yc0 + k*p;
+      ctx.lineTo(PX(xr), PY(yc - half(xr)));
+      ctx.lineTo(PX(xt), PY(yc - half(xt)));
+      ctx.lineTo(PX(xt), PY(yc + half(xt)));
+      ctx.lineTo(PX(xr), PY(yc + half(xr)));
+    }
+    ctx.lineTo(PX(xback), PY(yc0 + k1*p + p/2)); ctx.closePath();
+    ctx.fillStyle = alpha(C.rod, 0.2); ctx.fill(); ctx.strokeStyle = C.rod; ctx.lineWidth = 1.2; ctx.stroke();
+    // marked rack tooth (k = 0)
+    ctx.beginPath(); ctx.moveTo(PX(xr), PY(yc0 - half(xr))); ctx.lineTo(PX(xt), PY(yc0 - half(xt))); ctx.lineTo(PX(xt), PY(yc0 + half(xt))); ctx.lineTo(PX(xr), PY(yc0 + half(xr))); ctx.closePath();
+    ctx.fillStyle = alpha(C.rod, 0.7); ctx.fill();
+  }
+  return { O1x, O2x };
+}
+function drawCircles(ctx, PX, PY, sc, O1x, O2x, labels){
+  const circ = (ox, r, col, dash, lw = 1) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash); ctx.beginPath(); ctx.arc(PX(ox), PY(0), r*sc, 0, 7); ctx.stroke(); ctx.setLineDash([]); };
+  circ(O1x, M.rb1, C.muted, [3,3]); circ(O1x, M.r1w, C.ink, [10,3,2,3]); circ(O1x, M.ra1, alpha(C.crank, 0.6), [1,3]);
+  if (!M.rack){ circ(O2x, M.rb2, C.muted, [3,3]); circ(O2x, M.r2w, C.ink, [10,3,2,3]); circ(O2x, M.ra2, alpha(C.rod, 0.7), [1,3]); }
+  else { ctx.strokeStyle = C.ink; ctx.setLineDash([10,3,2,3]); ctx.beginPath(); ctx.moveTo(PX(0), 0); ctx.lineTo(PX(0), 4000); ctx.stroke();
+    ctx.strokeStyle = alpha(C.rod, 0.7); ctx.setLineDash([1,3]); ctx.beginPath(); ctx.moveTo(PX(M.da - M.ha), 0); ctx.lineTo(PX(M.da - M.ha), 4000); ctx.stroke(); ctx.setLineDash([]); }
+}
+function lineOfAction(ctx, PX, PY, sc, full){
+  const s = Math.sin(M.alpha), c = Math.cos(M.alpha), pt = u => [u*s, u*c];
+  const uA = -M.MP, uB = M.rack ? M.recess + 2*M.pb : M.PN;
+  ctx.strokeStyle = alpha(C.force, 0.55); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(PX(pt(uA)[0]), PY(pt(uA)[1])); ctx.lineTo(PX(pt(uB)[0]), PY(pt(uB)[1])); ctx.stroke();
+  const K = pt(-M.approach), L = pt(M.recess);
+  ctx.strokeStyle = C.force; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(PX(K[0]), PY(K[1])); ctx.lineTo(PX(L[0]), PY(L[1])); ctx.stroke();
+  if (M.intPinion){ ctx.strokeStyle = C.bad; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(PX(K[0]), PY(K[1])); ctx.lineTo(PX(pt(-M.MP)[0]), PY(pt(-M.MP)[1])); ctx.stroke(); }
+  return { pt, K, L };
+}
+
+let geo = null;
+function drawMesh(){
+  const cv = $('mesh'), { ctx, W, H } = prep(cv);
+  const st = $('status').querySelector('span'), dot = $('status').querySelector('i');
+  if (!M.ok){ st.textContent = 'Check the inputs'; dot.style.background = C.bad; return; }
+  const span = M.rack ? { xl: -2*M.r1w - 1.4*M.m, xr: M.da + M.hf + 2*M.m, h: 2*(M.ra1 + 0.6*M.m) }
+                      : { xl: -2*M.r1w - 1.4*M.m, xr: 2*M.r2w + 1.4*M.m, h: 2*(Math.max(M.ra1, M.ra2) + 0.6*M.m) };
+  const sc = Math.min((W - 30)/(span.xr - span.xl), (H - 30)/span.h);
+  const ox = 15 + (W - 30 - (span.xr - span.xl)*sc)/2 - span.xl*sc, oy = H/2;
+  const PX = x => ox + x*sc, PY = y => oy - y*sc;
+  geo = { ox, oy, sc };
+  const { O1x, O2x } = drawGearSet(ctx, PX, PY, sc, { ymin: -(oy)/sc, ymax: (H - oy)/sc + 0 });
+  if ($('showCircles').checked) drawCircles(ctx, PX, PY, sc, O1x, O2x);
+  // centres and line of centres
+  ctx.strokeStyle = C.muted; ctx.lineWidth = 1; ctx.setLineDash([8,4,2,4]); ctx.beginPath(); ctx.moveTo(PX(O1x), oy); ctx.lineTo(M.rack ? PX(M.da + M.hf) : PX(O2x), oy); ctx.stroke(); ctx.setLineDash([]);
+  for (const x of M.rack ? [O1x] : [O1x, O2x]){ ctx.fillStyle = C.sheet; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(PX(x), oy, 4.5, 0, 7); ctx.fill(); ctx.stroke(); }
+  label(ctx, 'O_1', PX(O1x) - 8, oy - 12, C.ink, 'right', 12);
+  if (!M.rack) label(ctx, 'O_2', PX(O2x) + 8, oy - 12, C.ink, 'left', 12);
+  // rotation arrows
+  const rotArrow = (cx, R, ccw, col, txt) => { ctx.strokeStyle = col; ctx.lineWidth = 1.8; ctx.beginPath(); const a0 = ccw ? 2.2 : 0.95, a1 = ccw ? 2.9 : 0.25;
+    ctx.arc(cx, oy, R, -a0, -a1, !ccw); ctx.stroke(); const ex = cx + R*Math.cos(a1), ey = oy - R*Math.sin(a1); const tx = (ccw ? -Math.sin(a1) : Math.sin(a1)), ty = (ccw ? Math.cos(a1) : -Math.cos(a1));
+    arrow(ctx, ex - tx*5, ey + ty*5, ex + tx*3, ey - ty*3, col, 1.8); label(ctx, txt, cx + R*Math.cos((a0+a1)/2)*1.25, oy - R*Math.sin((a0+a1)/2)*1.25, col, 'center', 11.5); };
+  rotArrow(PX(O1x), Math.max(18, M.rf1*sc*0.45), true, C.crank, 'ω_1');
+  if (!M.rack) rotArrow(PX(O2x), Math.max(18, M.rf2*sc*0.35), false, C.rod, 'ω_2');
+  else { arrow(ctx, PX(M.da + M.hf + 1.0*M.m), oy + 30, PX(M.da + M.hf + 1.0*M.m), oy - 10, C.rod, 1.8); label(ctx, 'v', PX(M.da + M.hf + 1.0*M.m) + 6, oy + 10, C.rod, 'left', 11.5); }
+  const q = M.inst(markedU());
+  if ($('showLoA').checked) lineOfAction(ctx, PX, PY, sc);
+  drawContacts(ctx, PX, PY, q, 70);
+  label(ctx, 'P', PX(0) + 6, oy + 12, C.ink, 'left', 12);
+  // status
+  const ph = !q.me || !q.inMesh ? 'marked pair out of mesh' : (q.u0 < 0 ? 'marked pair in approach' : 'marked pair in recess');
+  st.textContent = `${q.n} pair${q.n === 1 ? '' : 's'} in contact, ${ph}`;
+  dot.style.background = q.n >= 2 ? C.vel : (q.n === 1 ? C.crank : C.bad);
+}
+function drawContacts(ctx, PX, PY, q, Lmax){
+  const s = Math.sin(M.alpha), c = Math.cos(M.alpha);
+  for (const p of q.pairs){
+    const x = p.u*s, y = p.u*c, marked = Math.abs(p.u - q.u0) < 1e-9;
+    if ($('showForce').checked){ const L = Lmax*p.W/M.Fn; const nx = -c, ny = s; // normal on gear tooth: along line of action direction (sin, cos)
+      arrow(ctx, PX(x), PY(y), PX(x) + s*L, PY(y) - c*L, C.force, 2); }
+    ctx.fillStyle = marked ? C.vel : C.sheet; ctx.strokeStyle = C.vel; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(PX(x), PY(y), marked ? 5 : 4, 0, 7); ctx.fill(); ctx.stroke();
+  }
+}
+
+/* ---------- zoom view ---------- */
+function drawZoom(){
+  const cv = $('zoom'), { ctx, W, H } = prep(cv);
+  if (!M.ok) return;
+  const s = Math.sin(M.alpha), c = Math.cos(M.alpha);
+  const ext = Math.max(M.approach, M.recess, 1.2*M.pb)*1.25;
+  const halfW = Math.max(ext*s + 2.2*M.m, 2.6*M.m), halfH = Math.max(ext*c + 0.8*M.m, 2.4*M.m);
+  const sc = Math.min(W/(2*halfW), H/(2*halfH));
+  const ox = W/2, oy = H/2, PX = x => ox + x*sc, PY = y => oy - y*sc;
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+  const { O1x, O2x } = drawGearSet(ctx, PX, PY, sc, { ymin: -halfH*1.5, ymax: halfH*1.5 });
+  drawCircles(ctx, PX, PY, sc, O1x, O2x);
+  const { pt, K, L } = lineOfAction(ctx, PX, PY, sc, true);
+  const q = M.inst(markedU());
+  drawContacts(ctx, PX, PY, q, Math.min(70, H*0.22));
+  // labels
+  const lab = (p, t, col, dx = 8, dy = 0, al = 'left') => label(ctx, t, PX(p[0]) + dx, PY(p[1]) + dy, col, al, 12);
+  ctx.fillStyle = C.ink; for (const p of [K, L, [0,0]]){ ctx.beginPath(); ctx.arc(PX(p[0]), PY(p[1]), 3, 0, 7); ctx.fill(); }
+  lab(K, 'K', C.force, -10, 4, 'right'); lab(L, 'L', C.force, 10, 0); lab([0,0], 'P', C.ink, 8, 12);
+  const Mpt = pt(-M.MP); if (PY(Mpt[1]) < H + 20){ ctx.fillStyle = M.intPinion ? C.bad : C.muted; ctx.beginPath(); ctx.arc(PX(Mpt[0]), PY(Mpt[1]), 3.5, 0, 7); ctx.fill(); lab(Mpt, 'M (interference point)', M.intPinion ? C.bad : C.muted, 8, 0); }
+  if (!M.rack){ const Npt = pt(M.PN); if (PY(Npt[1]) > -20){ ctx.fillStyle = C.muted; ctx.beginPath(); ctx.arc(PX(Npt[0]), PY(Npt[1]), 3.5, 0, 7); ctx.fill(); lab(Npt, 'N', C.muted, 8, 0); } }
+  // dimension labels along the path
+  const mid = (u0, u1) => pt((u0 + u1)/2);
+  const ma = mid(-M.approach, 0), mr = mid(0, M.recess);
+  label(ctx, `approach ${fmt(M.approach*1000,2)} mm`, PX(ma[0]) - 14, PY(ma[1]), C.force, 'right', 12);
+  label(ctx, `recess ${fmt(M.recess*1000,2)} mm`, PX(mr[0]) - 14, PY(mr[1]), C.force, 'right', 12);
+  // pressure angle
+  ctx.strokeStyle = C.muted; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(PX(0), PY(0)); ctx.lineTo(PX(0), PY(halfH*0.8)); ctx.stroke();
+  const R = Math.min(60, halfH*sc*0.5); ctx.beginPath(); ctx.arc(PX(0), PY(0), R, -Math.PI/2, -Math.PI/2 + M.alpha); ctx.stroke();
+  label(ctx, `α′ = ${(M.alpha/DEG).toFixed(2)}°`, PX(0) + R*Math.sin(M.alpha/2) + 6, PY(0) - R*Math.cos(M.alpha/2) - 6, C.ink, 'left', 12);
+  ctx.restore();
+  $('zoomSub').textContent = `path of contact ${fmt(M.path*1000,2)} mm, base pitch ${fmt(M.pb*1000,2)} mm`;
+}
+
+/* ---------- stats and table ---------- */
+function drawStats(){
+  const el = $('stats');
+  if (!M.ok){ el.innerHTML = ''; $('statSub').textContent = ''; return; }
+  const mm = v => fmt(v*1000, 2);
+  const items = [
+    ['Velocity ratio', M.rack ? 'rack' : `1 : ${fmt(M.z2/M.z1,3)}`, ''], ['Contact ratio <span class="lc">ε</span>', fmt(M.eps,3), ''],
+    ['Path of contact', mm(M.path), 'mm'], ['Arc of contact', mm(M.arc), 'mm'], ['Backlash <span class="lc">j</span>', mm(M.j), 'mm'],
+    ['Operating <span class="lc">α′</span>', fmt(M.alpha/DEG,2), '°'], ['Fewest pinion teeth', String(Math.ceil(M.z1min - 1e-9)), ''],
+    [M.rack ? 'Largest rack addendum' : 'Largest gear addendum', M.rack ? mm(M.rackHaMax) : mm(M.ra2max - M.r2), 'mm'],
+    ['Max. sliding speed', fmt(M.vsMax,3), 'm/s'], ['<span class="lc">σ<sub>H</sub></span> at pitch point', fmt(M.sigPitch/1e6,0), 'MPa'],
+    ['Max. <span class="lc">σ<sub>H</sub></span>', isFinite(M.sigMax) ? fmt(M.sigMax/1e6,0) : 'n/a', 'MPa'],
+    ['Mesh efficiency', fmt(M.eta*100,2), '%']
+  ];
+  el.innerHTML = items.map(([k,v,u]) => `<div class="stat"><div class="k">${k}</div><div class="n">${v} <small>${u}</small></div></div>`).join('');
+  $('statSub').textContent = M.rack ? `${M.z1}-tooth pinion and rack, m = ${P.m} mm, φ = ${P.phi}°` : `${M.z1} and ${M.z2} teeth, m = ${P.m} mm, φ = ${P.phi}°`;
+}
+function drawTable(){
+  const t = $('res');
+  if (!M.ok){ t.innerHTML = '<tr><td>Fix the inputs flagged above to see results.</td></tr>'; return; }
+  const q = M.inst(markedU()), me = q.me, mm = v => fmt(v*1000, 3), d = 180/Math.PI;
+  const rows = [
+    ['sec','Geometry'],
+    ['Pitch radii','r_1, r_2', M.rack ? `${mm(M.r1)}, ∞` : `${mm(M.r1)}, ${mm(M.r2)}`,'mm'],
+    ['Base radii','r_b1, r_b2', M.rack ? `${mm(M.rb1)}, ∞` : `${mm(M.rb1)}, ${mm(M.rb2)}`,'mm'],
+    ['Addendum radii','r_a1, r_a2', M.rack ? `${mm(M.ra1)}, n/a` : `${mm(M.ra1)}, ${mm(M.ra2)}`,'mm'],
+    ...(M.rack ? [] : [['Centre distance','a, a′', `${mm(M.a)}, ${mm(M.aw)}`,'mm']]),
+    ['key','Operating pressure angle','α′', fmt(M.alpha*d,3),'°'],
+    ['sec','Contact'],
+    ['Path of approach','KP', mm(M.approach),'mm'], ['Path of recess','PL', mm(M.recess),'mm'],
+    ['key','Contact ratio','ε', fmt(M.eps,3),''], ['Backlash (circular, normal)','j, j_n', `${mm(M.j)}, ${mm(M.jn)}`,'mm'],
+    ['sec','Marked pair now'],
+    ['Position on line of action','u', mm(q.u0),'mm'],
+    ['key','Pairs in contact','n', String(q.n),''],
+    ['Load on marked pair','W', q.inMesh ? fmt(me.W,1) : '0','N'],
+    ['Radii of curvature','ρ_1, ρ_2', q.inMesh ? `${mm(me.rho1)}, ${M.rack ? '∞' : mm(me.rho2)}` : 'n/a','mm'],
+    ['Sliding velocity','v_s', q.inMesh ? fmt(me.vs,3) : 'n/a','m/s'],
+    ['key','Contact stress','σ_H', q.inMesh && isFinite(me.sigma) ? fmt(me.sigma/1e6,1) : 'n/a','MPa'],
+    ['sec','Speeds and forces'],
+    ['Pitch line velocity','v', fmt(M.vpitch,3),'m/s'],
+    ...(M.rack ? [] : [['Gear speed','N_2', fmt(P.N1*M.ratio,1),'rpm']]),
+    ['Pinion torque','T_1', fmt(M.T1,2),'N·m'], ...(M.rack ? [] : [['Gear torque','T_2', fmt(M.T2,2),'N·m']]),
+    ['key','Normal tooth force','F_n', fmt(M.Fn,1),'N'], ['Tangential, radial','F_t, F_r', `${fmt(M.Ft,1)}, ${fmt(M.Fr,1)}`,'N']
+  ];
+  t.innerHTML = rows.map(r => {
+    if (r[0] === 'sec') return `<tr class="sec"><td colspan="4">${r[1]}</td></tr>`;
+    const key = r[0] === 'key'; const a = key ? r.slice(1) : r;
+    return `<tr${key?' class="key"':''}><td>${a[0]}</td><td>${subHTML(a[1])}</td><td class="v">${a[2]}</td><td class="u">${a[3]}</td></tr>`;
+  }).join('');
+  $('instSub').textContent = `θ_1 = ${(+P.th).toFixed(1)}°`.replace('_1','₁');
+}
+
+/* ---------- charts ---------- */
+function drawCharts(){
+  if (!M.ok){ charts.forEach(cv => prep(cv)); return; }
+  const x = M.X, q = M.inst(markedU()), cx = markedU()/M.rb1/DEG;
+  const cur = (cx >= x[0] && cx <= x[x.length-1]) ? cx : null;
+  const tA = -M.approach/M.rb1/DEG, tR = M.recess/M.rb1/DEG;
+  const shade = [{ a: tA, b: 0, color: C.crank, label: 'approach' }, { a: 0, b: tR, color: C.vel, label: 'recess' }];
+  const xl = 'pinion angle from pitch point [°]';
+  const val = (arr, f, u) => { if (cur == null) return 'out of mesh'; const j = Math.round((cur - x[0])/(x[x.length-1] - x[0])*(x.length-1)); const v = arr[j]; return isFinite(v) ? `${f(v)} ${u}` : 'out of mesh'; };
+  chart(charts[0], { x, xlab: xl, series: [{ y: M.cn, color: C.vel, w: 2, label: 'pairs n' }], ylab: 'pairs', cursor: cur, value: `${q.n}`, shade, step: true,
+    hlines: [{ v: M.eps, color: C.muted, label: `ε = ${fmt(M.eps,2)}`, dash: [4,4] }] });
+  chart(charts[1], { x, xlab: xl, series: [{ y: M.cW, color: C.force, w: 2, label: 'W' }], ylab: 'load [N]', cursor: cur, value: val(M.cW, v => fmt(v,0), 'N'), shade,
+    hlines: [{ v: M.Fn, color: C.muted, label: `F_n = ${fmt(M.Fn,0)} N`, dash: [4,4] }] });
+  chart(charts[2], { x, xlab: xl, series: [{ y: M.cvs, color: C.acc, w: 2, label: 'v_s' }], ylab: 'v_s [m/s]', cursor: cur, value: val(M.cvs, v => fmt(v,3), 'm/s'), shade });
+  const sig = M.csig.map(v => v/1e6);
+  chart(charts[3], { x, xlab: xl, series: [{ y: sig, color: C.mass, w: 2, label: 'σ_H' }], ylab: 'σ_H [MPa]', cursor: cur, value: val(sig, v => fmt(v,0), 'MPa'), shade, clip: [0, Math.min(4*M.sigPitch/1e6, isFinite(M.sigMax) ? M.sigMax/1e6 : 4*M.sigPitch/1e6)*1.05] });
+  chart(charts[4], { x, xlab: xl, series: [{ y: M.cz1, color: C.crank, w: 2, label: 'pinion ζ_1' }, { y: M.cz2, color: C.rod, w: 2, label: M.rack ? 'rack ζ_2' : 'gear ζ_2' }], ylab: 'specific sliding', cursor: cur,
+    value: val(M.cz1, v => fmt(v,2), ''), shade, clip: [-4, 1.2] });
+  chart(charts[5], { x, xlab: xl, series: [{ y: M.closs, color: C.rod, w: 2, label: 'P_loss' }], ylab: 'loss [W]', cursor: cur, value: `${fmt(q.loss,1)} W`, shade,
+    hlines: [{ v: M.lossMean, color: C.ink, label: `mean ${fmt(M.lossMean,1)} W, η = ${fmt(M.eta*100,2)} %`, dash: [4,4] }] });
+}
+charts.forEach(cv => {
+  let down = false;
+  const set = e => { const m = cv._map; if (!m || !M || !M.ok) return; const rc = cv.getBoundingClientRect(); let v = m.xmin + (e.clientX - rc.left - m.pl)/m.w*(m.xmax - m.xmin);
+    v = Math.min(m.xmax, Math.max(m.xmin, v)); setInput('th', Math.round((((v % 360) + 360) % 360)*10)/10); refreshInstant(); };
+  cv.addEventListener('pointerdown', e => { down = true; cv.setPointerCapture(e.pointerId); set(e); });
+  cv.addEventListener('pointermove', e => { if (down) set(e); });
+  cv.addEventListener('pointerup', () => down = false); cv.addEventListener('pointercancel', () => down = false);
+});
+
+/* drag gears */
+(function(){
+  const cv = $('mesh'); let drag = null;
+  const ang = e => { const rc = cv.getBoundingClientRect(); const x = (e.clientX - rc.left - geo.ox)/geo.sc, y = -(e.clientY - rc.top - geo.oy)/geo.sc; return { x, y }; };
+  cv.addEventListener('pointerdown', e => { if (!geo || !M || !M.ok) return; const p = ang(e); const onPinion = p.x < 0;
+    drag = { onPinion, start: onPinion ? Math.atan2(p.y, p.x + M.r1w) : (M.rack ? p.y : Math.atan2(p.y, p.x - M.r2w)), th0: P.th };
+    cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; });
+  cv.addEventListener('pointermove', e => { if (!drag) return; const p = ang(e); let dth;
+    if (drag.onPinion){ let d = Math.atan2(p.y, p.x + M.r1w) - drag.start; d = Math.atan2(Math.sin(d), Math.cos(d)); dth = d; drag.start += d; }
+    else if (M.rack){ const d = p.y - drag.start; dth = d/M.r1w; drag.start = p.y; }
+    else { let d = Math.atan2(p.y, p.x - M.r2w) - drag.start; d = Math.atan2(Math.sin(d), Math.cos(d)); dth = -d/M.ratio; drag.start += d; }
+    let v = (P.th + dth/DEG) % 360; if (v < 0) v += 360; setInput('th', Math.round(v*10)/10); refreshInstant(); });
+  const end = () => { drag = null; cv.style.cursor = 'grab'; };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+})();
+
+/* ---------- animation ---------- */
+let playing = false, last = 0;
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+$('play').addEventListener('click', () => { playing = !playing; $('play').textContent = playing ? 'Pause' : 'Play'; last = 0; if (playing) requestAnimationFrame(tick); });
+function tick(ts){
+  if (!playing) return;
+  if (last){ const dt = Math.min(0.1, (ts - last)/1000); let rate = +$('speed').value; if (reduce.matches) rate = Math.min(rate, 6);
+    let v = (P.th + rate*dt) % 360; setInput('th', Math.round(v*100)/100); refreshInstant(); }
+  last = ts; requestAnimationFrame(tick);
+}
+const ro = new ResizeObserver(() => refreshInstant()); ['mesh','zoom','c1','c2','c3','c4','c5','c6'].forEach(id => ro.observe($(id)));
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => refreshInstant());
+new MutationObserver(() => refreshInstant()).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+applyMate(); refreshAll();
+})();
+</script>
+</body>
+</html>

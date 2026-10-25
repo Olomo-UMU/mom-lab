@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive notes for BME 2102 Chapter 5, toothed gearing: gear types in 3D, terminology, law of gearing, involute and cycloidal teeth, contact ratio, interference and minimum teeth, with the worked examples from the notes.">
+<title>Toothed Gearing</title>
+<link rel="stylesheet" href="assets/notes.css">
+</head>
+<body>
+<nav class="sitebar" aria-label="Site"><a href="../">← All labs</a><a href="./">BME 2102 interactive notes</a><a href="intro.html">1 Introduction</a><a href="mechanisms.html">2 Mechanisms</a><a href="velocity.html">3 Velocity and acceleration</a><a href="belts.html">4 Belt drives</a><a href="gearing.html" aria-current="page">5 Gearing</a><a href="cams.html">6 Cams</a><a href="balancing.html">7 Balancing</a></nav>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">BME 2102 Mechanics of Machines · Chapter 5 · Transmission of power</div>
+  <h1>Toothed Gearing</h1>
+  <p>The chapter on gears from the course notes, made to move. Turn the gear types around in 3D, watch involute teeth roll on each other, see where interference comes from, and rework every example in the notes with your own numbers.</p>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="On this page"><ol>
+  <li><a href="#s1"><span class="n">5.1</span>Why gears</a></li>
+  <li><a href="#s2"><span class="n">5.2</span>Kinds of gears (3D)</a></li>
+  <li><a href="#s3"><span class="n">5.3</span>Gear terms</a></li>
+  <li><a href="#s4"><span class="n">5.4</span>Law of gearing</a></li>
+  <li><a href="#s5"><span class="n">5.5</span>Involute and cycloidal teeth</a></li>
+  <li><a href="#s6"><span class="n">5.6</span>Standard proportions</a></li>
+  <li><a href="#s7"><span class="n">5.7</span>Contact ratio</a></li>
+  <li><a href="#s8"><span class="n">5.8</span>Interference</a></li>
+  <li><a href="#s9"><span class="n">5.9</span>Minimum number of teeth</a></li>
+  <li><a href="#quiz"><span class="n">✓</span>Check yourself</a></li>
+  <li><a href="#refs"><span class="n"></span>References</a></li>
+</ol></nav>
+<main>
+
+<section class="sec prose" id="s1"><h2><span class="n">5.1</span>Why gears</h2>
+<p>Belts, ropes and friction wheels pass motion from one shaft to another by friction, so they can slip. When the speed ratio must stay exact, or the shafts are close together, we cut teeth on the wheels. A gear is a friction wheel whose teeth stop it slipping: the two <b>pitch circles</b> roll on each other exactly as the plain wheels would.</p>
+<div class="panel"><div class="ph"><h4>Friction wheels against gears</h4><span class="sub">raise the load until the friction wheels slip</span></div>
+  <canvas class="cv short" id="fw" aria-label="Animation of a pair of friction wheels next to a pair of gears"></canvas>
+  <div class="controls" id="fw_c"></div><div class="caption" id="fw_cap"></div></div>
+<p><b>Advantages:</b> exact velocity ratio; can carry large power; high efficiency; compact and reliable. <b>Disadvantages:</b> need special tools and machines to make; errors in the teeth cause vibration and noise; need lubrication; not suited to shafts far apart.</p>
+<p><b>Materials:</b> cast iron (good wear, cheap, for slow gears), steel (plain carbon or alloy, often heat-treated for strong teeth), phosphor bronze (worm wheels, to reduce wear of the worm), and non-metals such as nylon or laminated fabric for quiet running.</p>
+</section>
+
+<section class="sec prose" id="s2"><h2><span class="n">5.2</span>Kinds of gears</h2>
+<p>Gears are classified first by how the two shafts lie. Pick a type, drag to turn it, scroll or pinch to zoom. Show the pitch surfaces to see the smooth cylinders or cones that the teeth replace.</p>
+<div class="panel"><div class="ph"><h4 id="g3_title">Spur gears</h4><span class="sub" id="g3_sub">parallel shafts</span></div>
+  <canvas class="gl" id="g3" aria-label="3D model of the selected gear pair, which you can turn with the mouse"></canvas>
+  <div class="chips" id="g3_chips" role="group" aria-label="Gear type"></div>
+  <div class="btnrow"><button type="button" id="g3_play">Pause</button>
+    <label class="checks"><input type="checkbox" id="g3_pitch"> Pitch surfaces</label><label class="checks"><input type="checkbox" id="g3_spin" checked> Slow</label></div>
+  <div class="caption" id="g3_cap"></div>
+  <div class="k3d">Drag to turn · scroll or pinch to zoom · right-drag or two fingers to move</div></div>
+<h3>By the shafts</h3>
+<ul><li><b>Parallel shafts:</b> spur gears (teeth parallel to the axis), helical gears (teeth inclined at the helix angle: smoother and quieter but they push the shaft sideways) and herringbone or double-helical gears (two opposite helices, so the side thrusts cancel). Rack and pinion and internal gears also work between parallel lines.</li>
+<li><b>Intersecting shafts:</b> bevel gears, with teeth cut on cones. Equal bevel gears on shafts at right angles are <b>mitre</b> gears.</li>
+<li><b>Shafts that neither meet nor are parallel:</b> spiral (skew) gears and worm gears. A worm gives a large reduction in one step.</li></ul>
+<h3>By peripheral speed and type of gearing</h3>
+<p>Low velocity below 3 m/s, medium 3 to 15 m/s, high above 15 m/s. In <b>external</b> gearing the wheels turn in opposite directions; in <b>internal</b> gearing they turn the same way; a <b>rack</b> is a gear of infinite radius that turns rotation into straight-line motion.</p>
+<div class="panel"><div class="ph"><h4>Which class is my gear?</h4><span class="sub">v = πdN/60</span></div><div class="controls" id="pv_c"></div><div class="stats" id="pv_s"></div></div>
+</section>
+
+<section class="sec prose" id="s3"><h2><span class="n">5.3</span>Gear terms</h2>
+<p>Choose a term to see it on the drawing. The numbers below update as you change the module, the teeth and the tooth system.</p>
+<div class="panel"><div class="ph"><h4>Anatomy of a gear pair</h4><span class="sub" id="tm_sub"></span></div>
+  <canvas class="cv tall" id="tm" aria-label="Close-up of a pinion and gear in mesh with the chosen term highlighted"></canvas>
+  <div class="chips" id="tm_chips" role="group" aria-label="Gear terms"></div>
+  <div class="caption" id="tm_cap" aria-live="polite"></div>
+  <div class="controls" id="tm_c"></div>
+  <div class="btnrow"><span style="font-size:13px">Tooth system</span><select id="tm_sys" style="width:auto"><option value="fd20">20° full depth involute</option><option value="fd145">14.5° full depth involute</option><option value="stub20">20° stub involute</option></select></div>
+  <div class="stats" id="tm_s"></div></div>
+<div class="eq"><div>Circular pitch p<sub>c</sub> = πD/T = πm &nbsp;·&nbsp; module m = D/T &nbsp;·&nbsp; diametral pitch p<sub>d</sub> = T/D = π/p<sub>c</sub></div>
+<div>Two gears mesh only if they have the same circular pitch (same module): D<sub>1</sub>/D<sub>2</sub> = T<sub>1</sub>/T<sub>2</sub></div>
+<div>Base circle diameter = D cos φ &nbsp;·&nbsp; root circle diameter = D − 2 × dedendum</div></div>
+<p>Recommended modules (IS): 1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 16, 20 mm. Backlash is normally kept between 0.05/p<sub>d</sub> and 0.1/p<sub>d</sub> to stop the teeth jamming from cutting errors and heat.</p>
+</section>
+
+<section class="sec prose" id="s4"><h2><span class="n">5.4</span>Law of gearing</h2>
+<p>For the speed ratio to stay constant, the <b>common normal</b> at the point where two teeth touch must always pass through the same point on the line of centres, the <b>pitch point P</b>. Then ω<sub>1</sub>/ω<sub>2</sub> = O<sub>2</sub>P/O<sub>1</sub>P = D<sub>2</sub>/D<sub>1</sub> = T<sub>2</sub>/T<sub>1</sub>. Teeth that obey this are <b>conjugate</b>. Involute teeth obey it automatically: the normal to an involute is always tangent to its base circle, so every contact lies on the one common tangent MN of the two base circles.</p>
+<div class="panel"><div class="ph"><h4>Involute gears in mesh</h4><span class="sub" id="lg_sub"></span></div>
+  <canvas class="cv tall" id="lg" aria-label="Animation of two involute gears meshing, with the line of action and the pitch point"></canvas>
+  <div class="legend"><span><i style="background:var(--crank)"></i>pinion (driver)</span><span><i style="background:var(--rod)"></i>wheel</span><span><i style="background:var(--force)"></i>line of action MN, contact points move along it</span><span><i style="background:var(--muted)"></i>base circles</span></div>
+  <div class="controls" id="lg_c"></div>
+  <div class="btnrow"><button type="button" id="lg_play">Pause</button></div>
+  <div class="stats" id="lg_s"></div></div>
+<p>Move the centres apart: the base circles do not change, so the ratio does not change, but the working pitch circles grow, the pressure angle grows, and backlash opens up. That is the first advantage of involute gears listed in 5.5.3.</p>
+<div class="eq"><div>O<sub>1</sub>M = O<sub>1</sub>P cos φ, &nbsp; O<sub>2</sub>N = O<sub>2</sub>P cos φ, &nbsp; O<sub>1</sub>O<sub>2</sub> = (O<sub>1</sub>M + O<sub>2</sub>N)/cos φ</div>
+<div>Tooth force F along MN: tangential F<sub>T</sub> = F cos φ, radial F<sub>R</sub> = F sin φ, torque = F<sub>T</sub> × r</div></div>
+<details class="ex" id="ex1"></details>
+</section>
+
+<section class="sec prose" id="s5"><h2><span class="n">5.5</span>Involute and cycloidal teeth</h2>
+<p>An <b>involute</b> is traced by the end of a taut string unwound from a circle (the base circle). A <b>cycloid</b> is traced by a point on a circle rolling along a line; rolling on the outside of the pitch circle gives an <b>epicycloid</b> (the face of a cycloidal tooth), rolling on the inside gives a <b>hypocycloid</b> (the flank).</p>
+<div class="panel"><div class="ph"><h4 id="cv_t">Drawing an involute</h4><span class="sub" id="cv_sub"></span></div>
+  <canvas class="cv" id="cvv" aria-label="Animation tracing an involute, epicycloid or hypocycloid"></canvas>
+  <div class="btnrow"><span class="seg" role="group" aria-label="Curve"><button type="button" data-cur="inv" aria-pressed="true">Involute</button><button type="button" data-cur="epi">Epicycloid</button><button type="button" data-cur="hypo">Hypocycloid</button></span><button type="button" id="cv_play">Pause</button></div>
+  <div class="caption" id="cv_cap"></div></div>
+<h3>Involute against cycloidal</h3>
+<ul><li><b>Involute:</b> the centre distance can change a little without changing the ratio; the pressure angle stays constant during engagement (smooth running); each flank is a single curve and the basic rack has straight sides, so teeth are easy to cut. Its weakness is interference on pinions with few teeth.</li>
+<li><b>Cycloidal:</b> wider flanks, so stronger teeth for the same pitch (preferred for cast teeth); a convex face works on a concave flank, giving slightly less wear; no interference. But the centre distance must be exact and the pressure angle varies from a maximum to zero and back.</li></ul>
+</section>
+
+<section class="sec prose" id="s6"><h2><span class="n">5.6</span>Standard proportions</h2>
+<div class="tablewrap"><table class="t"><thead><tr><th>Particular</th><th>14.5° composite or full depth involute</th><th>20° full depth involute</th><th>20° stub involute</th></tr></thead><tbody>
+<tr><td>Addendum</td><td>1m</td><td>1m</td><td>0.8m</td></tr><tr><td>Dedendum</td><td>1.25m</td><td>1.25m</td><td>1m</td></tr>
+<tr><td>Working depth</td><td>2m</td><td>2m</td><td>1.6m</td></tr><tr><td>Minimum total depth</td><td>2.25m</td><td>2.25m</td><td>1.8m</td></tr>
+<tr><td>Tooth thickness</td><td>1.5708m</td><td>1.5708m</td><td>1.5708m</td></tr><tr><td>Minimum clearance</td><td>0.25m</td><td>0.25m</td><td>0.2m</td></tr><tr><td>Fillet radius at root</td><td>0.4m</td><td>0.4m</td><td>0.4m</td></tr></tbody></table></div>
+<div class="panel"><div class="ph"><h4>One tooth in each system</h4><span class="sub">same module and number of teeth</span></div>
+  <canvas class="cv" id="sp" aria-label="Single teeth of the 14.5 degree, 20 degree full depth and 20 degree stub systems drawn over each other"></canvas>
+  <div class="legend"><span><i style="background:var(--crank)"></i>14.5° full depth</span><span><i style="background:var(--rod)"></i>20° full depth</span><span><i style="background:var(--vel)"></i>20° stub</span></div>
+  <div class="controls" id="sp_c"></div></div>
+<p>A larger pressure angle gives a tooth that is wider at the root, so it is stronger as a beam; a stub tooth is shorter, so it bends less and also avoids interference with fewer teeth. The 14.5° composite system has cycloidal tips and roots with an involute middle; it is strong but not interchangeable.</p>
+</section>
+
+<section class="sec prose" id="s7"><h2><span class="n">5.7</span>Contact ratio</h2>
+<p>A pair of teeth touches from <b>K</b>, where the wheel’s addendum circle cuts MN, to <b>L</b>, where the pinion’s addendum circle cuts it. KP is the <b>path of approach</b>, PL the <b>path of recess</b>. The arc of contact is the path of contact ÷ cos φ, and the <b>contact ratio</b> = arc of contact ÷ circular pitch is the average number of pairs in contact. Above 1 the next pair always takes over before the last one lets go.</p>
+<div class="eq"><div>KP = √(R<sub>A</sub>² − R² cos² φ) − R sin φ &nbsp;&nbsp; PL = √(r<sub>A</sub>² − r² cos² φ) − r sin φ</div>
+<div>arc of contact = (KP + PL)/cos φ &nbsp;&nbsp; contact ratio = arc of contact / (πm)</div>
+<div>sliding velocity at a distance x from P = (ω<sub>1</sub> + ω<sub>2</sub>) x &nbsp; (zero at P)</div></div>
+<div class="panel"><div class="ph"><h4>Pairs in contact as the pinion turns</h4><span class="sub" id="cr_sub"></span></div>
+  <div class="figrow"><canvas class="cv" id="cr" aria-label="Pinion and wheel meshing with the path of contact"></canvas><canvas class="cv" id="cr2" aria-label="Graph of number of pairs in contact and sliding velocity against pinion angle"></canvas></div>
+  <div class="controls" id="cr_c"></div><div class="btnrow"><button type="button" id="cr_play">Pause</button></div><div class="stats" id="cr_s"></div></div>
+<details class="ex" id="ex2"></details>
+<details class="ex" id="ex3"></details>
+<details class="ex" id="ex3b"></details>
+</section>
+
+<section class="sec prose" id="s8"><h2><span class="n">5.8</span>Interference</h2>
+<p>The involute exists only outside the base circle. M and N, where MN touches the base circles, are the <b>interference points</b>. If the wheel’s addendum circle cuts MN beyond M, the wheel tip would touch the pinion inside its base circle, where there is no involute: the tip digs into the root. When the pinion is cut by a rack or hob the cutter does exactly this and removes metal from the root, <b>undercutting</b> the tooth and weakening it. Interference is avoided when both addendum circles cut MN between M and N.</p>
+<div class="panel"><div class="ph"><h4>Cutting a pinion with a rack cutter</h4><span class="sub" id="uc_sub"></span></div>
+  <div class="figrow"><canvas class="cv tall" id="uc" aria-label="A rack cutter generating a pinion, showing undercut for few teeth"></canvas><canvas class="cv tall" id="it" aria-label="Interference points M and N with the addendum circles"></canvas></div>
+  <div class="controls" id="uc_c"></div><div class="btnrow"><button type="button" id="uc_play">Pause</button><button type="button" id="uc_cut">Cut again</button></div><div class="caption" id="uc_cap"></div></div>
+<div class="eq"><div>Largest path of approach MP = r sin φ, of recess PN = R sin φ, so the largest path of contact MN = (r + R) sin φ</div><div>Largest arc of contact = (r + R) tan φ</div></div>
+<details class="ex" id="ex4"></details>
+</section>
+
+<section class="sec prose" id="s9"><h2><span class="n">5.9</span>Minimum number of teeth</h2>
+<p>Put the limiting case into numbers. With G = T/t the gear ratio, φ the pressure angle and the addenda written as fractions A<sub>p</sub> and A<sub>w</sub> of the module:</p>
+<div class="eq"><div><b>Wheel tip at M</b> (the usual limit, since the wheel is bigger): &nbsp; t<sub>min</sub> = 2A<sub>w</sub> / ( G [ √(1 + (1/G)(1/G + 2) sin² φ) − 1 ] )</div>
+<div><b>Pinion tip at N</b>: &nbsp; t<sub>min</sub> = 2A<sub>p</sub> / ( √(1 + G(G + 2) sin² φ) − 1 )</div>
+<div>Equal wheels (G = 1): &nbsp; t<sub>min</sub> = 2A<sub>w</sub> / ( √(1 + 3 sin² φ) − 1 )</div>
+<div>Largest addenda that just avoid interference: &nbsp; A<sub>p</sub>m = (mt/2)[√(1 + G(G + 2) sin² φ) − 1], &nbsp; A<sub>w</sub>m = (mT/2)[√(1 + (1/G)(1/G + 2) sin² φ) − 1]</div></div>
+<div class="panel"><div class="ph"><h4>Fewest pinion teeth against gear ratio</h4><span class="sub">standard addendum 1m on both gears unless changed</span></div>
+  <canvas class="cv" id="mt" aria-label="Graph of the minimum number of pinion teeth against gear ratio for several pressure angles"></canvas>
+  <div class="controls" id="mt_c"></div><div class="stats" id="mt_s"></div></div>
+<table class="t"><thead><tr><th>System of gear teeth</th><th>Fewest teeth on a pinion that meshes with any gear or a rack (Table 5.2)</th></tr></thead><tbody><tr><td>14.5° composite</td><td class="n">12</td></tr><tr><td>14.5° full depth involute</td><td class="n">32</td></tr><tr><td>20° full depth involute</td><td class="n">18</td></tr><tr><td>20° stub involute</td><td class="n">14</td></tr></tbody></table>
+<details class="ex" id="ex5"></details>
+<details class="ex" id="ex6"></details>
+</section>
+
+<section class="sec" id="quiz"><h2><span class="n">✓</span>Check yourself</h2><div id="qz"></div></section>
+
+<section class="sec refs" id="refs"><h2><span class="n"></span>References</h2>
+<p>Khurmi, R. S., &amp; Gupta, J. K. (2020). <i>Theory of machines</i> (14th ed.). S. Chand.</p>
+<p>Norton, R. L. (2020). <i>Design of machinery: An introduction to the synthesis and analysis of mechanisms and machines</i> (6th ed.). McGraw-Hill Education.</p>
+<p>Uganda Martyrs University, Department of Mechanical Engineering. (2026). <i>BME 2102 Mechanics of machines: Course notes</i> [Unpublished lecture notes].</p>
+<p>Uicker, J. J., Pennock, G. R., &amp; Shigley, J. E. (2017). <i>Theory of machines and mechanisms</i> (5th ed.). Oxford University Press.</p>
+<p class="note" style="text-indent:0;padding-left:12px">For a detailed mesh analysis (sliding, tooth load, contact stress) open the <a href="../gears/">Spur Gear Mesh Lab</a>.</p></section>
+</main></div>
+<footer class="foot">BME 2102 interactive notes · Uganda Martyrs University · text CC BY 4.0, code MIT · 3D by three.js (MIT)</footer>
+</div>
+<script src="../vendor/three.min.js"></script>
+<script src="../vendor/OrbitControls.js"></script>
+<script src="assets/notes.js"></script>
+<script src="assets/gearing.js"></script>
+<script src="assets/slides.js"></script>
+</body>
+</html>
